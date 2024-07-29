@@ -33,7 +33,7 @@ securedApi.interceptors.request.use(
 securedApi.interceptors.response.use(
   response => response.data,
   error => {
-    const originalRequest = error.config;
+    const originalRequest = error?.config;
 
     // TODO: Ideally should be 401, but spring security overrides on token expiry...not urgent
     if (error.response?.status === 403 && !originalRequest._retry) {

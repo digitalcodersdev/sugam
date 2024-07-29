@@ -36,7 +36,7 @@ const DATA = [
     icon: 'account-group-outline',
     title: 'Operations',
     screen: ScreensNameEnum.OPERATIONS_SCREEN,
-    color: R.colors.LIGHTGREEN,
+    color: R.colors.lightYellow,
     image: require('../../assets/Images/icon1.png'),
   },
   // {
@@ -106,7 +106,7 @@ const HomeScreen = ({navigation}) => {
     <ScreenWrapper header={false}>
       <StatusBar
         backgroundColor={R.colors.PRIMARY_LIGHT}
-        barStyle={'dark-content'}
+        barStyle={'light-content'}
       />
       <ImageBackground
         source={require('../../assets/Images/mainbg.png')}
@@ -258,25 +258,13 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   cardView: {
-    // backgroundColor: R.colors.PRIMARY_LIGHT,
-    // borderRadius: 20,
-    // padding: 5,
-    // paddingVertical: 10,
-    // borderColor: R.colors.LIGHTGRAY,
-    // shadowOffset: {
-    //   height: 2,
-    //   width: 5,
-    // },
-    // shadowOpacity: 1,
-    // shadowColor: R.colors.LIGHTGRAY,
-    // elevation:10
     backgroundColor: R.colors.PRIMARY_LIGHT,
     borderRadius: 5,
     padding: 5,
     paddingVertical: 10,
     borderColor: R.colors.LIGHTGRAY,
     // Add elevation for Android
-    elevation: 5,
+    elevation: 1,
     // Set shadow properties for iOS
     shadowOffset: {
       height: 5,

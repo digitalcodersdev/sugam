@@ -48,7 +48,7 @@ const LogInScreen = () => {
 
   const otpHandler = message => {
     try {
-      console.log(message);
+      // console.log(message);
       const extractedOtp = /(\d{4})/.exec(message)[1]; // Assuming OTP is 4 digits
       setOtp(extractedOtp);
       verifyOtp(extractedOtp);

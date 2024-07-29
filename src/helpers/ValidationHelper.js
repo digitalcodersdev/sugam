@@ -152,4 +152,19 @@ ValidationHelper.isValidImageSize = (
   return result;
 };
 
+ValidationHelper.isPanValid = pan => {
+  const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  return panRegex.test(pan);
+};
+
+ValidationHelper.isValidAadhar = aadharNumber => {
+  const aadharRegex = /^\d{12}$/;
+  return aadharRegex.test(aadharNumber);
+};
+
+ValidationHelper.isValidVoterId = voterId => {
+  const voterIdPattern = /^[A-Z]{3}[0-9]{7}$/i;
+  return voterIdPattern.test(voterId);
+};
+
 export default ValidationHelper;

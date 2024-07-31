@@ -1,5 +1,35 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
 import UserApi from '../../datalib/services/user.api';
+
+
+export const getUserDetails = createAsyncThunk(
+  'get/user/details',
+  async (data, {rejectWithValue}) => {
+    try {
+      return await new UserApi().getUserDetails();
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+
+
+export const getCentres = createAsyncThunk(
+  'get/centres',
+  async (data, {rejectWithValue}) => {
+    try {
+      return await new UserApi().getCentreDetails();
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+
+
+
+
+
+
 /*
  * This function is used to create an action to fetch an user by his id
  * @author Kindajobs <mohitkumar.webdev@gmail.com>
@@ -15,22 +45,7 @@ export const getUserById = createAsyncThunk(
   },
 );
 
-/*
- * This function is used to create an action to  update  user information
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
- */
-// export const updateUser = createAsyncThunk(
-//   'user/update-user',
-//   async (user, {rejectWithValue}) => {
-//     try {
-//       // TODO: Removing profilePic while updating user, no need to clutter api call
-//       user.picture = null;
-//       return await new UserApi().updateUser(user);
-//     } catch (error) {
-//       return rejectWithValue(error.code);
-//     }
-//   },
-// );
+
 
 /*
  * This function is used to create an action to upload a picture

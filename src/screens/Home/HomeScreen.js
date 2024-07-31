@@ -10,7 +10,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import R from '../../resources/R';
@@ -30,6 +30,7 @@ import {
   fetchClockinStatus,
 } from '../../store/actions/userActions';
 import moment from 'moment';
+import { AuthContext } from '../../store/contexts/AuthContext';
 const DATA = [
   {
     id: 1,
@@ -67,6 +68,7 @@ const DATA = [
 
 const HomeScreen = ({navigation}) => {
   const dispatch = useDispatch();
+  const authContext = useContext(AuthContext)
   const [email, setEmail] = useState('');
   const [modalVis, setModalVis] = useState(false);
   const clockin = useSelector(clockinSelector);
@@ -75,7 +77,7 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     if (tasks?.length < 1) {
-      getAllTask();
+      // getAllTask();
     }
   }, []);
 
@@ -88,6 +90,16 @@ const HomeScreen = ({navigation}) => {
       // Alert.alert('something went wrong please try again laterp');
     }
   };
+
+
+  const handleLogout = async()=>{
+    try {
+      authContext.signOut()
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
 
   const Item = ({item}) => (
     <View style={[styles.cardView, {width: 130, marginRight: 10}]}>
@@ -105,7 +117,7 @@ const HomeScreen = ({navigation}) => {
   return (
     <ScreenWrapper header={false}>
       <StatusBar
-        backgroundColor={R.colors.PRIMARY_LIGHT}
+        backgroundColor={R.colors.primary}
         barStyle={'light-content'}
       />
       <ImageBackground
@@ -132,22 +144,22 @@ const HomeScreen = ({navigation}) => {
           <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
             <Image
               source={
-                user?.image_url
-                  ? {uri: user?.image_url}
+                user?.photo
+                  ? {uri: user?.photo}
                   : require('../../assets/Images/profile.png')
               }
               style={{height: 50, width: 50, borderRadius: 30, marginLeft: 20}}
             />
             <View style={{flexDirection: 'column'}}>
               <Text style={styles.userName}>
-                {user?.name ? user.name : 'N/A'}
+                {user?.staffname ? user.staffname : 'N/A'}
               </Text>
               <Text
                 style={[
                   styles.userName,
                   {color: R.colors.DARKGRAY, fontSize: R.fontSize.L},
                 ]}>
-                ( {user?.employee_detail?.designation?.name} )
+                ( {user?.stafftypedetail ? user?.stafftypedetail :"N/A"} )
               </Text>
             </View>
           </View>
@@ -159,7 +171,7 @@ const HomeScreen = ({navigation}) => {
               margin: 10,
               height: 50,
               width: 50,
-            }}>
+            }} onPress={handleLogout}>
             <Icon name={'power'} size={40} color={R.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -204,6 +216,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: R.fontSize.XL,
     paddingHorizontal: 10,
+    textTransform:"capitalize"
   },
   filterView: {
     flexDirection: 'row',

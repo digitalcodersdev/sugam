@@ -1,24 +1,38 @@
+import sInfoUtil from '../../utils/sInfo.util';
 import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
+
 /*
  * Here we handled user related API's
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
-class AuthenticationApi extends SecuredBaseApi {
-  /*
-   * This function is used to geneate email otp for email verification
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
-   */
 
-  async applyLeave(data) {
+class AuthenticationApi extends SecuredBaseApi {
+  async getUserDetails() {
     try {
-      const response = await this.securedAxios.post(getApiUri('/leave'), data);
-      if (response.data) {
+      const response = await this.securedAxios.get(
+        getApiUri('/get/user/details'),
+      );
+      if (response.data && response.success) {
+        await sInfoUtil.save('USER_CONTEXT', JSON.stringify(response.data));
         return response.data;
       }
       return false;
     } catch (err) {
       console.error(err);
+      return false;
+    }
+  }
+
+  async getCentreDetails() {
+    try {
+      const response = await this.securedAxios.get(getApiUri('/get/centres'));
+      if (response?.success) {
+        return response.data;
+      }
+      return false
+    } catch (error) {
+      console.log(error);
       return false;
     }
   }

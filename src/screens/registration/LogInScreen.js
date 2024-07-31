@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import BTextInput from '../../library/commons/BTextInput';
-import Loader from '../../library/commons/Loader';
 import AuthApi from '../../datalib/services/authentication.api';
 import Button from '../../library/commons/Button';
 import R from '../../resources/R';
@@ -24,43 +23,49 @@ import {OtpInput} from 'react-native-otp-entry';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import OTPVerify from 'react-native-otp-verify';
 import {PermissionsAndroid} from 'react-native';
+import LoaderAnimation from '../../library/commons/LoaderAnimation';
+import Toast from 'react-native-simple-toast';
+import UserApi from "../../datalib/services/user.api"
+import { UseDispatch, useDispatch } from 'react-redux';
+import { getUserDetails } from '../../store/actions/userActions';
+
 
 const LogInScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch()
   const [phone, setPhone] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [err, setError] = useState({});
   const authContext = useContext(AuthContext);
   const [otpEnabled, setOtpEnabled] = useState(false);
   const [otp, setOtp] = useState('');
+  const [transactionId, setTrasactionId] = useState(null);
 
-  useEffect(() => {
-    requestSMSPermissions().then(granted => {
-      if (granted) {
-        OTPVerify.getHash().then(console.log).catch(console.log);
-        OTPVerify.getOtp()
-          .then(p => OTPVerify.addListener(otpHandler))
-          .catch(p => console.log(p));
-        return () => OTPVerify.removeListener();
-      }
-    });
-  }, [otpEnabled]);
+  // useEffect(() => {
+  //   requestSMSPermissions().then(granted => {
+  //     if (granted) {
+  //       OTPVerify.getHash().then(console.log).catch(console.log);
+  //       OTPVerify.getOtp()
+  //         .then(p => OTPVerify.addListener(otpHandler))
+  //         .catch(p => console.log(p));
+  //       return () => OTPVerify.removeListener();
+  //     }
+  //   });
+  // }, [otpEnabled]);
 
-  const otpHandler = message => {
-    try {
-      // console.log(message);
-      const extractedOtp = /(\d{4})/.exec(message)[1]; // Assuming OTP is 4 digits
-      setOtp(extractedOtp);
-      verifyOtp(extractedOtp);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // const otpHandler = message => {
+  //   try {
+  //     const extractedOtp = /(\d{4})/.exec(message)[1]; // Assuming OTP is 4 digits
+  //     setOtp(extractedOtp);
+  //     verifyOtp(extractedOtp);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
-  const verifyOtp = otp => {
-    // Add your OTP verification logic here
-    Alert.alert(`OTP Verified: ${otp}`);
-  };
+  // const verifyOtp = otp => {
+  //   Alert.alert(`OTP Verified: ${otp}`);
+  // };
 
   const validate = () => {
     var valid = true;
@@ -73,43 +78,68 @@ const LogInScreen = () => {
     return valid;
   };
 
-  const requestSMSPermissions = async () => {
-    try {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-        PermissionsAndroid.PERMISSIONS.READ_SMS,
-      ]);
-      return (
-        granted[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] ===
-          PermissionsAndroid.RESULTS.GRANTED &&
-        granted[PermissionsAndroid.PERMISSIONS.READ_SMS] ===
-          PermissionsAndroid.RESULTS.GRANTED
-      );
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
+  // const requestSMSPermissions = async () => {
+  //   try {
+  //     const granted = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+  //       PermissionsAndroid.PERMISSIONS.READ_SMS,
+  //     ]);
+  //     return (
+  //       granted[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] ===
+  //         PermissionsAndroid.RESULTS.GRANTED &&
+  //       granted[PermissionsAndroid.PERMISSIONS.READ_SMS] ===
+  //         PermissionsAndroid.RESULTS.GRANTED
+  //     );
+  //   } catch (err) {
+  //     console.warn(err);
+  //     return false;
+  //   }
+  // };
 
   const handleOnSubmit = async () => {
     const valid = await validate();
     if (valid) {
-      setOtpEnabled(true);
-      // setLoading(true);
-      // const urlEncodedData = new URLSearchParams({
-      //   phone: phone,
-      //   password: password,
-      // }).toString();
-      // const res = await new AuthApi().login(urlEncodedData);
-      // console.log('___res', res);
-      // if (res) {
-      //   setLoading(false);
-        authContext.signIn();
-      // } else {
-      //   Alert.alert('Invalid username or password');
-      //   setLoading(false);
-      // }
-      // setLoading(false);
+      setLoading(true);
+      const data = {
+        phone: phone,
+      };
+      const res = await new AuthApi().generateOtp(data);
+      console.log(res);
+      if (res?.success ) {
+        Toast.show('OTP sent successfully', Toast.LONG, Toast.CENTER);
+        setOtpEnabled(true);
+        setTrasactionId(res?.data?.transactionId);
+      }else{
+        Toast.show(res.message, Toast.LONG, Toast.CENTER);
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      if (otp?.length === 4) {
+        setLoading(true);
+        const data = {
+          otp: otp,
+          transactionId: transactionId,
+          phone: phone,
+        };
+        const res = await new AuthApi().verifyMobileOtp(data);
+        if (res) {
+
+          const userData = await dispatch(getUserDetails())
+          if(userData?.type?.includes("fulfilled")){
+            authContext.signIn()
+          }
+        } else {
+          Toast.show('Invalid otp', Toast.LONG, Toast.CENTER);
+        }
+        setLoading(false);
+      } else {
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -213,7 +243,7 @@ const LogInScreen = () => {
             )}
             <Button
               title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
-              onPress={handleOnSubmit}
+              onPress={otpEnabled ? handleVerifyOtp : handleOnSubmit}
               disabled={
                 !otpEnabled && phone.length === 10
                   ? false
@@ -242,7 +272,7 @@ const LogInScreen = () => {
         </View>
       </ImageBackground>
 
-      <Loader loading={isLoading} />
+      <LoaderAnimation loading={isLoading} />
     </KeyboardAvoidingView>
     // </ScreenWrapper>
   );

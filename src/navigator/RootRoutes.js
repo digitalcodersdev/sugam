@@ -8,7 +8,7 @@ import {isFunction} from 'lodash-es';
 import {useDispatch, useSelector} from 'react-redux';
 import {AuthContextProvider} from '../store/contexts/AuthContext';
 import sInfoUtil from '../utils/sInfo.util';
-import {updateUser} from '../store/actions/userActions';
+import {getUserDetails, updateUser} from '../store/actions/userActions';
 import ScreensNameEnum from '../constants/ScreensNameEnum';
 import ScreenWrapper from '../library/wrapper/ScreenWrapper';
 
@@ -55,22 +55,22 @@ const RootRoutes = () => {
   }, [loggedInUser]);
 
   const bootstrapApp = async () => {
-    console.log('bootstrapApp', userNew);
+    // console.log('bootstrapApp', userNew);
     try {
       const storedUser = await sInfoUtil.fetch('USER_CONTEXT');
       if (storedUser) {
         setApicall(false);
         const _user = JSON.parse(storedUser);
-        console.log('bootstrapApp 32', _user);
+        // console.log('bootstrapApp 32', _user);
         setLoggedInUser(true);
         if (_user) {
-          const updatedUser = await dispatch(updateUser(_user));
-          console.log('updatedUser');
+          const updatedUser = await dispatch(getUserDetails());
+          // console.log('updatedUser');
           await sInfoUtil.save(
             'USER_CONTEXT',
             JSON.stringify(updatedUser.payload),
           );
-          console.log('setInitializing', false);
+          // console.log('setInitializing', false);
           setInitializing(false);
         } else {
           setLoggedInUser(false);
@@ -85,7 +85,7 @@ const RootRoutes = () => {
       console.error('err', error); // TODO: How to handle failure here
     }
   };
-  console.log('initializing', initializing);
+  // console.log('initializing', initializing);
   if (initializing) {
     return (
       <ScreenWrapper header={false}>

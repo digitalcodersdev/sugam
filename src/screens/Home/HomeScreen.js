@@ -4,33 +4,20 @@ import {
   StyleSheet,
   StatusBar,
   ImageBackground,
-  TextInput,
   Image,
   Pressable,
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useContext} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import R from '../../resources/R';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import {useDispatch, useSelector} from 'react-redux';
-import {
-  clockinSelector,
-  currentUserSelector,
-  tasksSelector,
-} from '../../store/slices/user/user.slice';
-import Button from '../../library/commons/Button';
-import ClockInModal from '../../library/modals/ClockInModal';
-import {
-  fetchAllTasks,
-  fetchAttendanceReport,
-  fetchClockinStatus,
-} from '../../store/actions/userActions';
-import moment from 'moment';
-import { AuthContext } from '../../store/contexts/AuthContext';
+import {currentUserSelector} from '../../store/slices/user/user.slice';
+import {AuthContext} from '../../store/contexts/AuthContext';
+
 const DATA = [
   {
     id: 1,
@@ -40,139 +27,105 @@ const DATA = [
     color: R.colors.lightYellow,
     image: require('../../assets/Images/icon1.png'),
   },
-  // {
-  //   id: 2,
-  //   icon: 'party-popper',
-  //   title: 'Leaves',
-  //   screen: ScreensNameEnum.LEAVE_SCREEN,
-  //   color: R.colors.RED,
-  //   image: require('../../assets/Images/icon2.png'),
-  // },
-  // {
-  //   id: 3,
-  //   icon: 'party-popper',
-  //   title: 'Holiday',
-  //   screen: ScreensNameEnum.HOLIDAY_SCREEN,
-  //   color: '#FFA201',
-  //   image: require('../../assets/Images/icon3.png'),
-  // },
-  // {
-  //   id: 4,
-  //   icon: 'gift-open-outline',
-  //   title: 'Appreciation',
-  //   screen: ScreensNameEnum.APPRECIATION_SCREEN,
-  //   color: R.colors.GREEN,
-  //   image: require('../../assets/Images/icon4.png'),
-  // },
+  {
+    id: 2,
+    icon: 'badge-account',
+    title: 'Admin',
+    screen: ScreensNameEnum.OPERATIONS_SCREEN,
+    color: R.colors.RED,
+    image: require('../../assets/Images/icon2.png'),
+  },
+  {
+    id: 3,
+    icon: 'account-supervisor',
+    title: 'Employee Directory',
+    screen: ScreensNameEnum.EMPLOYEE_DIRECTORY_SCREEN,
+    color: '#FFA201',
+    image: require('../../assets/Images/icon3.png'),
+  },
+  {
+    id: 4,
+    icon: 'calendar-month',
+    title: 'Holiday',
+    screen: ScreensNameEnum.OPERATIONS_SCREEN,
+    color: R.colors.GREEN,
+    image: require('../../assets/Images/icon4.png'),
+  },
+  {
+    id: 5,
+    icon: 'card-account-phone-outline',
+    title: 'Help Desk',
+    screen: ScreensNameEnum.HELP_DESK_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+    color: R.colors.SLATE_GRAY,
+    image: require('../../assets/Images/icon4.png'),
+  },
+  {
+    id: 6,
+    icon: 'handshake-outline',
+    title: 'Grievance',
+    screen: ScreensNameEnum.GRIEVANCE_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+    color: R.colors.SECONDARY,
+    image: require('../../assets/Images/icon4.png'),
+  },
 ];
 
 const HomeScreen = ({navigation}) => {
   const dispatch = useDispatch();
-  const authContext = useContext(AuthContext)
+  const authContext = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [modalVis, setModalVis] = useState(false);
-  const clockin = useSelector(clockinSelector);
   const user = useSelector(currentUserSelector);
-  const tasks = useSelector(tasksSelector);
 
-  useEffect(() => {
-    if (tasks?.length < 1) {
-      // getAllTask();
-    }
-  }, []);
-
-  const getAllTask = async () => {
+  const handleLogout = async () => {
     try {
-      await dispatch(fetchAllTasks());
-      await dispatch(fetchClockinStatus());
+      authContext.signOut();
     } catch (error) {
       console.log(error);
-      // Alert.alert('something went wrong please try again laterp');
     }
   };
 
-
-  const handleLogout = async()=>{
-    try {
-      authContext.signOut()
-    } catch (error) {
-      console.log(error);
-      
-    }
-  }
-
   const Item = ({item}) => (
-    <View style={[styles.cardView, {width: 130, marginRight: 10}]}>
+    <View style={styles.cardView}>
       <Pressable
         onPress={() => navigation.navigate(item.screen)}
-        style={{justifyContent: 'space-between', alignItems: 'center'}}>
-        <Icon name={item.icon} size={40} color={item?.color} />
-        {/* <Image source={item?.image} /> */}
-        <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: 'bold'}}>
-          {item.title}
-        </Text>
+        style={styles.pressable}>
+        <Icon name={item.icon} size={40} color={item.color} />
+        <Text style={styles.cardTitle}>{item.title}</Text>
       </Pressable>
     </View>
   );
+
   return (
     <ScreenWrapper header={false}>
       <StatusBar
-        backgroundColor={R.colors.primary}
+        backgroundColor={R.colors.SLATE_GRAY}
         barStyle={'light-content'}
       />
       <ImageBackground
         source={require('../../assets/Images/mainbg.png')}
         resizeMode="stretch"
         style={styles.container}>
-        {/* <View style={styles.headerView}>
-          <Icon
-            onPress={() => navigation.toggleDrawer()}
-            name="menu"
-            size={35}
-            color={R.colors.PRIMARI_DARK}
-          />
-          <Icon name="bell-outline" size={35} color={R.colors.PRIMARI_DARK} />
-        </View> */}
-        <View
-          style={{
-            flexDirection: 'row',
-            borderBottomWidth: 0.5,
-            paddingBottom: 10,
-            borderColor: R.colors.LIGHTGRAY,
-            marginTop: 10,
-          }}>
-          <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+        <View style={styles.header}>
+          <View style={styles.userInfo}>
             <Image
               source={
                 user?.photo
-                  ? {uri: user?.photo}
-                  : require('../../assets/Images/profile.png')
+                  ? {uri: user.photo}
+                  : require('../../assets/Images/activeProfile.jpeg')
               }
-              style={{height: 50, width: 50, borderRadius: 30, marginLeft: 20}}
+              style={styles.userImage}
             />
-            <View style={{flexDirection: 'column'}}>
+            <View>
               <Text style={styles.userName}>
-                {user?.staffname ? user.staffname : 'N/A'}
+                {user?.staffname?.trim() || 'N/A'}
               </Text>
-              <Text
-                style={[
-                  styles.userName,
-                  {color: R.colors.DARKGRAY, fontSize: R.fontSize.L},
-                ]}>
-                ( {user?.stafftypedetail ? user?.stafftypedetail :"N/A"} )
+              <Text style={styles.userType}>
+                ({user?.stafftypedetail?.trim() || 'N/A'})
               </Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={{
-              justifyContent: 'center',
-              // alignContent: 'flex-end',
-              // alignItems: 'flex-end',
-              margin: 10,
-              height: 50,
-              width: 50,
-            }} onPress={handleLogout}>
-            <Icon name={'power'} size={40} color={R.colors.primary} />
+          <TouchableOpacity onPress={handleLogout}>
+            <Icon name="power" size={40} color={R.colors.primary} />
           </TouchableOpacity>
         </View>
         <View style={styles.categoryView}>
@@ -180,14 +133,13 @@ const HomeScreen = ({navigation}) => {
             data={DATA}
             renderItem={({item}) => <Item item={item} />}
             keyExtractor={item => item.id}
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
+            numColumns={3}
+            columnWrapperStyle={styles.columnWrapper}
+            contentContainerStyle={styles.contentContainer}
+            ItemSeparatorComponent={() => <View style={styles.separator} />}
           />
         </View>
       </ImageBackground>
-      {modalVis && (
-        <ClockInModal isVisible={modalVis} onModalClose={setModalVis} />
-      )}
     </ScreenWrapper>
   );
 };
@@ -198,190 +150,76 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerView: {
+  header: {
     flexDirection: 'row',
+    borderBottomWidth: 0.5,
+    paddingBottom: 10,
+    borderColor: R.colors.LIGHTGRAY,
+    marginTop: 10,
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    // borderBottomWidth:0.5
+    alignItems: 'center',
   },
-  helloText: {
-    color: R.colors.PRIMARI_DARK,
-    fontWeight: 'bold',
-    fontSize: R.fontSize.XL,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userImage: {
+    height: 50,
+    width: 50,
+    borderRadius: 30,
+    marginLeft: 20,
   },
   userName: {
     color: R.colors.primary,
     fontWeight: 'bold',
     fontSize: R.fontSize.XL,
     paddingHorizontal: 10,
-    textTransform:"capitalize"
+    textTransform: 'capitalize',
   },
-  filterView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    alignItems: 'center',
-  },
-  searchView: {
-    borderWidth: 0.5,
-    borderColor: R.colors.DARKGRAY,
-    width: '80%',
-    borderRadius: 30,
-    backgroundColor: R.colors.PRIMARY_LIGHT,
-    height: 40,
-  },
-  iconView: {
-    borderColor: R.colors.DARKGRAY,
-    borderRadius: 10,
-    backgroundColor: R.colors.PRIMARY_LIGHT,
-    padding: 5,
-  },
-  icon: {
-    position: 'absolute',
-    top: 5,
-    left: 10,
-  },
-  textInput: {
-    fontFamily: R.fonts.Regular,
-    fontSize: 18,
-    width: '90%',
-    textAlign: 'center',
-    padding: 0,
-    height: 40,
-  },
-  catText: {
-    color: R.colors.PRIMARI_DARK,
-    fontWeight: 'bold',
+  userType: {
+    color: R.colors.DARKGRAY,
     fontSize: R.fontSize.L,
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  seeAllText: {
-    color: R.colors.PRIMARI_DARK,
-    fontSize: R.fontSize.L,
-    paddingTop: 18,
   },
   categoryView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flex: 1,
     padding: 10,
-    textAlignVertical: 'center',
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+  },
+  contentContainer: {
+    paddingBottom: 10,
+  },
+  separator: {
+    height: 10,
   },
   cardView: {
-    backgroundColor: R.colors.PRIMARY_LIGHT,
-    borderRadius: 5,
-    padding: 5,
-    paddingVertical: 10,
-    borderColor: R.colors.LIGHTGRAY,
-    // Add elevation for Android
-    elevation: 1,
-    // Set shadow properties for iOS
-    shadowOffset: {
-      height: 5,
-      width: 0, // Adjust as needed
-    },
-    shadowOpacity: 0.5, // Adjust as needed
-    shadowRadius: 5, // Adjust as needed
-    shadowColor: R.colors.LIGHTGRAY,
-    // Add dimensions to the container
-    width: 200, // Adjust as needed
-    height: 100, // Adjust as needed
-    borderColor: '#ccc',
-    borderWidth: 0.5,
-  },
-  taskView: {
-    flexDirection: 'row',
-    backgroundColor: R.colors.PRIMARY_LIGHT,
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 0.5,
-    borderColor: R.colors.LIGHTGRAY,
-    marginHorizontal: 10,
-    alignItems: 'center',
-    elevation: 5,
-    shadowOffset: {
-      height: 5,
-      width: 0, // Adjust as needed
-    },
-    shadowOpacity: 0.5, // Adjust as needed
-    shadowRadius: 5, // Adjust as needed
-    shadowColor: R.colors.LIGHTGRAY,
-    borderColor: '#ccc',
-    marginTop: 10,
-  },
-  nameText: {fontWeight: 'bold', fontSize: 20, color: R.colors.PRIMARI_DARK},
-  dateText: {color: R.colors.primary, fontSize: 15},
-  ImageView: {paddingRight: 20, paddingLeft: 20},
-  acceptView: {
-    flexDirection: 'column',
-    // justifyContent: 'space-between',
-    // flex: 1,
-  },
-  pendingView: {
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-  },
-  cancelView: {
-    paddingHorizontal: 20,
-    paddingVertical: 5,
-  },
-  pendingText: {
-    color: R.colors.TEXT_COLOR,
-    fontWeight: 'bold',
-    // backgroundColor: '#FFF7E5',
-    borderRadius: 20,
-    padding: 10,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  cancelText: {
-    color: R.colors.PRIMARY_LIGHT,
-    fontWeight: 'bold',
-    borderRadius: 20,
-    backgroundColor: 'red',
-    padding: 10,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  attView: {
-    flexDirection: 'column',
-    borderRadius: 15,
-    alignItems: 'center',
     flex: 1,
-    borderWidth: 1,
-    borderColor: R.colors.LIGHTGRAY,
-    alignItems: 'center',
-    marginHorizontal: 5,
+    margin: 5,
+    backgroundColor: R.colors.PRIMARY_LIGHT,
+    borderRadius: 5,
     padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 1,
+    shadowOffset: {
+      height: 5,
+      width: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    shadowColor: R.colors.LIGHTGRAY,
+    borderColor: '#ccc',
+    borderWidth: 0.5,
+    height: 120,
   },
-  presentText: {
-    fontWeight: 'bold',
-    fontSize: 35,
-    textAlign: 'center',
-    padding: 20,
-    borderRadius: 50,
-    color: '#1C67F6',
-    backgroundColor: '#E8F0FE',
+  pressable: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  lateText: {
+  cardTitle: {
+    color: R.colors.PRIMARI_DARK,
     fontWeight: 'bold',
-    backgroundColor: '#FFF6E5',
     textAlign: 'center',
-    color: '#FFA200',
-    fontSize: 35,
-    borderRadius: 50,
-    padding: 20,
-  },
-  absentText: {
-    fontWeight: 'bold',
-    backgroundColor: '#FFEFEB',
-    textAlign: 'center',
-    color: '#FFA200',
-    fontSize: 35,
-    borderRadius: 50,
-    padding: 20,
   },
 });

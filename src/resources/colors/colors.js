@@ -13,6 +13,7 @@ const colors = {
   GREEN: '#4CB948',
 
   GRAY: '#f7f7f7',
+  SLATE_GRAY:"#708090",
   LIGHTGRAY: '#C7C7C7',
   DARKGRAY: '#5E5E5E',
   CGRAY: '#ececec',

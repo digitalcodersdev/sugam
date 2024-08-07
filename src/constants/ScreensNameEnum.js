@@ -59,13 +59,22 @@ const ScreensNameEnum = {
   EVENTS_SCREENS: 'Events',
   MESSAGE_SCREEN: 'Messages',
   ACCOUNT_SCREEN: 'Profile Management',
-  TASK_DETAILS_SCREEN:"TASK DETAILS SCREEN",
-  PROJECT_DETAILS_SCREEN:"PROJECT DETAILS SCREEN",
-  OPERATIONS_SCREEN:"Operations",
-  ENROLLMENT_SCREEN:"Enrollment",
-  NEW_CLIENT:"New Client Enrollment",
-  EXISTING_CLIENT:"Existing Client Enrollment",
-  CHECK_CREDIT_BUREAU_SCREEN:"Check Credit Bureau"
-
+  TASK_DETAILS_SCREEN: 'TASK DETAILS SCREEN',
+  PROJECT_DETAILS_SCREEN: 'PROJECT DETAILS SCREEN',
+  OPERATIONS_SCREEN: 'Operations',
+  ENROLLMENT_SCREEN: 'Enrollment',
+  NEW_CLIENT: 'New Client Enrollment',
+  EXISTING_CLIENT: 'Existing Client Enrollment',
+  CHECK_CREDIT_BUREAU_SCREEN: 'Check Credit Bureau',
+  VERIFY_AADHAR_SCREEN: 'Verify Aadhar',
+  CREATE_NEW_CENTER_SCREEN: 'Create New Center',
+  AADHAR_INFORMATION_USER: 'User Aadhar Information',
+  EMPLOYEE_DIRECTORY_SCREEN: 'Employee Directory ',
+  HELP_DESK_SCREEN: 'Help Desk',
+  GRIEVANCE_SCREEN: 'Grievance',
+  COLLECTION_SCREEN:"Collection",
+  FLO_COLLECTION_SCREEN:"FLO Collection",
+  CENTER_COLECTION_SCREEN:"Center Collection",
+  CLIENT_COLLECTION_SCREEN:"Client Collection"
 };
 export default Object.freeze(ScreensNameEnum);

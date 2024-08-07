@@ -22,11 +22,11 @@ export default function ChildScreensHeader({screenName, style}) {
           alignItems: 'center',
           padding: 5,
           elevation: 1,
-          backgroundColor: R.colors.primary,
+          backgroundColor: R.colors.SLATE_GRAY,
         },
         style,
       ]}>
-      <StatusBar backgroundColor={R.colors.primary} barStyle="light-content" />
+      <StatusBar backgroundColor={R.colors.SLATE_GRAY} barStyle="light-content" />
       <TouchableOpacity onPress={() => navigation.goBack()}>
         <Icon name="chevron-left" size={40} color={R.colors.PRIMARY_LIGHT} />
       </TouchableOpacity>

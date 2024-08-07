@@ -5,57 +5,60 @@ import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from '../../resources/R';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 
 const Operations = () => {
-    const navigation = useNavigation()
+  const navigation = useNavigation();
   const DATA = [
     {
       id: 1,
+      icon: 'home-group',
+      title: 'Create New Center',
+      screen: ScreensNameEnum.CREATE_NEW_CENTER_SCREEN,
+      color: R.colors.LIGHTGREEN,
+      image: require('../../assets/Images/icon2.png'),
+    },
+    {
+      id: 2,
       icon: 'account-multiple-plus',
       title: 'Enrollment',
       screen: ScreensNameEnum.ENROLLMENT_SCREEN,
-      color: R.colors.SECONDARY ,
+      color: R.colors.SECONDARY,
       image: require('../../assets/Images/icon1.png'),
     },
-    // {
-    //   id: 2,
-    //   icon: 'party-popper',
-    //   title: 'Leaves',
-    //   screen: ScreensNameEnum.LEAVE_SCREEN,
-    //   color: R.colors.RED,
-    //   image: require('../../assets/Images/icon2.png'),
-    // },
-    // {
-    //   id: 3,
-    //   icon: 'party-popper',
-    //   title: 'Holiday',
-    //   screen: ScreensNameEnum.HOLIDAY_SCREEN,
-    //   color: '#FFA201',
-    //   image: require('../../assets/Images/icon3.png'),
-    // },
-    // {
-    //   id: 4,
-    //   icon: 'gift-open-outline',
-    //   title: 'Appreciation',
-    //   screen: ScreensNameEnum.APPRECIATION_SCREEN,
-    //   color: R.colors.GREEN,
-    //   image: require('../../assets/Images/icon4.png'),
-    // },
+
+    {
+      id: 3,
+      icon: 'rhombus-split',
+      title: 'Collection',
+      screen: ScreensNameEnum.COLLECTION_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+      color: R.colors.lightYellow,
+      image: require('../../assets/Images/icon4.png'),
+    },
+    {
+      id: 4,
+      icon: 'robber',
+      title: 'FLO Collection',
+      screen: ScreensNameEnum.FLO_COLLECTION_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+      color: R.colors.SLATE_GRAY,
+      image: require('../../assets/Images/icon4.png'),
+    },
   ];
+
   const Item = ({item}) => (
-    <View style={[styles.cardView, {width: 130, marginRight: 10}]}>
-      <Pressable
-        onPress={() => navigation.navigate(item.screen)}
-        style={{justifyContent: 'space-between', alignItems: 'center'}}>
-        <Icon name={item.icon} size={40} color={item?.color} />
-        {/* <Image source={item?.image} /> */}
-        <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: 'bold'}}>
-          {item.title}
-        </Text>
-      </Pressable>
-    </View>
+    <Pressable
+      onPress={() => navigation.navigate(item.screen)}
+      style={[
+        {justifyContent: 'space-between', alignItems: 'center', borderWidth: 1},
+        styles.cardView,
+      ]}>
+      <Icon name={item.icon} size={40} color={item?.color} />
+      <Text style={{color: R.colors.DARKGRAY, fontWeight: '500'}}>
+        {item.title}
+      </Text>
+    </Pressable>
   );
+
   return (
     <ScreenWrapper header={false}>
       <ChildScreensHeader
@@ -67,8 +70,8 @@ const Operations = () => {
           data={DATA}
           renderItem={({item}) => <Item item={item} />}
           keyExtractor={item => item.id}
-          horizontal={true}
-          showsHorizontalScrollIndicator={false}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
         />
       </View>
     </ScreenWrapper>
@@ -79,30 +82,34 @@ export default Operations;
 
 const styles = StyleSheet.create({
   categoryView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flex: 1,
     padding: 10,
-    textAlignVertical: 'center',
+    justifyContent: 'center',
+  },
+  row: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   cardView: {
+    flex: 1,
     backgroundColor: R.colors.PRIMARY_LIGHT,
     borderRadius: 5,
-    padding: 5,
-    paddingVertical: 10,
-    borderColor: R.colors.LIGHTGRAY,
+    padding: 10,
+    margin: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
     // Add elevation for Android
     elevation: 5,
     // Set shadow properties for iOS
     shadowOffset: {
       height: 5,
-      width: 0, // Adjust as needed
+      width: 0,
     },
-    shadowOpacity: 0.5, // Adjust as needed
-    shadowRadius: 5, // Adjust as needed
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     shadowColor: R.colors.LIGHTGRAY,
     // Add dimensions to the container
-    width: 200, // Adjust as needed
-    height: 100, // Adjust as needed
+    height: 150,
     borderColor: '#ccc',
     borderWidth: 0.5,
   },

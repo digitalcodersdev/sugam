@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext, useRef} from 'react';
 import {
   View,
   Text,
@@ -25,14 +25,13 @@ import OTPVerify from 'react-native-otp-verify';
 import {PermissionsAndroid} from 'react-native';
 import LoaderAnimation from '../../library/commons/LoaderAnimation';
 import Toast from 'react-native-simple-toast';
-import UserApi from "../../datalib/services/user.api"
-import { UseDispatch, useDispatch } from 'react-redux';
-import { getUserDetails } from '../../store/actions/userActions';
-
+import UserApi from '../../datalib/services/user.api';
+import {UseDispatch, useDispatch} from 'react-redux';
+import {getUserDetails} from '../../store/actions/userActions';
 
 const LogInScreen = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [phone, setPhone] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [err, setError] = useState({});
@@ -40,6 +39,17 @@ const LogInScreen = () => {
   const [otpEnabled, setOtpEnabled] = useState(false);
   const [otp, setOtp] = useState('');
   const [transactionId, setTrasactionId] = useState(null);
+  const intervalRef = useRef(null);
+  const [time, setTime] = useState(30);
+
+  useEffect(() => {
+    if (otpEnabled) {
+      intervalRef.current = setInterval(() => {
+        setTime(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [otpEnabled]);
 
   // useEffect(() => {
   //   requestSMSPermissions().then(granted => {
@@ -67,17 +77,6 @@ const LogInScreen = () => {
   //   Alert.alert(`OTP Verified: ${otp}`);
   // };
 
-  const validate = () => {
-    var valid = true;
-    const err = {};
-    if (!ValidationHelper.isPhone(phone)) {
-      valid = false;
-      err.phone = 'Please enter a valid phone number...';
-    }
-    setError(err);
-    return valid;
-  };
-
   // const requestSMSPermissions = async () => {
   //   try {
   //     const granted = await PermissionsAndroid.requestMultiple([
@@ -96,6 +95,17 @@ const LogInScreen = () => {
   //   }
   // };
 
+  const validate = () => {
+    var valid = true;
+    const err = {};
+    if (!ValidationHelper.isPhone(phone)) {
+      valid = false;
+      err.phone = 'Please enter a valid phone number...';
+    }
+    setError(err);
+    return valid;
+  };
+
   const handleOnSubmit = async () => {
     const valid = await validate();
     if (valid) {
@@ -105,12 +115,13 @@ const LogInScreen = () => {
       };
       const res = await new AuthApi().generateOtp(data);
       console.log(res);
-      if (res?.success ) {
-        Toast.show('OTP sent successfully', Toast.LONG, Toast.CENTER);
+      if (res?.success) {
+        Toast.show('OTP sent successfully', Toast.LONG, Toast.TOP);
         setOtpEnabled(true);
         setTrasactionId(res?.data?.transactionId);
-      }else{
-        Toast.show(res.message, Toast.LONG, Toast.CENTER);
+        setTime(30);
+      } else {
+        Toast.show(res.message, Toast.LONG, Toast.TOP);
       }
       setLoading(false);
     }
@@ -127,13 +138,13 @@ const LogInScreen = () => {
         };
         const res = await new AuthApi().verifyMobileOtp(data);
         if (res) {
-
-          const userData = await dispatch(getUserDetails())
-          if(userData?.type?.includes("fulfilled")){
-            authContext.signIn()
+          const userData = await dispatch(getUserDetails());
+          if (userData?.type?.includes('fulfilled')) {
+            authContext.signIn();
+            Toast.show('Signin Successfully', Toast.LONG, Toast.TOP);
           }
         } else {
-          Toast.show('Invalid otp', Toast.LONG, Toast.CENTER);
+          Toast.show('Invalid otp', Toast.LONG, Toast.TOP);
         }
         setLoading(false);
       } else {
@@ -194,29 +205,30 @@ const LogInScreen = () => {
               </View>
             ) : (
               <>
-                <Text
-                  style={{
-                    color: R.colors.PRIMARI_DARK,
-                    textAlign: 'center',
-                    fontSize: R.fontSize.M,
-                    alignItems: 'center',
-                    textTransform: 'capitalize',
-                    width: '100%',
-                    fontWeight: '500',
-                  }}>
-                  A verification code has been sent to your phone
+                <View style={{alignItems: 'center', justifyContent: 'center'}}>
+                  <Text
+                    style={{
+                      color: R.colors.PRIMARI_DARK,
+                      textAlign: 'center',
+                      fontSize: R.fontSize.M,
+                      alignItems: 'center',
+                      textTransform: 'capitalize',
+                      width: '100%',
+                      fontWeight: '500',
+                    }}>
+                    A verification code has been sent to
+                  </Text>
                   <Text
                     style={{
                       color: 'blue',
                       textAlign: 'center',
                       alignItems: 'center',
                       fontSize: R.fontSize.L,
-                      borderWidth: 1,
                       lineHeight: 35,
                     }}>
-                    {`   +91${phone}`}
+                    {`+91${phone}`}
                   </Text>
-                </Text>
+                </View>
 
                 <OtpInput
                   numberOfDigits={4}
@@ -241,34 +253,50 @@ const LogInScreen = () => {
                 />
               </>
             )}
-            <Button
-              title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
-              onPress={otpEnabled ? handleVerifyOtp : handleOnSubmit}
-              disabled={
-                !otpEnabled && phone.length === 10
-                  ? false
-                  : otpEnabled && otp.length === 4
-                  ? false
-                  : true
-              }
-              buttonStyle={{borderRadius: 12}}
-              // textColor="#ffb606"
-              textStyle={{
-                fontWeight: 'bold',
-                fontSize: R.fontSize.XL,
-                fontFamily: 'sans-serif',
-              }}
-            />
-            {otpEnabled && (
-              <TouchableOpacity>
-                <Text style={styles.resend}>Resend OTP</Text>
-              </TouchableOpacity>
-            )}
+            <View style={{height: '30%', justifyContent: 'space-around'}}>
+              {otpEnabled && time != 0 ? (
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontWeight: '500',
+                    color: R.colors.PRIMARI_DARK,
+                  }}>
+                  Resend OTP in {time} Seconds
+                </Text>
+              ) : otpEnabled ? (
+                <TouchableOpacity onPress={handleOnSubmit}>
+                  <Text style={styles.resend}>Resend OTP</Text>
+                </TouchableOpacity>
+              ) : null}
+
+              <Button
+                title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
+                onPress={otpEnabled ? handleVerifyOtp : handleOnSubmit}
+                disabled={
+                  !otpEnabled && phone.length === 10
+                    ? false
+                    : otpEnabled && otp.length === 4
+                    ? false
+                    : true
+                }
+                buttonStyle={{borderRadius: 12}}
+                // textColor="#ffb606"
+                textStyle={{
+                  fontWeight: 'bold',
+                  fontSize: R.fontSize.XL,
+                  fontFamily: 'sans-serif',
+                  padding: 0,
+                  margin: 0,
+                }}
+              />
+            </View>
           </View>
-          <Text
-            style={
-              styles.appVersion
-            }>{`Current App Version ${APP_CONSTANTS.APP_VERSION}`}</Text>
+          {!otpEnabled && (
+            <Text
+              style={
+                styles.appVersion
+              }>{`Current App Version ${APP_CONSTANTS.APP_VERSION}`}</Text>
+          )}
         </View>
       </ImageBackground>
 
@@ -309,7 +337,7 @@ const styles = StyleSheet.create({
   },
   appVersion: {
     color: R.colors.PRIMARI_DARK,
-    fontSize: R.fontSize.L,
+    fontSize: R.fontSize.M,
     textAlign: 'center',
     padding: 20,
     fontWeight: '600',

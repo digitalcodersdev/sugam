@@ -12,6 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.faizal.OtpVerify.OtpVerifyPackage;
+import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 
 class MainApplication : Application(), ReactApplication {
 

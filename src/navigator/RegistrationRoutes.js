@@ -37,6 +37,17 @@ import NewClient from '../screens/NewClient/NewClient';
 import CheckCreditBureau from '../screens/CheckCreditBureau/CheckCreditBureau';
 import ExistingClient from '../screens/ExistingClient/ExistingClient';
 import R from '../resources/R';
+import VerifyAadhar from '../screens/VerifyAadhar/VerifyAadhar';
+import CreateNewCenter from '../screens/CreateNewCenter/CreateNewCenter';
+import AddharInformationUser from '../screens/AddharInformationUser/AddharInformationUser';
+import EmployeeDirectory from '../screens/EmployeeDirectory/EmployeeDirectory';
+import ContactUs from '../screens/ContactUs/ContactUs';
+import Grievance from '../screens/Grievance/Grievance';
+import Collection from '../screens/Collection/Collection';
+import FLOCollection from '../screens/FLOCollection/FLOCollection';
+import CenterCollection from '../screens/CenterCollection/CenterCollection';
+import CollectionInformation from '../screens/ClientCollection/ClientCollection';
+import ClientCollection from '../screens/ClientCollection/ClientCollection';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -111,10 +122,59 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             name={ScreensNameEnum.EXISTING_CLIENT}
             options={{headerShown: false}}
           />
-
           <RegistrationStack.Screen
             component={CheckCreditBureau}
             name={ScreensNameEnum.CHECK_CREDIT_BUREAU_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={VerifyAadhar}
+            name={ScreensNameEnum.VERIFY_AADHAR_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={CreateNewCenter}
+            name={ScreensNameEnum.CREATE_NEW_CENTER_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={AddharInformationUser}
+            name={ScreensNameEnum.AADHAR_INFORMATION_USER}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={EmployeeDirectory}
+            name={ScreensNameEnum.EMPLOYEE_DIRECTORY_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={ContactUs}
+            name={ScreensNameEnum.HELP_DESK_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={Grievance}
+            name={ScreensNameEnum.GRIEVANCE_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={Collection}
+            name={ScreensNameEnum.COLLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={FLOCollection}
+            name={ScreensNameEnum.FLO_COLLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={CenterCollection}
+            name={ScreensNameEnum.CENTER_COLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+             <RegistrationStack.Screen
+            component={ClientCollection}
+            name={ScreensNameEnum.CLIENT_COLLECTION_SCREEN}
             options={{headerShown: false}}
           />
         </>

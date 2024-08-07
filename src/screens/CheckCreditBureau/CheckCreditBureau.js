@@ -75,7 +75,7 @@ const CheckCreditBureau = () => {
     let valid = true;
     let error = {};
     if (!applicantName.replace(/\s+/g, '').length) {
-      Toast.show('Please Enter Applicant Name', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Applicant Name', Toast.SHORT, Toast.TOP);
       error.applicantName = true;
       valid = false;
       applicantNameRef.current.focus();
@@ -85,74 +85,74 @@ const CheckCreditBureau = () => {
       moment(dob).format('DD MMM YYYY') ===
       moment(new Date()).format('DD MMM YYYY')
     ) {
-      Toast.show('Please Enter DOB', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter DOB', Toast.SHORT, Toast.TOP);
       valid = false;
       error.dob = true;
       return valid;
     }
     if (!address.replace(/\s+/g, '').length) {
-      Toast.show('Please Enter Address', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Address', Toast.SHORT, Toast.TOP);
       error.address = true;
       valid = false;
       addressRef.current.focus();
       return valid;
     }
     if (state === null) {
-      Toast.show('Please Select State', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Select State', Toast.SHORT, Toast.TOP);
       error.state = true;
       valid = false;
       return valid;
     }
     if (relation === null) {
-      Toast.show('Please Select Relation', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Select Relation', Toast.SHORT, Toast.TOP);
       error.relation = true;
       valid = false;
       return valid;
     }
     if (!relationName.replace(/\s+/g, '').length) {
-      Toast.show('Please Enter Relation Name', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Relation Name', Toast.SHORT, Toast.TOP);
       error.relationName = true;
       valid = false;
       relationNameRef.current.focus();
       return valid;
     }
     if (pincode.replace(/\s+/g, '').length !== 6) {
-      Toast.show('Please Enter Valid Pincode', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Valid Pincode', Toast.SHORT, Toast.TOP);
       error.pincode = true;
       valid = false;
       pincodeRef.current.focus();
       return valid;
     }
     if (!ValidationHelper.isPhone(phone)) {
-      Toast.show('Please Enter Valid Mobile Number', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Valid Mobile Number', Toast.SHORT, Toast.TOP);
       error.phone = true;
       valid = false;
       phoneRef.current.focus();
       return valid;
     }
     if (!ValidationHelper.isPanValid(panNo)) {
-      Toast.show('Please Enter Valid PAN No.', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Valid PAN No.', Toast.SHORT, Toast.TOP);
       error.panNo = true;
       valid = false;
       panNoRef.current.focus();
       return valid;
     }
     if (!ValidationHelper.isValidAadhar(aadharNo)) {
-      Toast.show('Please Enter Valid Aadhar No.', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Valid Aadhar No.', Toast.SHORT, Toast.TOP);
       error.aadharNo = true;
       valid = false;
       aadharNoRef.current.focus();
       return valid;
     }
     if (!ValidationHelper.isValidVoterId(voterId)) {
-      Toast.show('Please Enter Valid Voter Id No.', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Enter Valid Voter Id No.', Toast.SHORT, Toast.TOP);
       error.voterId = true;
       valid = false;
       voterIdRef.current.focus();
       return valid;
     }
     if (product === null) {
-      Toast.show('Please Select Product', Toast.SHORT, Toast.CENTER);
+      Toast.show('Please Select Product', Toast.SHORT, Toast.TOP);
       error.product = true;
       valid = false;
       return valid;
@@ -161,7 +161,7 @@ const CheckCreditBureau = () => {
     // co-applicant Validation starts from here
 
     if (!coApplicantName.replace(/\s+/g, '').length) {
-      Toast.show("Please Enter Co-Applicant's Name", Toast.SHORT, Toast.CENTER);
+      Toast.show("Please Enter Co-Applicant's Name", Toast.SHORT, Toast.TOP);
       error.applicantName = true;
       valid = false;
       coApplicantNameRef.current.focus();
@@ -171,7 +171,7 @@ const CheckCreditBureau = () => {
       moment(coApplDOB).format('DD MMM YYYY') ===
       moment(new Date()).format('DD MMM YYYY')
     ) {
-      Toast.show("Please Enter Co-Applicant's DOB", Toast.SHORT, Toast.CENTER);
+      Toast.show("Please Enter Co-Applicant's DOB", Toast.SHORT, Toast.TOP);
       valid = false;
       error.coApplDOB = true;
       return valid;
@@ -180,7 +180,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Address",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coAppAddress = true;
       valid = false;
@@ -191,7 +191,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Select Co-Applicant's State",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coApplState = true;
       valid = false;
@@ -201,7 +201,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Select Co-Applicant's Relation",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coApplRelation = true;
       valid = false;
@@ -211,7 +211,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Relation Name",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.relationName = true;
       valid = false;
@@ -222,7 +222,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Valid Pincode",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coAppPincode = true;
       valid = false;
@@ -233,7 +233,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Valid Mobile Number",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coApplMobileNo = true;
       valid = false;
@@ -244,7 +244,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Valid PAN No.",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coApplPAN = true;
       valid = false;
@@ -255,7 +255,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Valid Aadhar No.",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.coApplAadhar = true;
       valid = false;
@@ -266,7 +266,7 @@ const CheckCreditBureau = () => {
       Toast.show(
         "Please Enter Co-Applicant's Valid Voter Id No.",
         Toast.SHORT,
-        Toast.CENTER,
+        Toast.TOP,
       );
       error.voterId = true;
       valid = false;

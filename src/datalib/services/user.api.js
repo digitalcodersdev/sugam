@@ -2,11 +2,6 @@ import sInfoUtil from '../../utils/sInfo.util';
 import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
 
-/*
- * Here we handled user related API's
- * @author Sugam <mohitkumar.webdev@gmail.com>
- */
-
 class AuthenticationApi extends SecuredBaseApi {
   async getUserDetails() {
     try {
@@ -30,20 +25,111 @@ class AuthenticationApi extends SecuredBaseApi {
       if (response?.success) {
         return response.data;
       }
-      return false
+      return false;
     } catch (error) {
       console.log(error);
       return false;
     }
   }
 
-  async fetchClockinStatus() {
+  async getMaxCenterNo(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/get/max/center/number'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async createCenter(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/create/center'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async fetchEmployeeDirectory() {
     try {
       const response = await this.securedAxios.get(
-        getApiUri('/attendance/today'),
+        getApiUri('/fetch/emp/directory'),
       );
-      console.log(response);
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
 
+  async fetchEmployeeTypes() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/fetch/user/type'),
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async fetchConatctInformation() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/fetch/company/data'),
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async fetchGrievanceDropdowns() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/grievance/dropdown`),
+      );
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async saveGrievance(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/save/grievance`),
+        data,
+      );
       if (response.data) {
         return response.data;
       }

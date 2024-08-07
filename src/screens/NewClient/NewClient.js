@@ -18,6 +18,8 @@ const NewClient = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  console.log(data);
   useEffect(() => {
     fetchCentresData();
   }, []);
@@ -32,12 +34,12 @@ const NewClient = () => {
     if (search?.length >= 1) {
       const res = data?.filter(
         item =>
-          item?.centreid?.includes(search?.toUpperCase()) ||
+          item?.centreid == search ||
           item?.cename?.toUpperCase().includes(search?.toUpperCase()),
       );
-      if (res?.length >= 1) {
-        setData(res);
-      }
+      setData(res);
+    } else {
+      setData(centre);
     }
   }, [search]);
 
@@ -49,7 +51,7 @@ const NewClient = () => {
     <View style={[styles.cardView, {marginTop: index === 0 ? 0 : 20}]}>
       <Pressable
         onPress={() =>
-          navigation.navigate(ScreensNameEnum.CHECK_CREDIT_BUREAU_SCREEN)
+          navigation.navigate(ScreensNameEnum.VERIFY_AADHAR_SCREEN)
         }
         style={{
           justifyContent: 'space-between',
@@ -65,7 +67,11 @@ const NewClient = () => {
         </View>
         <View style={styles.view}>
           <Text style={styles.label}>Address :</Text>
-          <Text style={styles.value}>{item?.ceaddress}</Text>
+          <Text style={styles.value}>
+            {item?.ceaddress?.length >= 60
+              ? `${item?.ceaddress?.slice(0, 60)}... `
+              : item?.ceaddress}
+          </Text>
         </View>
         <View style={styles.view}>
           <Text style={styles.label}>Centre No :</Text>
@@ -85,6 +91,7 @@ const NewClient = () => {
             onChangeText={setSearch}
             style={styles.searchInput}
             placeholder="Type here to search..."
+            placeholderTextColor={R.colors.DARKGRAY}
           />
           <Icon
             name="magnify"
@@ -93,12 +100,19 @@ const NewClient = () => {
             size={40}
           />
         </View>
-        <FlatList
-          data={data}
-          renderItem={({item, index}) => <Item item={item} index={index} />}
-          keyExtractor={item => item.id}
-          showsHorizontalScrollIndicator={false}
-        />
+        {data?.length >= 1 ? (
+          <View style={{flex:1,paddingBottom:10}}>
+
+          <FlatList
+            data={data}
+            renderItem={({item, index}) => <Item item={item} index={index} />}
+            keyExtractor={item => item.id}
+            showsHorizontalScrollIndicator={false}
+          />
+          </View>
+        ) : (
+          <Text style={styles.noDataFound}>No Data Found</Text>
+        )}
       </View>
     </ScreenWrapper>
   );
@@ -117,8 +131,8 @@ const styles = StyleSheet.create({
   },
   cardView: {
     backgroundColor: R.colors.PRIMARY_LIGHT,
-    borderRadius: 5,
-    padding: 5,
+    borderRadius: 10,
+    padding: 10,
     paddingVertical: 10,
     width: '100%',
     borderColor: '#ccc', // Updated border color for consistency
@@ -136,7 +150,7 @@ const styles = StyleSheet.create({
     // Elevation for Android
     elevation: 10,
   },
-  label: {color: R.colors.black, flex: 1.5, alignItems: 'center'},
+  label: {color: R.colors.black, flex: 1.5, alignItems: 'center',color:R.colors.PRIMARI_DARK,fontWeight:"500"},
   value: {
     color: R.colors.PRIMARI_DARK,
     fontWeight: '400',
@@ -151,5 +165,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: R.colors.DARKGRAY,
     padding: 10,
+    color:R.colors.DARKGRAY
+  },
+  noDataFound: {
+    color: R.colors.DARKGRAY,
+    fontSize: R.fontSize.XXL,
+    height: '100%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontWeight: '600',
   },
 });

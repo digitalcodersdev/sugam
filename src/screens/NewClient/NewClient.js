@@ -10,6 +10,7 @@ import {TextInput} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
 import {getCentres} from '../../store/actions/userActions';
 import {centresSelector} from '../../store/slices/user/user.slice';
+import Loader from '../../library/commons/Loader';
 
 const NewClient = () => {
   const dispatch = useDispatch();
@@ -19,7 +20,6 @@ const NewClient = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  console.log(data);
   useEffect(() => {
     fetchCentresData();
   }, []);
@@ -44,14 +44,18 @@ const NewClient = () => {
   }, [search]);
 
   const fetchCentresData = async () => {
+    setLoading(true);
     await dispatch(getCentres());
+    setLoading(false);
   };
 
   const Item = ({item, index}) => (
     <View style={[styles.cardView, {marginTop: index === 0 ? 0 : 20}]}>
       <Pressable
         onPress={() =>
-          navigation.navigate(ScreensNameEnum.VERIFY_AADHAR_SCREEN)
+          navigation.navigate(ScreensNameEnum.CLIENT_PHONE_VERIFY, {
+            center: item,
+          })
         }
         style={{
           justifyContent: 'space-between',
@@ -101,19 +105,19 @@ const NewClient = () => {
           />
         </View>
         {data?.length >= 1 ? (
-          <View style={{flex:1,paddingBottom:10}}>
-
-          <FlatList
-            data={data}
-            renderItem={({item, index}) => <Item item={item} index={index} />}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-          />
+          <View style={{flex: 1, paddingBottom: 10}}>
+            <FlatList
+              data={data}
+              renderItem={({item, index}) => <Item item={item} index={index} />}
+              keyExtractor={item => item.id}
+              showsHorizontalScrollIndicator={false}
+            />
           </View>
         ) : (
           <Text style={styles.noDataFound}>No Data Found</Text>
         )}
       </View>
+      <Loader loading={loading} message={'Loading data...'} />
     </ScreenWrapper>
   );
 };
@@ -150,7 +154,13 @@ const styles = StyleSheet.create({
     // Elevation for Android
     elevation: 10,
   },
-  label: {color: R.colors.black, flex: 1.5, alignItems: 'center',color:R.colors.PRIMARI_DARK,fontWeight:"500"},
+  label: {
+    color: R.colors.black,
+    flex: 1.5,
+    alignItems: 'center',
+    color: R.colors.PRIMARI_DARK,
+    fontWeight: '500',
+  },
   value: {
     color: R.colors.PRIMARI_DARK,
     fontWeight: '400',
@@ -165,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: R.colors.DARKGRAY,
     padding: 10,
-    color:R.colors.DARKGRAY
+    color: R.colors.DARKGRAY,
   },
   noDataFound: {
     color: R.colors.DARKGRAY,

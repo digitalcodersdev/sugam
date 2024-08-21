@@ -17,42 +17,71 @@ import axios from 'axios';
 import {OtpInput} from 'react-native-otp-entry';
 import Button from '../commons/Button';
 import LoaderAnimation from '../commons/LoaderAnimation';
+import Toast from 'react-native-simple-toast';
+import Loader from '../commons/Loader';
 
 const VerifyOTPModal = ({
   isVisible,
   onModalClose,
   onConfirm,
-  clientId,
   aadharNo,
   resendCode,
+  extraData,
 }) => {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [aadharNumber, setAAdhar] = useState(aadharNo ? aadharNo : '');
   const [focused, setFocused] = useState(null);
-  console.log('___', aadharNumber);
-  const handleSubmit = async () => {
+
+  const verifyOtp = async () => {
     try {
       setLoading(true);
-      const formData = new FormData();
-      formData.append('client_id', clientId);
-      formData.append('otp', otp);
-      const res = await axios.post(
-        'https://plumber-crm.rnvalves.app/public/api/verify_otp_for_aadhar_verification',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
+      const payload = {
+        transactionId: extraData?.transactionId,
+        fwdp: extraData?.fwdp,
+        codeVerifier: extraData?.codeVerifier,
+        otp: otp,
+        shareCode: '1234',
+        isSendPdf: true,
+      };
+      const myHeaders = new Headers();
+      myHeaders.append(
+        'Authorization',
+        'NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
       );
-      if (res && res.data.status) {
-        setLoading(false);
-        onModalClose(false);
-        onConfirm && onConfirm();
-      } else {
-        Alert.alert('Invalid otp...');
-      }
+      myHeaders.append('Content-Type', 'application/json');
+      const raw = JSON.stringify(payload);
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      };
+      fetch(
+        'https://svcdemo.digitap.work/ent/v3/kyc/submit-otp',
+        requestOptions,
+      )
+        .then(response => response.text())
+        .then(result => {
+          const res = JSON.parse(result);
+          setOtp('');
+          console.log('result', result);
+          if (res?.code == 200 && res?.msg == 'success') {
+            onConfirm && onConfirm({...res?.model});
+            setLoading(false);
+            Toast.show('OTP Verified...', Toast.BOTTOM);
+            onModalClose(false)
+          }
+          if (res?.code == 500 && res?.msg == 'success') {
+            Toast.show('something Went wrong please try again...', Toast.BOTTOM);
+ 
+            setLoading(false);
+          }
+        })
+        .catch(error => {
+          console.error({error});
+          setLoading(false);
+        });
     } catch (error) {
       console.log(error);
       Alert.alert('Something wehnt wrong please try again later...');
@@ -67,9 +96,9 @@ const VerifyOTPModal = ({
       onSwipeComplete={e => {
         onModalClose(false);
       }}
-      onBackdropPress={e => {
-        onModalClose(false);
-      }}
+      // onBackdropPress={e => {
+      //   onModalClose(false);
+      // }}
       style={styles.modalContainer}>
       <View style={styles.modalInnerContainer}>
         <View style={styles.modalButton}></View>
@@ -118,7 +147,7 @@ const VerifyOTPModal = ({
         </View>
         <Button
           title={'Verify'}
-          onPress={handleSubmit}
+          onPress={verifyOtp}
           buttonStyle={styles.button}
           backgroundColor={R.colors.primary}
           textColor={R.colors.PRIMARY_LIGHT}
@@ -147,7 +176,7 @@ const VerifyOTPModal = ({
                 width: '100%',
                 textAlign: 'center',
                 flexDirection: 'row',
-                color: R.colors.LIGHT_GREEN,
+                color: R.colors.primary,
                 fontSize: R.fontSize.L,
                 fontWeight: 'bold',
                 textAlignVertical: 'center',
@@ -158,7 +187,7 @@ const VerifyOTPModal = ({
           </TouchableOpacity>
         </View>
       </View>
-      <LoaderAnimation loading={loading} message={'verifying otp'} />
+      <Loader loading={loading} message={'verifying otp'} />
     </Modal>
   );
 };

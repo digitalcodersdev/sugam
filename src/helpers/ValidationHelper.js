@@ -154,7 +154,7 @@ ValidationHelper.isValidImageSize = (
 
 ValidationHelper.isPanValid = pan => {
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-  return panRegex.test(pan);
+  return panRegex.test(pan?.toUpperCase());
 };
 
 ValidationHelper.isValidAadhar = aadharNumber => {
@@ -164,7 +164,7 @@ ValidationHelper.isValidAadhar = aadharNumber => {
 
 ValidationHelper.isValidVoterId = voterId => {
   const voterIdPattern = /^[A-Z]{3}[0-9]{7}$/i;
-  return voterIdPattern.test(voterId);
+  return voterIdPattern.test(voterId?.toUpperCase());
 };
 
 export default ValidationHelper;

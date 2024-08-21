@@ -13,6 +13,7 @@ import com.facebook.soloader.SoLoader
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.faizal.OtpVerify.OtpVerifyPackage;
 import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
+import com.AlexanderZaytsev.RNI18n.RNI18nPackage;
 
 class MainApplication : Application(), ReactApplication {
 

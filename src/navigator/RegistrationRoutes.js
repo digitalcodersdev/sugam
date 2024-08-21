@@ -48,6 +48,7 @@ import FLOCollection from '../screens/FLOCollection/FLOCollection';
 import CenterCollection from '../screens/CenterCollection/CenterCollection';
 import CollectionInformation from '../screens/ClientCollection/ClientCollection';
 import ClientCollection from '../screens/ClientCollection/ClientCollection';
+import ClientPhoneVerify from '../screens/ClientPhoneVerify/ClientPhoneVerify';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -172,9 +173,14 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             name={ScreensNameEnum.CENTER_COLECTION_SCREEN}
             options={{headerShown: false}}
           />
-             <RegistrationStack.Screen
+          <RegistrationStack.Screen
             component={ClientCollection}
             name={ScreensNameEnum.CLIENT_COLLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={ClientPhoneVerify}
+            name={ScreensNameEnum.CLIENT_PHONE_VERIFY}
             options={{headerShown: false}}
           />
         </>

@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import BTextInput from '../../library/commons/BTextInput';
 import AuthApi from '../../datalib/services/authentication.api';
 import Button from '../../library/commons/Button';
@@ -21,16 +20,12 @@ import ValidationHelper from '../../helpers/ValidationHelper';
 import APP_CONSTANTS from '../../constants/appConstants';
 import {OtpInput} from 'react-native-otp-entry';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import OTPVerify from 'react-native-otp-verify';
-import {PermissionsAndroid} from 'react-native';
 import LoaderAnimation from '../../library/commons/LoaderAnimation';
 import Toast from 'react-native-simple-toast';
-import UserApi from '../../datalib/services/user.api';
-import {UseDispatch, useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {getUserDetails} from '../../store/actions/userActions';
 
 const LogInScreen = () => {
-  const navigation = useNavigation();
   const dispatch = useDispatch();
   const [phone, setPhone] = useState('');
   const [isLoading, setLoading] = useState(false);
@@ -115,7 +110,7 @@ const LogInScreen = () => {
       };
       const res = await new AuthApi().generateOtp(data);
       console.log(res);
-      if (res?.success) {
+      if (res && res?.success) {
         Toast.show('OTP sent successfully', Toast.LONG, Toast.TOP);
         setOtpEnabled(true);
         setTrasactionId(res?.data?.transactionId);

@@ -72,9 +72,10 @@ const ScreensNameEnum = {
   EMPLOYEE_DIRECTORY_SCREEN: 'Employee Directory ',
   HELP_DESK_SCREEN: 'Help Desk',
   GRIEVANCE_SCREEN: 'Grievance',
-  COLLECTION_SCREEN:"Collection",
-  FLO_COLLECTION_SCREEN:"FLO Collection",
-  CENTER_COLECTION_SCREEN:"Center Collection",
-  CLIENT_COLLECTION_SCREEN:"Client Collection"
+  COLLECTION_SCREEN: 'Collection',
+  FLO_COLLECTION_SCREEN: 'FLO Collection',
+  CENTER_COLECTION_SCREEN: 'Center Collection',
+  CLIENT_COLLECTION_SCREEN: 'Client Collection',
+  CLIENT_PHONE_VERIFY: 'Client Phone Verification',
 };
 export default Object.freeze(ScreensNameEnum);

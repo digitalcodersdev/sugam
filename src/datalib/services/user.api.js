@@ -1,8 +1,26 @@
+import {Alert} from 'react-native';
 import sInfoUtil from '../../utils/sInfo.util';
 import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
 
 class AuthenticationApi extends SecuredBaseApi {
+  async sendClientOtp({phone}) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/send/otp/client/${phone}`),
+      );
+      if (response.data?.transactionId) {
+        return response;
+      }
+      return response;
+    } catch (error) {
+      if (error?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.log(error);
+      return false;
+    }
+  }
   async getUserDetails() {
     try {
       const response = await this.securedAxios.get(
@@ -14,7 +32,10 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
-      console.error(err);
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
       return false;
     }
   }
@@ -27,6 +48,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (error) {
+      if (error?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.log(error);
       return false;
     }
@@ -43,6 +67,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -59,6 +86,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -74,6 +104,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -89,6 +122,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -104,6 +140,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -119,6 +158,9 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
@@ -135,17 +177,34 @@ class AuthenticationApi extends SecuredBaseApi {
       }
       return false;
     } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
       console.error(err);
       return false;
     }
   }
 
+  async sendAadharOtp({aadharNo}) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/generate/aadhar/otp/${aadharNo}`),
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
   async fetchAttendReport({month, year}) {
     try {
-      console.log(
-        '___URL',
-        getApiUri(`/attendance/report?month=${month}&year=${year}`),
-      );
+
       const response = await this.securedAxios.get(
         getApiUri(`/attendance/report?month=${month}&year=${year}`),
       );
@@ -259,10 +318,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  /*
-   * This function is used to update user information
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
-   */
+
   async updateUser(data) {
     try {
       const response = await this.securedAxios.put(
@@ -278,10 +334,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  /*
-   * This function is used to verify email otp
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
-   */
+
   async verifyEmailOTP(email, otp) {
     try {
       const response = await this.securedAxios.post(
@@ -299,10 +352,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  /*
-   * This function is used to fetch user profile
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
-   */
+
   async getUserById() {
     try {
       const response = await this.securedAxios.get(
@@ -318,10 +368,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  /*
-   * This function is used to upload image
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
-   */
+
   async uploadProfilePic(file) {
     try {
       console.log('uploadProfilePic', file);

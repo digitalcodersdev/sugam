@@ -23,39 +23,96 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ValidationHelper from '../../helpers/ValidationHelper';
 import Toast from 'react-native-simple-toast';
+import UserApi from '../../datalib/services/user.api';
+import Loader from '../../library/commons/Loader';
+import I18n from 'react-native-i18n';
+import {useNavigation} from '@react-navigation/native';
 
-const VerifyAadhar = () => {
+const VerifyAadhar = ({route}) => {
+  const navigation = useNavigation();
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [aadharNumber, setAAdhar] = useState('');
   const [focused, setFocused] = useState(null);
   const [otpEnabled, setOtpEnabled] = useState(false);
+  const [data, setData] = useState({});
+  const [userDetails, setUserDetails] = useState({});
   const aadharNoRef = useRef();
   const loaderMessage = useRef();
+  const {center} = route?.params;
+  // console.log(center);
+  function calculateAge(dob) {
+    const [day, month, year] = dob.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+    return age;
+  }
 
   const verifyOtp = async () => {
     try {
       setLoading(true);
       loaderMessage.current = 'Verifying Otp...';
-      const formData = new FormData();
-      formData.append('client_id', clientId);
-      formData.append('otp', otp);
-      const res = await axios.post(
-        'https://plumber-crm.rnvalves.app/public/api/verify_otp_for_aadhar_verification',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        },
+      const payload = {
+        transactionId: data?.transactionId,
+        fwdp: data?.fwdp,
+        codeVerifier: data?.codeVerifier,
+        otp: otp,
+        shareCode: '1234',
+        isSendPdf: true,
+      };
+      const myHeaders = new Headers();
+      myHeaders.append(
+        'Authorization',
+        'NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
       );
-      if (res && res.data.status) {
-        setLoading(false);
-        onModalClose(false);
-        onConfirm && onConfirm();
-      } else {
-        Toast.show('Invalid otp...', Toast.SHORT, Toast.TOP);
-      }
+      myHeaders.append('Content-Type', 'application/json');
+      const raw = JSON.stringify(payload);
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      };
+
+      fetch(
+        'https://svcdemo.digitap.work/ent/v3/kyc/submit-otp',
+        requestOptions,
+      )
+        .then(response => response.text())
+        .then(result => {
+          const res = JSON.parse(result);
+          const age = calculateAge(res?.model?.dob); //
+          if (age >= 18 && age < 59) {
+            setOtp('');
+            console.log('result', result);
+            if (res?.code == 200 && res?.msg == 'success') {
+              setUserDetails(res?.model);
+              navigation.navigate(ScreensNameEnum.AADHAR_INFORMATION_USER, {
+                data: {...res?.model, ...center},
+              });
+              setLoading(false);
+              Toast.show('OTP Verified...', Toast.BOTTOM);
+            }
+          } else {
+            Alert.alert(
+              'आवेदक ऋण प्रक्रिया के लिए पात्र नहीं है। आयु 59 वर्ष से कम और 18 वर्ष से अधिक या 18 वर्ष के बराबर होनी चाहिए',
+            );
+            setOtpEnabled(false);
+            setAAdhar('');
+            setLoading(false);
+            navigation.navigate(ScreensNameEnum.NEW_CLIENT);
+          }
+        })
+        .catch(error => {
+          console.error({error});
+          setLoading(false);
+        });
     } catch (error) {
       console.log(error);
       Alert.alert('Something wehnt wrong please try again later...');
@@ -78,26 +135,63 @@ const VerifyAadhar = () => {
     try {
       setLoading(true);
       loaderMessage.current = 'Sending Otp...';
+      // Set up translations
+      I18n.translations = {
+        'en-IN': {
+          welcome: 'Welcome',
+          alreadyCustomer: 'This Aadhar number is already registered.',
+        },
+        en: {
+          welcome: 'Welcome',
+          alreadyCustomer: 'This Aadhar number is already registered.',
+          msgSent: 'OTP sent successfully',
+          msgLimitEnd: 'Exceeded maximum OTP generation limit',
+        },
+        hi: {
+          welcome: 'स्वागत है',
+          alreadyCustomer: 'यह आधार नंबर पहले से मौजूद है।',
+          msgSent: 'OTP सफलतापूर्वक भेजा गया',
+          msgLimitEnd:
+            'अधिकतम OTP जनरेशन सीमा पार हो गई| कृपया कुछ समय बाद पुनः प्रयास करें ',
+          pleaseRetry: 'कुछ गलत हो गया कृपया पुनः प्रयास करें',
+          enterValidAAdhar: 'कृपया वैध आधार संख्या दर्ज करें',
+        },
+      };
+
       if (validate()) {
-        const formData = new FormData();
-        formData.append('aadhar_no', aadharNumber);
-        console.log(aadharNumber);
-        const res = await axios.post(
-          'https://plumber-crm.rnvalves.app/public/api/aadhar_verification',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          },
-        );
-        if (res && res.status === 200 && res?.data?.status) {
+        const res1 = await new UserApi().sendAadharOtp({
+          aadharNo: aadharNumber,
+        });
+
+        // Handle response if `data` is a string
+        let res = res1;
+        if (typeof res1?.data === 'string') {
+          const parsedData = JSON.parse(res1.data);
+          res = {...res, data: parsedData};
+        }
+        I18n.locale = 'hi';
+        if (
+          res?.data?.client_adharcard == aadharNumber ||
+          res?.data?.co_borrower_adharcard == aadharNumber
+        ) {
+          Alert.alert(null, I18n.t('alreadyCustomer'));
+          setLoading(false);
+        }
+        if (res?.data?.code == 500) {
+          Alert.alert(null, I18n.t('msgLimitEnd'));
+          setLoading(false);
+        }
+        if (res?.data?.code == 400) {
+          Alert.alert(null, I18n.t('enterValidAAdhar'));
+          setLoading(false);
+        }
+        if (res?.data?.model?.transactionId) {
+          Alert.alert(null, I18n.t('msgSent'));
+          setData(res?.data?.model);
           setOtpEnabled(true);
-        } else {
-          Toast.show('invalid Aadhar number...', Toast.SHORT, Toast.TOP);
+          setLoading(false);
         }
       }
-      setLoading(false);
     } catch (error) {
       console.log(error);
       Alert.alert('something went wrong. please try again later');
@@ -106,8 +200,8 @@ const VerifyAadhar = () => {
   };
 
   return (
-    <ScreenWrapper header={false}>
-      <ChildScreensHeader screenName={ScreensNameEnum.VERIFY_AADHAR_SCREEN} />
+    <ScreenWrapper header={false} backDisabled>
+      {/* <ChildScreensHeader screenName={ScreensNameEnum.VERIFY_AADHAR_SCREEN} /> */}
       <View style={styles.modalContainer}>
         <Image
           source={require('../../assets/Images/aadhar.png')}
@@ -207,7 +301,7 @@ const VerifyAadhar = () => {
           </View>
         )}
       </View>
-      <LoaderAnimation loading={loading} message={loaderMessage.current} />
+      <Loader loading={loading} message={loaderMessage.current} />
     </ScreenWrapper>
   );
 };

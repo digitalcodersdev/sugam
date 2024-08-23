@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   Image,
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -24,6 +23,7 @@ import LoaderAnimation from '../../library/commons/LoaderAnimation';
 import Toast from 'react-native-simple-toast';
 import {useDispatch} from 'react-redux';
 import {getUserDetails} from '../../store/actions/userActions';
+import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 
 const LogInScreen = () => {
   const dispatch = useDispatch();
@@ -45,50 +45,6 @@ const LogInScreen = () => {
     }
     return () => clearInterval(intervalRef.current);
   }, [otpEnabled]);
-
-  // useEffect(() => {
-  //   requestSMSPermissions().then(granted => {
-  //     if (granted) {
-  //       OTPVerify.getHash().then(console.log).catch(console.log);
-  //       OTPVerify.getOtp()
-  //         .then(p => OTPVerify.addListener(otpHandler))
-  //         .catch(p => console.log(p));
-  //       return () => OTPVerify.removeListener();
-  //     }
-  //   });
-  // }, [otpEnabled]);
-
-  // const otpHandler = message => {
-  //   try {
-  //     const extractedOtp = /(\d{4})/.exec(message)[1]; // Assuming OTP is 4 digits
-  //     setOtp(extractedOtp);
-  //     verifyOtp(extractedOtp);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const verifyOtp = otp => {
-  //   Alert.alert(`OTP Verified: ${otp}`);
-  // };
-
-  // const requestSMSPermissions = async () => {
-  //   try {
-  //     const granted = await PermissionsAndroid.requestMultiple([
-  //       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-  //       PermissionsAndroid.PERMISSIONS.READ_SMS,
-  //     ]);
-  //     return (
-  //       granted[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] ===
-  //         PermissionsAndroid.RESULTS.GRANTED &&
-  //       granted[PermissionsAndroid.PERMISSIONS.READ_SMS] ===
-  //         PermissionsAndroid.RESULTS.GRANTED
-  //     );
-  //   } catch (err) {
-  //     console.warn(err);
-  //     return false;
-  //   }
-  // };
 
   const validate = () => {
     var valid = true;
@@ -150,7 +106,7 @@ const LogInScreen = () => {
   };
 
   return (
-    // <ScreenWrapper header={false}>
+    <ScreenWrapper header={false}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}>
@@ -297,7 +253,7 @@ const LogInScreen = () => {
 
       <LoaderAnimation loading={isLoading} />
     </KeyboardAvoidingView>
-    // </ScreenWrapper>
+ </ScreenWrapper>
   );
 };
 export default LogInScreen;

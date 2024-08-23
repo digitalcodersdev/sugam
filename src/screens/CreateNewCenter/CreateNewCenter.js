@@ -178,40 +178,6 @@ const CreateNewCenter = ({}) => {
     }
   };
 
-  //   const fetchGeolocation = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const API_KEY = 'AIzaSyBsc_32ip44ZxiwytqSxKdczopDmUAFpow';
-  //       Geolocation.getCurrentPosition(
-  //         async position => {
-  //           const {latitude, longitude} = position.coords;
-  //           setLat(latitude);
-  //           setLong(longitude);
-  //           const res = await axios.get(
-  //             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`,
-  //           );
-
-  //           //   console.log(res);
-  //           const fetchedAddress = res?.data?.results[0]?.formatted_address;
-  //           setCenterAddress(fetchedAddress);
-  //           setCenterName(
-  //             res?.data?.results[0]?.address_components[2]?.long_name,
-  //           );
-  //           setPincode(res?.data?.results[0]?.address_components[9]?.long_name);
-  //         },
-  //         error => {
-  //           Alert.alert('Error', 'Failed to fetch geolocation');
-  //           console.log(error);
-  //           setLoading(false);
-  //         },
-  //         {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-  //       );
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.log(error);
-  //       setLoading(false);
-  //     }
-  //   };
 
   const validate = () => {
     let valid = true;

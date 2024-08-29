@@ -10,10 +10,8 @@ import Modal from 'react-native-modal';
 import R from 'resources/R';
 import Rating from 'library/commons/Rating';
 import {useSelector, useDispatch} from 'react-redux';
-/*
- * This function is used to create Review modal
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
- */
+
+
 const ReviewModal = ({isVisible, onModalClose}) => {
   const res = useSelector(state => state?.user);
   const [options] = useState([1, 2, 3, 4, 5, 6, 7, 8, 9]);

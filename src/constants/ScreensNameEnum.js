@@ -77,5 +77,12 @@ const ScreensNameEnum = {
   CENTER_COLECTION_SCREEN: 'Center Collection',
   CLIENT_COLLECTION_SCREEN: 'Client Collection',
   CLIENT_PHONE_VERIFY: 'Client Phone Verification',
+  LAF_GROUP_SCREEN: 'Loan Appl. Form (LAF) - Group Loan',
+  LAF_GROUP_SCREEN1: 'Loan Appl. Form (LAF) - Group Loan 1',
+  LAF_GROUP_SCREEN2: 'Loan Appl. Form (LAF) - Group Loan 2',
+  MY_APPLICATION_SCREEN:"My Application Details",
+  KYC_CUSTOMER_SCREEN:"KYC Applicant",
+  KYC_CO_CUSTOMER_SCREEN:"KYC Co-Applicant",
+  BANK_DETAILS_SCREEN:"Bank Details"
 };
 export default Object.freeze(ScreensNameEnum);

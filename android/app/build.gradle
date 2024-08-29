@@ -108,10 +108,11 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation project(':react-native-vector-icons')
-    implementation project(':react-native-otp-verify')
+    implementation project(':react-native-otp-verify')    
     implementation project(':react-native-geolocation-service')
     implementation 'com.google.android.gms:play-services-location:21.0.1'  
     implementation project(':react-native-i18n')
+    implementation project(':react-native-sms-retriever')
 
 
     if (hermesEnabled.toBoolean()) {

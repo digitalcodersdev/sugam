@@ -15,6 +15,7 @@ import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
 import AuthenticationApi from '../../datalib/services/authentication.api';
 import {useNavigation} from '@react-navigation/native';
+import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
 I18n.translations = {
   'en-IN': {
@@ -42,8 +43,9 @@ I18n.translations = {
     panDetailsMisMatch: 'आवेदक के पैन कार्ड का विवरण मेल नहीं खा रहा है',
   },
 };
-I18n.locale = 'hi';
+
 const CheckCreditBureau = ({route}) => {
+  I18n.locale = 'hi';
   const navigation = useNavigation();
   const {
     name,
@@ -316,6 +318,7 @@ const CheckCreditBureau = ({route}) => {
     try {
       const valid = validate();
       if (valid) {
+        navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
       }
     } catch (error) {
       console.log('Error Details --->', error);
@@ -359,8 +362,9 @@ const CheckCreditBureau = ({route}) => {
       );
       const result = await response.text();
       const res = JSON.parse(result);
-      console.log('res________', res);
-      if (res?.result) {
+      console.log('res________', res, !'message' in res);
+      // debugger;
+      if (res?.result && res?.result_code != '103') {
         const {fullname, dob: dobClient} = res?.result;
         if (
           type == 'client'
@@ -387,6 +391,9 @@ const CheckCreditBureau = ({route}) => {
         }
       }
 
+      if (res?.http_response_code === 200 && res?.result_code == "103") {
+        Alert.alert(null, I18n.t('invalidPan'));
+      }
       if (res?.http_response_code === 400) {
         Alert.alert(null, I18n.t('invalidPan'));
       }
@@ -741,7 +748,7 @@ const CheckCreditBureau = ({route}) => {
                 <Picker.Item label="Brother-in-law" value="Brother-in-law" />
               </Picker>
             </View>
-            <View style={styles.viewInput}>
+            {/* <View style={styles.viewInput}>
               <Text style={styles.label}>Relation Name</Text>
               <TextInput
                 value={relationName}
@@ -760,7 +767,7 @@ const CheckCreditBureau = ({route}) => {
                 onFocus={() => setFocused('relationName')}
                 onBlur={() => setFocused(null)}
               />
-            </View>
+            </View> */}
 
             <View style={styles.viewInput}>
               <Text style={styles.label}>Mobile No</Text>

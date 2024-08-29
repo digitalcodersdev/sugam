@@ -49,6 +49,13 @@ import CenterCollection from '../screens/CenterCollection/CenterCollection';
 import CollectionInformation from '../screens/ClientCollection/ClientCollection';
 import ClientCollection from '../screens/ClientCollection/ClientCollection';
 import ClientPhoneVerify from '../screens/ClientPhoneVerify/ClientPhoneVerify';
+import LAFScreen from '../screens/LAFScreen/LAFScreen';
+import LAFScreen1 from '../screens/LAFScreen/LAFScreen1';
+import LAFScreen2 from '../screens/LAFScreen/LAFScreen2';
+import MyApplication from '../screens/MyApplication/MyApplication';
+import KYCCustomer from '../screens/LAFScreen/KYCCustomer';
+import KYCCoApplicant from '../screens/LAFScreen/KYCCoApplicant';
+import BankDetails from '../screens/LAFScreen/BankDetails';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -181,6 +188,41 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
           <RegistrationStack.Screen
             component={ClientPhoneVerify}
             name={ScreensNameEnum.CLIENT_PHONE_VERIFY}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={LAFScreen}
+            name={ScreensNameEnum.LAF_GROUP_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={LAFScreen1}
+            name={ScreensNameEnum.LAF_GROUP_SCREEN1}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={LAFScreen2}
+            name={ScreensNameEnum.LAF_GROUP_SCREEN2}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={MyApplication}
+            name={ScreensNameEnum.MY_APPLICATION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={KYCCustomer}
+            name={ScreensNameEnum.KYC_CUSTOMER_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={KYCCoApplicant}
+            name={ScreensNameEnum.KYC_CO_CUSTOMER_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={BankDetails}
+            name={ScreensNameEnum.BANK_DETAILS_SCREEN}
             options={{headerShown: false}}
           />
         </>

@@ -9,6 +9,7 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import BTextInput from '../../library/commons/BTextInput';
@@ -30,6 +31,7 @@ import {getUserDetails} from '../../store/actions/userActions';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
+import Loader from '../../library/commons/Loader';
 
 const ClientPhoneVerify = ({route}) => {
   const navigation = useNavigation();
@@ -43,7 +45,7 @@ const ClientPhoneVerify = ({route}) => {
   const intervalRef = useRef(null);
   const [time, setTime] = useState(30);
   const {center} = route?.params;
-  console.log(center);
+  console.log(Dimensions.get('screen').height);
   useEffect(() => {
     if (otpEnabled) {
       intervalRef.current = setInterval(() => {
@@ -52,50 +54,6 @@ const ClientPhoneVerify = ({route}) => {
     }
     return () => clearInterval(intervalRef.current);
   }, [otpEnabled]);
-
-  // useEffect(() => {
-  //   requestSMSPermissions().then(granted => {
-  //     if (granted) {
-  //       OTPVerify.getHash().then(console.log).catch(console.log);
-  //       OTPVerify.getOtp()
-  //         .then(p => OTPVerify.addListener(otpHandler))
-  //         .catch(p => console.log(p));
-  //       return () => OTPVerify.removeListener();
-  //     }
-  //   });
-  // }, [otpEnabled]);
-
-  // const otpHandler = message => {
-  //   try {
-  //     const extractedOtp = /(\d{4})/.exec(message)[1]; // Assuming OTP is 4 digits
-  //     setOtp(extractedOtp);
-  //     verifyOtp(extractedOtp);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const verifyOtp = otp => {
-  //   Alert.alert(`OTP Verified: ${otp}`);
-  // };
-
-  // const requestSMSPermissions = async () => {
-  //   try {
-  //     const granted = await PermissionsAndroid.requestMultiple([
-  //       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-  //       PermissionsAndroid.PERMISSIONS.READ_SMS,
-  //     ]);
-  //     return (
-  //       granted[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] ===
-  //         PermissionsAndroid.RESULTS.GRANTED &&
-  //       granted[PermissionsAndroid.PERMISSIONS.READ_SMS] ===
-  //         PermissionsAndroid.RESULTS.GRANTED
-  //     );
-  //   } catch (err) {
-  //     console.warn(err);
-  //     return false;
-  //   }
-  // };
 
   const validate = () => {
     var valid = true;
@@ -113,7 +71,7 @@ const ClientPhoneVerify = ({route}) => {
     if (valid) {
       setLoading(true);
       const res = await new UserApi().sendClientOtp({phone});
-      console.log(res);
+      // console.log(res);
       if (
         res?.success &&
         !res?.message?.includes('phone number already exists')
@@ -175,10 +133,10 @@ const ClientPhoneVerify = ({route}) => {
               width: 200,
               alignSelf: 'center',
               borderRadius: 16000,
-            //   borderWidth: 1,
-              borderColor:R.colors.PRIMARI_DARK,
-              height:200,
-              marginTop:10
+              //   borderWidth: 1,
+              borderColor: R.colors.PRIMARI_DARK,
+              height: 200,
+              marginTop: 10,
             }}
             resizeMode="cover"
           />
@@ -224,7 +182,7 @@ const ClientPhoneVerify = ({route}) => {
               ) : (
                 <>
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center'}}>
+                    style={{alignItems: 'center', justifyContent: 'center',flex:1}}>
                     <Text
                       style={{
                         color: R.colors.PRIMARI_DARK,
@@ -313,7 +271,7 @@ const ClientPhoneVerify = ({route}) => {
           </View>
         </ImageBackground>
 
-        <LoaderAnimation loading={isLoading} />
+        <Loader loading={isLoading} message={""} />
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );

@@ -28,7 +28,7 @@ const initialThunkState = {status: ThunkStatusEnum.IDLE, error: null};
 
 const initialState = {
   user: null,
-  centres: null,
+  centres: [],
   tasks: [],
   projects: [],
   clockin: null,
@@ -78,7 +78,7 @@ const userSlice = createSlice({
 export default userSlice.reducer;
 export const {restoreUserStore} = userSlice.actions;
 
-export const currentUserSelector = state => state.user.user || {};
+export const currentUserSelector = state => state?.user?.user || {};
 export const tasksSelector = state => state?.user?.tasks || [];
 export const projectsSelector = state => state?.user?.projects || [];
 export const clockinSelector = state => state?.user?.clockin || {};

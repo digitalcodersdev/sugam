@@ -202,13 +202,42 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async fetchLoanType() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/loan/type`),
+      );
+      console.log(response);
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async checkCenterName(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/check/center/name`),data
+      );
+      console.log(response);
+      if (response?.data) {
+        return response?.data
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
   async fetchAttendReport({month, year}) {
     try {
-
       const response = await this.securedAxios.get(
         getApiUri(`/attendance/report?month=${month}&year=${year}`),
       );
-      console.log(response);
+      // console.log(response);
       if (response.data) {
         return response.data;
       }

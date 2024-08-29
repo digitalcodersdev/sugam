@@ -27,7 +27,7 @@ import {currentUserSelector} from '../../store/slices/user/user.slice';
 import moment from 'moment';
 import env from '../../../env';
 import Loader from '../../library/commons/Loader';
-
+import DatePicker from 'react-native-date-picker';
 const DATA = {
   Monday: '1',
   Tuesday: '2',
@@ -45,6 +45,8 @@ const CreateNewCenter = ({}) => {
   const [centerAddress, setCenterAddress] = useState('');
   const [meetingTime, setMeetingTime] = useState('');
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  const [meetingDate, setMeetingDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
   const [meetingDay, setMeetingDay] = useState(null);
   const [contactNo, setContactNo] = useState('');
   const [contactName, setContactName] = useState('');
@@ -54,6 +56,7 @@ const CreateNewCenter = ({}) => {
   const [loading, setLoading] = useState(true);
   const [lat, setLat] = useState('');
   const [long, setLong] = useState('');
+  const [centerNameChecked, setCenterNameChecked] = useState(false);
   const contactNameRef = useRef();
   const contactNoRef = useRef();
   const centerPlaceRef = useRef();
@@ -71,6 +74,41 @@ const CreateNewCenter = ({}) => {
   const handleTimeConfirm = time => {
     setMeetingTime(time);
     hideTimePicker();
+  };
+
+  useEffect(() => {
+    if (centerName?.length >= 2 && user?.branchid && !centerNameChecked) {
+      setCenterNameChecked(true);
+      checkCenterName();
+    }
+  }, [centerName, user]);
+  const checkCenterName = async () => {
+    try {
+      setLoading(true);
+      const payload = {
+        centerData: {
+          branchid: user?.branchid,
+          cename: centerName,
+        },
+      };
+      const res = await new UserApi().checkCenterName(payload);
+      if (res && res?.length >= 1) {
+        if (res?.length == 1) {
+          setCenterName(centerName + '-' + 1);
+          setCenterNameChecked(true);
+        } else {
+          const name = res[0]?.cename?.split('-');
+          const count = name[name?.length - 1];
+          const finalCount = parseInt(count) + 1;
+          setCenterName(res[0]?.cename?.replace(`-${count}`, '-' + finalCount));
+          setCenterNameChecked(true);
+        }
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error.message);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -178,9 +216,16 @@ const CreateNewCenter = ({}) => {
     }
   };
 
-
   const validate = () => {
     let valid = true;
+    if (
+      moment(meetingDate).format('MM-DD-YYYY') ==
+      moment(meetingDate).format('MM-DD-YYYY')
+    ) {
+      Toast.show('Please Select Meeting Date ', Toast.SHORT, Toast.TOP);
+      valid = false;
+      return valid;
+    }
     if (centerNo === null) {
       Toast.show('Center No is required ', Toast.SHORT, Toast.TOP);
       valid = false;
@@ -244,9 +289,9 @@ const CreateNewCenter = ({}) => {
         const data = {
           branchid: user?.branchid,
           centreid: centerNo,
+          cename: centerName,
           staffid: user?.staffid,
           ceaddress: centerAddress,
-          cename: centerName,
           cedate: moment(new Date()).format('YYYY-MM-DD'),
           cetime: meetingTime?.toLocaleTimeString(),
           ceday: meetingDay,
@@ -413,6 +458,43 @@ const CreateNewCenter = ({}) => {
               <Picker.Item label="Saturday" value="Saturday" />
             </Picker>
           </View>
+          <View style={{marginBottom: 10}}>
+            <Pressable onPress={() => setOpen(!open)} style={styles.input}>
+              <Text
+                style={[
+                  //   styles.input,
+                  {
+                    height: 60,
+                    paddingBottom: 10,
+                    fontSize: 16,
+                    color: R.colors.PRIMARI_DARK,
+                    textAlignVertical: 'center',
+                    // borderWidth:1
+                  },
+                ]}>
+                {'    Meeting Date* :      '}
+                {moment(meetingDate).format('DD MMM YYYY') ==
+                moment(new Date()).format('DD MMM YYYY')
+                  ? '-- Select Meeting Date --'
+                  : moment(meetingDate).format('DD-MMM-YYYY')}
+              </Text>
+              <DatePicker
+                modal
+                open={open}
+                mode="date"
+                date={meetingDate}
+                onConfirm={date => {
+                  setOpen(false);
+                  setMeetingDate(date);
+                }}
+                onCancel={() => {
+                  setOpen(false);
+                }}
+                minimumDate={new Date()}
+              />
+            </Pressable>
+          </View>
+     
           <View style={{marginBottom: 10}}>
             <Pressable onPress={showTimePicker} style={styles.input}>
               <Text

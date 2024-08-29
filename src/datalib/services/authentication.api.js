@@ -12,7 +12,6 @@ class AuthenticationApi extends BaseApi {
       }
       return response;
     } catch (error) {
-      console.error('generateOtp', error);
       if (error?.code == 'ERR_NETWORK') {
         Alert.alert('please check your internet connection and try again');
       }

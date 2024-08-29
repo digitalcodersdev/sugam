@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   userType: {
     color: R.colors.DARKGRAY,
     fontSize: R.fontSize.L,
+    textTransform:"capitalize"
   },
   categoryView: {
     flex: 1,

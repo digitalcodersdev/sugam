@@ -62,7 +62,7 @@ const NewClient = () => {
           alignItems: 'center',
         }}>
         <View style={styles.view}>
-          <Text style={styles.label}>Center Name :</Text>
+          <Text style={styles.label}>Center Name:</Text>
           <Text style={styles.value}>{item?.cename}</Text>
         </View>
         <View style={styles.view}>
@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     flex: 2.5,
     flexWrap: 'wrap',
+    fontSize:R.fontSize.M
   },
   view: {flexDirection: 'row', margin: 5, alignItems: 'center'},
   searchView: {},

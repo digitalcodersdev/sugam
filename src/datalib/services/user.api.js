@@ -43,6 +43,25 @@ class AuthenticationApi extends SecuredBaseApi {
   async getCentreDetails() {
     try {
       const response = await this.securedAxios.get(getApiUri('/get/centres'));
+      console.log('response', response);
+      if (response?.success) {
+        return response.data;
+      }
+      return false;
+    } catch (error) {
+      if (error?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.log(error);
+      return false;
+    }
+  }
+  async getPendingEnrollments({centerId, branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/get/pending/enrollments/${centerId}/${branchId}`),
+      );
+
       if (response?.success) {
         return response.data;
       }
@@ -65,7 +84,7 @@ class AuthenticationApi extends SecuredBaseApi {
       if (response.data && response.success) {
         return response;
       }
-      return false;
+      return response;
     } catch (err) {
       if (err?.code == 'ERR_NETWORK') {
         Alert.alert('please check your internet connection and try again');
@@ -84,7 +103,7 @@ class AuthenticationApi extends SecuredBaseApi {
       if (response.data && response.success) {
         return response;
       }
-      return false;
+      return response;
     } catch (err) {
       if (err?.code == 'ERR_NETWORK') {
         Alert.alert('please check your internet connection and try again');
@@ -165,11 +184,108 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async fetchClientInformationByLoanId({loanId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/client/details/${loanId}`),
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+
+  async fetchDisburesemnt({branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/disbursement/${branchId}`),
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async updateDisburse({branchId, loanId}) {
+    try {
+      console.log(getApiUri(`/update/disburse/${branchId}/${loanId}`));
+      const response = await this.securedAxios.put(
+        getApiUri(`/update/disburse/${branchId}/${loanId}`),
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+
+  async fetchCurrentDayCollectionByBranchId({branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/current-day/collection/pending/${branchId}`),
+      );
+      console.log(response, 'response');
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchCurrentDayCollectionByCenterId({centerId, branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(
+          `/fetch/current-day/collection/pending-center/${centerId}/${branchId}`,
+        ),
+      );
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
 
   async saveGrievance(data) {
     try {
       const response = await this.securedAxios.post(
         getApiUri(`/save/grievance`),
+        data,
+      );
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
+  async createEnrollmentHis(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/create/enroll/his`),
         data,
       );
       if (response.data) {
@@ -202,7 +318,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  async fetchLoanType() {
+  async fetchLoanTypeAndPurpose() {
     try {
       const response = await this.securedAxios.get(
         getApiUri(`/fetch/loan/type`),
@@ -217,14 +333,57 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async fetchLoanAmt({id}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/product/${id}`),
+      );
+      if (response?.data) {
+        return response?.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchLoanPurpose({id}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/loan/purpose/${id}`),
+      );
+      if (response?.data) {
+        return response?.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchProdFreqTen({amt, id}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/product/freq/tenure/${amt}/${id}`),
+      );
+      if (response?.data) {
+        return response?.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
   async checkCenterName(data) {
     try {
       const response = await this.securedAxios.post(
-        getApiUri(`/check/center/name`),data
+        getApiUri(`/check/center/name`),
+        data,
       );
       console.log(response);
       if (response?.data) {
-        return response?.data
+        return response?.data;
       }
       return false;
     } catch (err) {
@@ -262,6 +421,21 @@ class AuthenticationApi extends SecuredBaseApi {
     }
   }
 
+  async fetchCCRRules(data) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/get/ccr/crieteria'),
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      // console.error(err);
+      return false;
+    }
+  }
   async clockIn({currentLatitude, currentLongitude, working_from}) {
     try {
       const response = await this.securedAxios.post(
@@ -279,12 +453,12 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  async clockOut({id}) {
+  async clockOut(data) {
     try {
-      const response = await this.securedAxios.post(
-        getApiUri(`/attendance/clock-out/${id}`),
+      const response = await this.securedAxios.put(
+        getApiUri(`/clock-out`),
+        data,
       );
-      // console.log('===-=-============', response);
       if (response.data) {
         return response;
       }
@@ -295,6 +469,22 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  // async clockOut({id}) {
+  //   try {
+  //     const response = await this.securedAxios.post(
+  //       getApiUri(`/attendance/clock-out/${id}`),
+  //     );
+  //     // console.log('===-=-============', response);
+  //     if (response.data) {
+  //       return response;
+  //     }
+  //     return false;
+  //   } catch (err) {
+  //     console.log(err);
+  //     console.error(err);
+  //     return false;
+  //   }
+  // }
 
   async fetchTasks() {
     try {
@@ -415,6 +605,144 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+
+
+
+
+  async getCurrentDayAttendance(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/get/today/attendance'),
+        data,
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async getAttendanceByMonthAndYear({month, year}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/get/attendance/${month}/${year}`),
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async clockIn(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/clock-in'),
+        data,
+      );
+      if (response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async getLeaveTypes() {
+    try {
+      const response = await this.securedAxios.get(getApiUri('/leave/types'));
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async applyLeave(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/apply/leave'),
+        data,
+      );
+      if (response.data) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchMyLeaves() {
+    try {
+      const response = await this.securedAxios.get(getApiUri('/my/leaves'));
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+
+  async fetchMyAppliedLeaves() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/my/applied/leaves'),
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchApprovalLeaves() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/get/approval/leaves'),
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async handleLeaveApproval(data) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri('/update/leave'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
 }
 
 export default AuthenticationApi;

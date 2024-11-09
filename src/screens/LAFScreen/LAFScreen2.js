@@ -15,7 +15,7 @@ import {Picker} from '@react-native-picker/picker';
 import UserApi from '../../datalib/services/user.api';
 import Button from '../../library/commons/Button';
 
-const LAFScreen2 = () => {
+const LAFScreen2 = props => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
@@ -26,6 +26,7 @@ const LAFScreen2 = () => {
   const [frequency, setFrequency] = useState(null);
   const [loanPurpose, setLoanPurpose] = useState(null);
   const [insurance, setInsurance] = useState(null);
+  const {userData, coAppData} = props.route?.params?.data;
   //new States
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
@@ -58,19 +59,44 @@ const LAFScreen2 = () => {
   const noOfDependentRef = useRef(null);
   const occupationRef = useRef(null);
   useEffect(() => {
-    fetchLoanType();
-  }, []);
+    if (coAppData) {
+      const {
+        coApplicantName,
+        coApplDOB,
+        coAppAddress,
+        coApplAadhar,
+        coApplPAN,
+        coApplVoterid,
+        coApplMaskedAadhar,
+        coApplMobileNo,
+        coApplState,
+        coAppPincode,
+        coAppCareOf,
+      } = coAppData;
+      const names = coApplicantName?.split(' ');
+      if (names?.length == 2) {
+        setFirstName(names[0]);
+        setLastName(names[1]);
+      }
+      if (names?.length == 3) {
+        setFirstName(names[0]);
+        setMiddleName(names[1]);
+        setLastName(names[2]);
+      }
+      if (names?.length == 1) {
+        setFirstName(names[0]);
+      }
 
-  const fetchLoanType = async () => {
-    try {
-      const res = await new UserApi().fetchLoanType();
-      console.log('res', res);
-    } catch (error) {
-      console.log(error);
+      setDob(coApplDOB);
+      setPhone(coApplMobileNo);
+      setFatherName(coAppCareOf);
+      setPincode(coAppPincode);
+      setState(coApplState);
+      setAddress(coAppAddress);
     }
-  };
+  }, []);
   return (
-    <ScreenWrapper header={false} backDisabled>
+    <ScreenWrapper>
       <Text
         style={[
           styles.tagline,
@@ -159,36 +185,36 @@ const LAFScreen2 = () => {
               />
             </View>
             <View style={styles.viewInput}>
-            <Text style={styles.label}>Relation With Co-Applicant*</Text>
-            <Picker
-              selectedValue={relationWithCoBorrw}
-              onValueChange={(itemValue, itemIndex) =>
-                setRelationWithCoBorrow(itemValue)
-              }
-              dropdownIconColor={R.colors.PRIMARI_DARK}
-              mode="dropdown"
-              style={[
-                styles.input,
-                {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
-              ]}>
-              {relationWithCoBorrw === null && (
-                <Picker.Item
-                  label="Select Relation "
-                  value={null}
-                  enabled={false}
-                />
-              )}
-              <Picker.Item label="Husband" value="Husband" />
-              <Picker.Item label="Wife" value="Wife" />
-              <Picker.Item label="Father" value="Father" />
-              <Picker.Item label="Mother" value="Mother" />
-              <Picker.Item label="Son" value="Son" />
-              <Picker.Item label="Daughter" value="Daughter" />
-              <Picker.Item label="Father-in-law" value="  Father-in-law" />
-              <Picker.Item label="Mother-in-law" value="Mother-in-law" />
-              <Picker.Item label="Brother-in-law" value="Brother-in-law" />
-            </Picker>
-          </View>
+              <Text style={styles.label}>Relation With Co-Applicant*</Text>
+              <Picker
+                selectedValue={relationWithCoBorrw}
+                onValueChange={(itemValue, itemIndex) =>
+                  setRelationWithCoBorrow(itemValue)
+                }
+                dropdownIconColor={R.colors.PRIMARI_DARK}
+                mode="dropdown"
+                style={[
+                  styles.input,
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                ]}>
+                {relationWithCoBorrw === null && (
+                  <Picker.Item
+                    label="Select Relation "
+                    value={null}
+                    enabled={false}
+                  />
+                )}
+                <Picker.Item label="Husband" value="Husband" />
+                <Picker.Item label="Wife" value="Wife" />
+                <Picker.Item label="Father" value="Father" />
+                <Picker.Item label="Mother" value="Mother" />
+                <Picker.Item label="Son" value="Son" />
+                <Picker.Item label="Daughter" value="Daughter" />
+                <Picker.Item label="Father-in-law" value="  Father-in-law" />
+                <Picker.Item label="Mother-in-law" value="Mother-in-law" />
+                <Picker.Item label="Brother-in-law" value="Brother-in-law" />
+              </Picker>
+            </View>
             <View style={styles.viewInput}>
               <Text style={styles.label}>DOB*</Text>
               <TextInput
@@ -402,6 +428,7 @@ const LAFScreen2 = () => {
               <TextInput
                 value={address}
                 onChangeText={text => setAddress(text)}
+                multiline
                 style={[
                   styles.input,
                   {
@@ -410,6 +437,8 @@ const LAFScreen2 = () => {
                         ? R.colors.primary
                         : R.colors.PRIMARI_DARK,
                     borderBottomWidth: focused === 'address' ? 1.5 : 1,
+                    minHeight: 80,
+                    maxHeight: 120,
                   },
                 ]}
                 onFocus={() => setFocused('address')}
@@ -559,7 +588,9 @@ const LAFScreen2 = () => {
               margin: 10,
             }}
             textStyle={{fontWeight: 'bold'}}
-            onPress={()=>navigation.navigate(ScreensNameEnum.MY_APPLICATION_SCREEN)}
+            onPress={() =>
+              navigation.navigate(ScreensNameEnum.MY_APPLICATION_SCREEN)
+            }
           />
         </ScrollView>
       </View>
@@ -626,7 +657,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: 'bottom',
     height: '100%',
-    flexWrap:"wrap"
+    flexWrap: 'wrap',
   },
   //   input: (isDarkMode, isDisabled = false) => ({
   //     borderColor: isDarkMode ? R.colors.LIGHTGRAY : '#000',

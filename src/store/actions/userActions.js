@@ -1,7 +1,6 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
 import UserApi from '../../datalib/services/user.api';
 
-
 export const getUserDetails = createAsyncThunk(
   'get/user/details',
   async (data, {rejectWithValue}) => {
@@ -13,7 +12,6 @@ export const getUserDetails = createAsyncThunk(
   },
 );
 
-
 export const getCentres = createAsyncThunk(
   'get/centres',
   async (data, {rejectWithValue}) => {
@@ -24,11 +22,16 @@ export const getCentres = createAsyncThunk(
     }
   },
 );
-
-
-
-
-
+export const getPendingEnrollments = createAsyncThunk(
+  'get/pending/enrollments',
+  async ({branchId, centerId}, {rejectWithValue}) => {
+    try {
+      return await new UserApi().getPendingEnrollments({branchId, centerId});
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
 
 /*
  * This function is used to create an action to fetch an user by his id
@@ -44,8 +47,6 @@ export const getUserById = createAsyncThunk(
     }
   },
 );
-
-
 
 /*
  * This function is used to create an action to upload a picture
@@ -119,11 +120,37 @@ export const fetchClockinStatus = createAsyncThunk(
   },
 );
 
+export const fetchCurrentDayCollectionByBranchId = createAsyncThunk(
+  'fetch/current-day/collection',
+  async ({branchId}, {rejectWithValue}) => {
+    try {
+      return await new UserApi().fetchCurrentDayCollectionByBranchId({
+        branchId,
+      });
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+export const fetchCurrentDayCollectionByCenterId = createAsyncThunk(
+  'fetch/current-day/collection/center-id',
+  async ({centerId, branchId}, {rejectWithValue}) => {
+    try {
+      return await new UserApi().fetchCurrentDayCollectionByCenterId({
+        centerId,
+        branchId,
+      });
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+
 export const fetchAttendanceReport = createAsyncThunk(
   'fetch/attendance/report',
-  async ({month,year}, {rejectWithValue}) => {
+  async ({month, year}, {rejectWithValue}) => {
     try {
-      const res = await new UserApi().fetchAttendReport({month,year});
+      const res = await new UserApi().fetchAttendReport({month, year});
       if (res) {
         return res;
       }
@@ -146,5 +173,3 @@ export const fetchHolidays = createAsyncThunk(
     }
   },
 );
-
-

@@ -18,15 +18,11 @@ import Button from '../../library/commons/Button';
 import R from '../../resources/R';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ValidationHelper from '../../helpers/ValidationHelper';
-import APP_CONSTANTS from '../../constants/appConstants';
 import {OtpInput} from 'react-native-otp-entry';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import OTPVerify from 'react-native-otp-verify';
-import {PermissionsAndroid} from 'react-native';
-import LoaderAnimation from '../../library/commons/LoaderAnimation';
 import Toast from 'react-native-simple-toast';
 import UserApi from '../../datalib/services/user.api';
-import {UseDispatch, useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {getUserDetails} from '../../store/actions/userActions';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
@@ -45,7 +41,7 @@ const ClientPhoneVerify = ({route}) => {
   const intervalRef = useRef(null);
   const [time, setTime] = useState(30);
   const {center} = route?.params;
-  console.log(Dimensions.get('screen').height);
+
   useEffect(() => {
     if (otpEnabled) {
       intervalRef.current = setInterval(() => {
@@ -71,7 +67,6 @@ const ClientPhoneVerify = ({route}) => {
     if (valid) {
       setLoading(true);
       const res = await new UserApi().sendClientOtp({phone});
-      // console.log(res);
       if (
         res?.success &&
         !res?.message?.includes('phone number already exists')
@@ -96,7 +91,7 @@ const ClientPhoneVerify = ({route}) => {
           transactionId: transactionId,
           phone: phone,
         };
-        const res = await new AuthApi().verifyMobileOtp(data);
+        const res = await new AuthApi().verifyMobileOtpClient(data);
         if (res) {
           const userData = await dispatch(getUserDetails());
           if (userData?.type?.includes('fulfilled')) {
@@ -128,15 +123,13 @@ const ClientPhoneVerify = ({route}) => {
           resizeMode="stretch">
           {/* <ScrollView style={{flex:1}}> */}
           <Image
-            source={require('../../assets/Images/profile.png')}
+            source={require('../../assets/Images/otp.jpeg')}
             style={{
-              width: 200,
+              width: 150,
               alignSelf: 'center',
-              borderRadius: 16000,
-              //   borderWidth: 1,
               borderColor: R.colors.PRIMARI_DARK,
-              height: 200,
-              marginTop: 10,
+              height: 150,
+              marginTop: 150,
             }}
             resizeMode="cover"
           />
@@ -145,6 +138,16 @@ const ClientPhoneVerify = ({route}) => {
             <View style={styles.inputContainer}>
               {!otpEnabled ? (
                 <View>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontWeight: '800',
+                      marginVertical: 20,
+                      fontSize: R.fontSize.L,
+                      color: R.colors.PRIMARI_DARK,
+                    }}>
+                    Please Enter Client's Mobile Number
+                  </Text>
                   <View style={styles.mobileContainer}>
                     <Icon
                       name={'phone'}
@@ -182,7 +185,11 @@ const ClientPhoneVerify = ({route}) => {
               ) : (
                 <>
                   <View
-                    style={{alignItems: 'center', justifyContent: 'center',flex:1}}>
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flex: 1,
+                    }}>
                     <Text
                       style={{
                         color: R.colors.PRIMARI_DARK,
@@ -271,7 +278,7 @@ const ClientPhoneVerify = ({route}) => {
           </View>
         </ImageBackground>
 
-        <Loader loading={isLoading} message={""} />
+        <Loader loading={isLoading} message={''} />
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );
@@ -286,6 +293,7 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     flex: 1,
+    marginTop: 100,
   },
   inputContainer: {
     paddingVertical: 20,

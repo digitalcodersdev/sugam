@@ -25,11 +25,11 @@ import {AuthContext} from '../../store/contexts/AuthContext';
 import ValidationHelper from '../../helpers/ValidationHelper';
 import APP_CONSTANTS from '../../constants/appConstants';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-import LoaderAnimation from '../../library/commons/LoaderAnimation';
 import Toast from 'react-native-simple-toast';
 import {useDispatch} from 'react-redux';
 import {getUserDetails} from '../../store/actions/userActions';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
+import {OtpInput} from 'react-native-otp-entry';
 import {
   requestMultiple,
   PERMISSIONS,
@@ -52,13 +52,13 @@ const LogInScreen = () => {
   const intervalRef = useRef(null);
   const [time, setTime] = useState(30);
   const [permissionCount, setPermissionCount] = useState(0);
-
+  console.log(otp);
   const {
     otp: receivedOtp,
     stopListener,
     hash,
   } = useOtpVerify({numberOfDigits: 4});
-  console.log('permissionCount', permissionCount, hash);
+  // console.log('permissionCount', permissionCount, hash);
   useEffect(() => {
     if (permissionCount <= 2) {
       requestPermissions();
@@ -169,13 +169,17 @@ const LogInScreen = () => {
       setLoading(true);
       try {
         const res = await new AuthApi().generateOtp({phone, hash: hash[0]});
-        if (res && res.success) {
+        if (res && res?.success) {
           Toast.show('OTP sent successfully', Toast.LONG, Toast.TOP);
           setOtpEnabled(true);
           setTransactionId(res.data.transactionId);
           setTime(30);
-        } else {
+        } else if (res.message) {
           Toast.show(res.message, Toast.LONG, Toast.TOP);
+        } else {
+          Alert.alert(
+            'Something went wrong while sending OTP. Please try again later...',
+          );
         }
       } catch (error) {
         console.error('Error generating OTP:', error);
@@ -269,14 +273,35 @@ const LogInScreen = () => {
                     </Text>
                     <Text style={styles.phoneNumberText}>{`+91${phone}`}</Text>
                   </View>
-                  <ActivityIndicator
+                  <OtpInput
+                    numberOfDigits={4}
+                    focusColor="green"
+                    focusStickBlinkingDuration={300}
+                    onTextChange={code => setOtp(code)}
+                    onFilled={text => console.log(`OTP is ${text}`)}
+                    theme={{
+                      containerStyle: {
+                        width: '80%',
+                        alignSelf: 'center',
+                        // marginVertical: 20,
+                      },
+                      pinCodeContainerStyle: {
+                        height: 50,
+                        width: 50,
+                        backgroundColor: R.colors.PRIMARY_LIGHT,
+                      },
+                      pinCodeTextStyle: styles.pinCodeText,
+                    }}
+                    value={otp?.toString()}
+                  />
+                  {/* <ActivityIndicator
                     animating={true}
                     color={MD2Colors.red800}
                     size="large"
                   />
                   <Text style={styles.waitingText}>
                     Please wait while we verify your number
-                  </Text>
+                  </Text> */}
                 </>
               )}
               <View style={styles.buttonContainer}>
@@ -285,23 +310,23 @@ const LogInScreen = () => {
                     Resend OTP in {time} Seconds
                   </Text>
                 ) : otpEnabled ? (
-                  <TouchableOpacity onPress={() => handleVerifyOtp('7959')}>
+                  <TouchableOpacity onPress={() => handleOnSubmit('')}>
                     <Text style={styles.resend}>Resend OTP</Text>
                   </TouchableOpacity>
                 ) : null}
-                {!otpEnabled && (
-                  <Button
-                    title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
-                    onPress={
-                      otpEnabled ? () => handleVerifyOtp(otp) : handleOnSubmit
-                    }
-                    disabled={
-                      !otpEnabled ? phone.length !== 10 : otp.length !== 4
-                    }
-                    buttonStyle={styles.button}
-                    textStyle={styles.buttonText}
-                  />
-                )}
+                {/* {!otpEnabled && ( */}
+                <Button
+                  title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
+                  onPress={
+                    otpEnabled ? () => handleVerifyOtp(otp) : handleOnSubmit
+                  }
+                  disabled={
+                    !otpEnabled ? phone.length !== 10 : otp.length !== 4
+                  }
+                  buttonStyle={styles.button}
+                  textStyle={styles.buttonText}
+                />
+                {/* )} */}
               </View>
             </View>
             {!otpEnabled && (
@@ -414,6 +439,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
+  pinCodeText: {color: 'black'},
 });
 
 export default LogInScreen;

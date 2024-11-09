@@ -9,18 +9,19 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState, useContext} from 'react';
+import React, { useContext, useCallback, useMemo } from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import R from '../../resources/R';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
-import {useDispatch, useSelector} from 'react-redux';
-import {currentUserSelector} from '../../store/slices/user/user.slice';
-import {AuthContext} from '../../store/contexts/AuthContext';
+import { useSelector } from 'react-redux';
+import { currentUserSelector } from '../../store/slices/user/user.slice';
+import { AuthContext } from '../../store/contexts/AuthContext';
 
+// Static data for rendering options
 const DATA = [
   {
-    id: 1,
+    id: '1',
     icon: 'account-group-outline',
     title: 'Operations',
     screen: ScreensNameEnum.OPERATIONS_SCREEN,
@@ -28,7 +29,7 @@ const DATA = [
     image: require('../../assets/Images/icon1.png'),
   },
   {
-    id: 2,
+    id: '2',
     icon: 'badge-account',
     title: 'Admin',
     screen: ScreensNameEnum.OPERATIONS_SCREEN,
@@ -36,7 +37,7 @@ const DATA = [
     image: require('../../assets/Images/icon2.png'),
   },
   {
-    id: 3,
+    id: '3',
     icon: 'account-supervisor',
     title: 'Employee Directory',
     screen: ScreensNameEnum.EMPLOYEE_DIRECTORY_SCREEN,
@@ -44,7 +45,7 @@ const DATA = [
     image: require('../../assets/Images/icon3.png'),
   },
   {
-    id: 4,
+    id: '4',
     icon: 'calendar-month',
     title: 'Holiday',
     screen: ScreensNameEnum.OPERATIONS_SCREEN,
@@ -52,48 +53,43 @@ const DATA = [
     image: require('../../assets/Images/icon4.png'),
   },
   {
-    id: 5,
+    id: '5',
     icon: 'card-account-phone-outline',
     title: 'Help Desk',
-    screen: ScreensNameEnum.HELP_DESK_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+    screen: ScreensNameEnum.HELP_DESK_SCREEN,
     color: R.colors.SLATE_GRAY,
     image: require('../../assets/Images/icon4.png'),
   },
   {
-    id: 6,
+    id: '6',
     icon: 'handshake-outline',
     title: 'Grievance',
-    screen: ScreensNameEnum.GRIEVANCE_SCREEN, // ScreensNameEnum.APPRECIATION_SCREEN,
+    screen: ScreensNameEnum.GRIEVANCE_SCREEN,
     color: R.colors.SECONDARY,
     image: require('../../assets/Images/icon4.png'),
   },
 ];
 
-const HomeScreen = ({navigation}) => {
-  const dispatch = useDispatch();
+const HomeScreen = ({ navigation }) => {
   const authContext = useContext(AuthContext);
-  const [email, setEmail] = useState('');
-  const [modalVis, setModalVis] = useState(false);
   const user = useSelector(currentUserSelector);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      authContext.signOut();
+      await authContext.signOut();
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [authContext]);
 
-  const Item = ({item}) => (
-    <View style={styles.cardView}>
-      <Pressable
-        onPress={() => navigation.navigate(item.screen)}
-        style={styles.pressable}>
-        <Icon name={item.icon} size={40} color={item.color} />
-        <Text style={styles.cardTitle}>{item.title}</Text>
-      </Pressable>
-    </View>
+  // Memoized item renderer to avoid unnecessary re-renders
+  const renderItem = useCallback(
+    ({ item }) => <Item item={item} navigation={navigation} />,
+    [navigation]
   );
+
+  // Memoized key extractor for flatlist
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
 
   return (
     <ScreenWrapper header={false}>
@@ -104,13 +100,14 @@ const HomeScreen = ({navigation}) => {
       <ImageBackground
         source={require('../../assets/Images/mainbg.png')}
         resizeMode="stretch"
-        style={styles.container}>
+        style={styles.container}
+      >
         <View style={styles.header}>
           <View style={styles.userInfo}>
             <Image
               source={
                 user?.photo
-                  ? {uri: user.photo}
+                  ? { uri: user.photo }
                   : require('../../assets/Images/activeProfile.jpeg')
               }
               style={styles.userImage}
@@ -131,18 +128,35 @@ const HomeScreen = ({navigation}) => {
         <View style={styles.categoryView}>
           <FlatList
             data={DATA}
-            renderItem={({item}) => <Item item={item} />}
-            keyExtractor={item => item.id}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
             numColumns={3}
             columnWrapperStyle={styles.columnWrapper}
             contentContainerStyle={styles.contentContainer}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={Separator}
+            initialNumToRender={6} // Adjust based on screen size
           />
         </View>
       </ImageBackground>
     </ScreenWrapper>
   );
 };
+
+// Separated memoized component to prevent unnecessary re-renders
+const Item = React.memo(({ item, navigation }) => (
+  <View style={styles.cardView}>
+    <Pressable
+      onPress={() => navigation.navigate(item.screen)}
+      style={styles.pressable}
+    >
+      <Icon name={item.icon} size={40} color={item.color} />
+      <Text style={styles.cardTitle}>{item.title}</Text>
+    </Pressable>
+  </View>
+));
+
+// Separated memoized component for separator
+const Separator = React.memo(() => <View style={styles.separator} />);
 
 export default HomeScreen;
 
@@ -179,7 +193,7 @@ const styles = StyleSheet.create({
   userType: {
     color: R.colors.DARKGRAY,
     fontSize: R.fontSize.L,
-    textTransform:"capitalize"
+    textTransform: 'capitalize',
   },
   categoryView: {
     flex: 1,

@@ -15,17 +15,13 @@ import {Picker} from '@react-native-picker/picker';
 import UserApi from '../../datalib/services/user.api';
 import Button from '../../library/commons/Button';
 
-const LAFScreen1 = () => {
+const LAFScreen1 = props => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
-  const [phone, setPhone] = useState('8265805176');
-  const [product, setProduct] = useState(null);
-  const [amountApplied, setAmountApplied] = useState(null);
-  const [durationOfLoan, setDurationOfLoan] = useState('26 Weeks');
-  const [frequency, setFrequency] = useState(null);
-  const [loanPurpose, setLoanPurpose] = useState(null);
-  const [insurance, setInsurance] = useState(null);
+  const [phone, setPhone] = useState('');
+  const {userData, coAppData} = props.route?.params?.data;
+  // console.log(userData);
   //new States
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
@@ -57,19 +53,46 @@ const LAFScreen1 = () => {
   const noOfDependentRef = useRef(null);
   const occupationRef = useRef(null);
   useEffect(() => {
-    fetchLoanType();
-  }, []);
+    if (userData) {
+      const {
+        name,
+        dob,
+        address,
+        aadharNo,
+        panNo,
+        voterId,
+        maskedAdharNumber,
+        phone,
+        relation,
+        pincode,
+        state,
+        careOf,
+      } = userData;
+      const names = name?.split(' ');
+      if (names?.length == 2) {
+        setFirstName(names[0]);
+        setLastName(names[1]);
+      }
+      if (names?.length == 3) {
+        setFirstName(names[0]);
+        setMiddleName(names[1]);
+        setLastName(names[2]);
+      }
+      if (names?.length == 1) {
+        setFirstName(names[0]);
+      }
 
-  const fetchLoanType = async () => {
-    try {
-      const res = await new UserApi().fetchLoanType();
-      console.log('res', res);
-    } catch (error) {
-      console.log(error);
+      setDob(dob);
+      setPhone(phone);
+      setFatherName(careOf?.split(':')[1]);
+      setPincode(pincode);
+      setState(state);
+      setAddress(address);
     }
-  };
+  }, []);
+  console.log(firstName);
   return (
-    <ScreenWrapper header={false} backDisabled>
+    <ScreenWrapper>
       <Text
         style={[
           styles.tagline,
@@ -95,7 +118,7 @@ const LAFScreen1 = () => {
                 padding: 5,
               },
             ]}>
-           Personal and Employment Details 
+            Personal and Employment Details
           </Text>
           <View style={styles.cardView}>
             <View style={styles.viewInput}>
@@ -368,8 +391,9 @@ const LAFScreen1 = () => {
             <View style={styles.viewInput}>
               <Text style={styles.label}>Address*</Text>
               <TextInput
-                value={address}
+                value={address} //?.length <=80? address:address.substring(0,80)+"..."
                 onChangeText={text => setAddress(text)}
+                multiline
                 style={[
                   styles.input,
                   {
@@ -378,6 +402,8 @@ const LAFScreen1 = () => {
                         ? R.colors.primary
                         : R.colors.PRIMARI_DARK,
                     borderBottomWidth: focused === 'address' ? 1.5 : 1,
+                    minHeight: 80,
+                    maxHeight: 120,
                   },
                 ]}
                 onFocus={() => setFocused('address')}
@@ -527,7 +553,11 @@ const LAFScreen1 = () => {
               margin: 10,
             }}
             textStyle={{fontWeight: 'bold'}}
-            onPress={()=>navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN2)}
+            onPress={() =>
+              navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN2, {
+                data: props.route?.params?.data,
+              })
+            }
           />
         </ScrollView>
       </View>
@@ -561,6 +591,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     justifyContent: 'flex-end',
     marginVertical: 5,
+    alignItems: 'center',
   },
   labels: {
     color: R.colors.PRIMARI_DARK,

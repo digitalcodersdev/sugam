@@ -573,7 +573,7 @@ const createStyles = colorScheme =>
       borderRadius: 6,
       marginVertical: 10,
       padding: 5,
-      width: '70%',
+      width: '75%',
       alignSelf: 'center',
       fontSize: R.fontSize.XL
     },

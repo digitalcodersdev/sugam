@@ -1,20 +1,18 @@
 import {
   View,
   Text,
-  ImageBackground,
   TextInput,
   StyleSheet,
   Pressable,
   Alert,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import {useNavigation} from '@react-navigation/native';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import R from '../../resources/R';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Button from '../../library/commons/Button';
-import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
 import {Picker} from '@react-native-picker/picker';
@@ -22,8 +20,19 @@ import UserApi from '../../datalib/services/user.api';
 import {useSelector} from 'react-redux';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import Loader from '../../library/commons/Loader';
+import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
-const LeaveScreen = () => {
+const leaveTypes = {
+  'Casual Leave': 'CL',
+  'Comp Off': 'CompOff',
+  'Earned Leave': 'EL',
+  'Maternity Leave': 'ML',
+  'Paternity Leave': 'PL',
+  'Sick Leave': 'SL',
+};
+
+const LeaveScreen = ({route}) => {
+  const {leaveType} = route?.params;
   const user = useSelector(currentUserSelector);
   const navigation = useNavigation();
   const [endDate, setEndDate] = useState(new Date());
@@ -31,106 +40,123 @@ const LeaveScreen = () => {
   const [aditional, setAditional] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [openStartDate, setStartDateOpen] = useState(false);
-  const [type, setType] = useState('1');
-  const [duration, setDuration] = useState('full_day');
+  const [duration, setDuration] = useState(null);
   const [loading, setLoading] = useState(false);
-  console.log('______________', user);
+  const [leaveTypeData, setLeaveTypeData] = useState([]);
+  useEffect(() => {
+    if (
+      duration == 'half_day' &&
+      moment(startDate).format('MM-DD-YYYY') !=
+        moment(endDate).format('MM-DD-YYYY')
+    ) {
+      Alert.alert(
+        'You can only apply Half Day for the same Start Date and  End Date',
+      );
+      setDuration('full_day');
+    }
+  }, [startDate, endDate, duration]);
+
+  useEffect(() => {
+    // fetchLeaveTypes();
+  }, []);
+
+  // const fetchLeaveTypes = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await new UserApi().getLeaveTypes();
+  //     if (response) {
+  //       setLeaveTypeData(response.data);
+  //     }
+  //     setLoading(false);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setLoading(false);
+  //   }
+  // };
+
+  const validate = () => {
+    let valid = true;
+    if (duration == null) {
+      valid = false;
+      Alert.alert('Please Select Leave Duration');
+      return valid;
+    }
+    if (aditional?.length < 10) {
+      valid = false;
+      Alert.alert(
+        'Please give Additional Information (Minimum 10 characters required)',
+      );
+      return valid;
+    }
+    return valid;
+  };
+
   const handleLeave = async () => {
     try {
       setLoading(true);
-      const data = {
-        leave_type_id: type,
-        duration: duration,
-        reason: aditional,
-        status: 0,
-        user_id: user?.id,
-        leave_date: moment(new Date()).format('YYYY-MM-DD'),
-      };
-      const res = await new UserApi().applyLeave(data);
-      if (res) {
-        Alert.alert('Leave Applied Successfully');
-        setAditional('');
-        setLoading(false);
+      if (validate()) {
+        const payload = {
+          data: {
+            StaffID: user?.staffid,
+            StartFrom: startDate,
+            EndTo: endDate,
+            Remarks: aditional,
+            LeaveType: leaveTypes[leaveType],
+            LeaveAs: duration,
+            Month: startDate.getMonth() + 1,
+            Year: startDate?.getFullYear(),
+          },
+        };
+        const res = await new UserApi().applyLeave(payload);
+        if (res) {
+          Alert.alert('Leave Applied Successfully');
+          setAditional('');
+          navigation.navigate(ScreensNameEnum.APPLIED_LEAVES_SCREENS);
+        }
       }
-      // console.log('------', res);
+      setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
     }
   };
-  // console.log('___', duration);
+
   return (
     <ScreenWrapper header={false}>
-      <ChildScreensHeader
-        style={{backgroundColor: R.colors.PRIMARY_LIGHT}}
-        screenName={'Create a Leave Plan'}
-      />
-      <View style={{backgroundColor: R.colors.backgroundColor, flex: 1}}>
-        <View
-          style={{
-            backgroundColor: R.colors.PRIMARY_LIGHT,
-            margin: 10,
-            borderRadius: 1,
-          }}>
-          <View style={[styles.TextInput]}>
-            <Picker
-              // style={{
-              //   color: R.colors.PRIMARI_DARK,
-              //   backgroundColor: R.colors.PRIMARY_LIGHT,
+      <ChildScreensHeader screenName={'Create a Leave Plan'} />
+      <View style={styles.container}>
+        <View style={styles.formContainer}>
+          {/* Leave Type Label */}
+          <Text style={styles.label}>Leave Type</Text>
+          <TextInput
+            style={styles.leaveType}
+            value={leaveType}
+            editable={false}
+          />
 
-              //   alignSelf: 'flex-end',
-              // }}
-              itemStyle={{fontSize: 20}}
-              selectedValue={type}
-              enabled={true}
-              onValueChange={(itemValue, itemIndex) => {
-                setType(itemValue);
-              }}>
-              {/* {stateData &&
-                      stateData?.map((itemValue, i) => ( */}
-              <Picker.Item label={'Casual Leave'} value={'1'} />
-              <Picker.Item label={'Earned Leave'} value={'2'} />
-              {/* ))} */}
-            </Picker>
-          </View>
-          <View style={[styles.TextInput]}>
-            <Picker
-              // style={{
-              //   color: R.colors.PRIMARI_DARK,
-              //   backgroundColor: R.colors.PRIMARY_LIGHT,
+          {/* Duration Label */}
+          <Text style={styles.label}>Leave Duration</Text>
+          <Picker
+            style={styles.picker}
+            selectedValue={duration}
+            onValueChange={itemValue => setDuration(itemValue)}>
+            <Picker.Item label="-- Select Duration --" value={null} />
+            <Picker.Item label="Full Day" value="full_day" />
+            <Picker.Item label="Half Day" value="half_day" />
+          </Picker>
 
-              //   alignSelf: 'flex-end',
-              // }}
-              itemStyle={{fontSize: 20}}
-              selectedValue={duration}
-              enabled={true}
-              onValueChange={(itemValue, itemIndex) => {
-                setDuration(itemValue);
-              }}>
-              {/* {stateData &&
-                      stateData?.map((itemValue, i) => ( */}
-              <Picker.Item label={'Full Day'} value={'full_day'} />
-              <Picker.Item label={'Half Day'} value={'half_day'} />
-              <Picker.Item label={'Short Leave'} value={'short_leave'} />
-              {/* ))} */}
-            </Picker>
-          </View>
-          <View style={styles.TextInput}>
-            <Text
-              style={{
-                paddingLeft: 10,
-                height: 50,
-                textAlign: 'left',
-                paddingTop: 10,
-              }}>
+          {/* Start Date Label */}
+          <Text style={styles.label}>Start Date</Text>
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateText}>
               {moment(startDate).format('DD-MM-YYYY')}
             </Text>
             <Icon
-              onPress={() => setStartDateOpen(true)}
               name="calendar-blank-outline"
               size={25}
               color={R.colors.PRIMARI_DARK}
-              style={{position: 'absolute', padding: 10, right: 10}}
+              style={styles.icon}
+              onPress={() => setStartDateOpen(true)}
             />
             <DatePicker
               modal
@@ -139,30 +165,28 @@ const LeaveScreen = () => {
               onConfirm={date => {
                 setStartDateOpen(false);
                 setStartDate(date);
+                if (endDate < date) {
+                  setEndDate(date)
+                }
               }}
-              onCancel={() => {
-                setStartDateOpen(false);
-              }}
+              onCancel={() => setStartDateOpen(false)}
               mode="date"
               minimumDate={new Date()}
             />
           </View>
-          <View style={[styles.TextInput, {}]}>
-            <Text
-              style={{
-                paddingLeft: 10,
-                height: 50,
-                textAlign: 'left',
-                paddingTop: 10,
-              }}>
+
+          {/* End Date Label */}
+          <Text style={styles.label}>End Date</Text>
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateText}>
               {moment(endDate).format('DD-MM-YYYY')}
             </Text>
             <Icon
-              onPress={() => setEndDateopen(true)}
-              style={{position: 'absolute', padding: 10, right: 10}}
               name="calendar-blank-outline"
               size={25}
               color={R.colors.primary}
+              style={styles.icon}
+              onPress={() => setEndDateopen(true)}
             />
             <DatePicker
               modal
@@ -172,56 +196,104 @@ const LeaveScreen = () => {
                 setEndDateopen(false);
                 setEndDate(date);
               }}
-              onCancel={() => {
-                setEndDateopen(false);
-              }}
+              minimumDate={startDate}
+              onCancel={() => setEndDateopen(false)}
               mode="date"
             />
           </View>
-          <View style={[styles.TextInput, {height: 100, borderRadius: 10}]}>
-            <TextInput
-              style={{paddingLeft: 10}}
-              value={aditional}
-              onChangeText={setAditional}
-              placeholder="Additional Information "
-           
-            />
-          </View>
 
+          {/* Additional Information Label */}
+          <Text style={styles.label}>Additional Information</Text>
+          <TextInput
+            style={styles.additionalInfo}
+            value={aditional}
+            onChangeText={setAditional}
+            placeholder="Provide a reason or any other relevant details"
+            multiline
+          />
+
+          {/* Submit Button */}
           <Button
-            // onPress={() => navigation.navigate(ScreensNameEnum.SUCCESS_SCREEN)}
-            onPress={() => {
-              if (aditional?.length > 1) {
-                handleLeave();
-              } else {
-                Alert.alert('Additional information is required');
-              }
-            }}
-            title="Submit"
-            buttonStyle={{
-              alignSelf: 'center',
-              width: '90%',
-              marginTop: 30,
-              backgroundColor: '#4dc8d8',
-            }}
-            textStyle={{fontWeight: 'bold'}}
+            title="Apply"
+            onPress={handleLeave}
+            buttonStyle={styles.button}
+            textStyle={styles.buttonText}
           />
         </View>
       </View>
-      <Loader loading={loading} />
+      <Loader loading={loading} message={'Please wait...'} />
     </ScreenWrapper>
   );
 };
 
 export default LeaveScreen;
+
 const styles = StyleSheet.create({
-  TextInput: {
-    width: '90%',
-    borderWidth: 0.5,
+  container: {
+    flex: 1,
+    backgroundColor: R.colors.backgroundColor,
+  },
+  formContainer: {
+    margin: 20,
+    padding: 20,
     borderRadius: 10,
-    backgroundColor: R.colors.CGRAY,
-    textAlign: 'left',
-    alignSelf: 'center',
-    marginTop: 30,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 5},
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  leaveType: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: R.colors.PRIMARI_DARK,
+    color:R.colors.DARKGRAY
+  },
+  picker: {
+    marginBottom: 20,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  dateText: {
+    fontSize: 16,
+    color: '#555',
+    flex: 1,
+  },
+  icon: {
+    marginLeft: 10,
+  },
+  additionalInfo: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 10,
+    textAlignVertical: 'top',
+    height: 100,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#2980B9',
+    paddingVertical: 15,
+    borderRadius: 10,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 10,
+    color: '#555',
   },
 });

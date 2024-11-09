@@ -28,12 +28,23 @@ import moment from 'moment';
 import env from '../../../env';
 import Loader from '../../library/commons/Loader';
 import DatePicker from 'react-native-date-picker';
+import {Calendar, LocaleConfig} from 'react-native-calendars';
+// import {TimerPicker} from 'react-native-timer-picker';
 const DATA = {
   Monday: '1',
   Tuesday: '2',
   Wednesday: '3',
   Thursday: '4',
   Friday: '5',
+  Saturday: '6',
+};
+const DATA_ = {
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
 };
 
 const CreateNewCenter = ({}) => {
@@ -60,8 +71,8 @@ const CreateNewCenter = ({}) => {
   const contactNameRef = useRef();
   const contactNoRef = useRef();
   const centerPlaceRef = useRef();
+  const [selectedDays, setSelectedDays] = useState({});
   const user = useSelector(currentUserSelector);
-  console.log(meetingTime);
 
   const showTimePicker = () => {
     setTimePickerVisibility(true);
@@ -92,6 +103,7 @@ const CreateNewCenter = ({}) => {
         },
       };
       const res = await new UserApi().checkCenterName(payload);
+      console.log(res, 'res');
       if (res && res?.length >= 1) {
         if (res?.length == 1) {
           setCenterName(centerName + '-' + 1);
@@ -99,6 +111,7 @@ const CreateNewCenter = ({}) => {
         } else {
           const name = res[0]?.cename?.split('-');
           const count = name[name?.length - 1];
+
           const finalCount = parseInt(count) + 1;
           setCenterName(res[0]?.cename?.replace(`-${count}`, '-' + finalCount));
           setCenterNameChecked(true);
@@ -110,6 +123,71 @@ const CreateNewCenter = ({}) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (meetingDay !== null) {
+      async function getDayssForNext28Days() {
+        const today = new Date();
+        const calculatedDays = {};
+        const daysToCheck = 29; // Total days to check
+
+        for (let i = 1; i < daysToCheck; i++) {
+          // debugger;
+          const currentDate = new Date();
+          currentDate.setDate(today.getDate() + i);
+          // console.log(
+          //   'currentDate.getDay() === DATA[meetingDay]',
+          //   currentDate.getDay(),
+          //   DATA[meetingDay],
+          // );
+          if (currentDate.getDay() == DATA[meetingDay]) {
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(currentDate.getDate()).padStart(2, '0');
+
+            const formattedDate = `${year}-${month}-${day}`;
+            calculatedDays[formattedDate] = {
+              selected: true,
+              marked: true,
+              selectedColor: R.colors.BLUE,
+            };
+          }
+        }
+        // console.log(calculatedDays, 'calculatedDays');
+        return calculatedDays;
+      }
+
+      // Await the result of the asynchronous function
+      async function fetchDates() {
+        const dates = await getDayssForNext28Days(); // Await the result here
+        setSelectedDays(dates);
+      }
+
+      fetchDates(); // Call the async function inside useEffect
+    }
+  }, [meetingDay]);
+
+  // const handleDateChange = date => {
+  //   if (
+  //     meetingDate &&
+  //     moment(date).format('MM-DD-YYYY') !=
+  //       moment(new Date()).format('MM-DD-YYYY')
+  //   ) {
+  //     const selectedDay =
+  //       DATA_[new Date(moment(date).format('MM-DD-YYYY')).getDay()]; // Get day name based on numeric value
+  //     if (meetingDay == null) {
+  //       setMeetingDay(selectedDay); // Set the day name
+  //     } else {
+  //       console.log('meetingDay != selectedDay', meetingDay, selectedDay);
+  //       if (meetingDay != selectedDay) {
+  //         Alert.alert(
+  //           `${moment(date).format('MM-DD-YYYY')} is not ${meetingDay}`,
+  //         );
+  //         setMeetingDate(new Date());
+  //       }
+  //     }
+  //   }
+  // };
 
   useEffect(() => {
     if (user) {
@@ -151,7 +229,7 @@ const CreateNewCenter = ({}) => {
         branchId: user?.branchid,
       });
       if (res) {
-        setCenterNo(res.data + 1);
+        setCenterNo(parseInt(res.data) + 1);
       }
     } catch (error) {
       console.log(error);
@@ -159,10 +237,26 @@ const CreateNewCenter = ({}) => {
     }
   };
 
+  // function extractStateAndPincode(address) {
+  //   // Regular expression to match the state and pincode pattern
+  //   const stateRegex = /,\s*([a-zA-Z\s]+)\s*\d{6},/; // matches the state before the pincode
+
+  //   const stateMatch = address.match(stateRegex);
+
+  //   const state = stateMatch ? stateMatch[1].trim() : null;
+
+  //   return state;
+  // }
+  const today = new Date();
+  const tomorrow = new Date(today);
+  const afterOneMonth = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  afterOneMonth.setDate(today.getDate() + 28);
+
   const fetchGeolocation = async () => {
     try {
       setLoading(true);
-      const API_KEY = env.GOOGLE_MAP_API_KEY;
+      const API_KEY = 'AIzaSyBsc_32ip44ZxiwytqSxKdczopDmUAFpow';
       Geolocation.getCurrentPosition(
         async position => {
           const {latitude, longitude} = position.coords;
@@ -171,8 +265,13 @@ const CreateNewCenter = ({}) => {
           const res = await axios.get(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`,
           );
+          //            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${25.3618028},${83.0580068}&key=${API_KEY}`,
           const fetchedAddress = res?.data?.results[0]?.formatted_address;
-
+          const shortAddressRegex = /,\s*([^,]+),/;
+          const shortAddressMatch = fetchedAddress.match(shortAddressRegex);
+          const shortAddress = shortAddressMatch
+            ? shortAddressMatch[1].trim()
+            : 'Unknown Locality';
           let add = '';
           for (
             let i = 0;
@@ -193,13 +292,12 @@ const CreateNewCenter = ({}) => {
               add = add + ' ' + types?.long_name;
             }
           }
-          console.log('add', add);
+          // console.log('add', res);
           const pincode = fetchedAddress.match(/\b\d{6}\b/);
           setCenterAddress(fetchedAddress);
-          const area = fetchedAddress.split(',');
-
-          setCenterName(add?.trim());
-          //   setState(res?.data?.results[11]?.address_components[0]?.long_name);
+          // console.log('pincode', pincode);
+          setCenterName(add ? add?.trim() : shortAddress);
+          // setState(extractStateAndPincode(fetchedAddress));
           setPincode(pincode[0]);
         },
         error => {
@@ -220,7 +318,7 @@ const CreateNewCenter = ({}) => {
     let valid = true;
     if (
       moment(meetingDate).format('MM-DD-YYYY') ==
-      moment(meetingDate).format('MM-DD-YYYY')
+      moment(new Date()).format('MM-DD-YYYY')
     ) {
       Toast.show('Please Select Meeting Date ', Toast.SHORT, Toast.TOP);
       valid = false;
@@ -231,9 +329,16 @@ const CreateNewCenter = ({}) => {
       valid = false;
       return valid;
     }
+
     if (!centerName?.trim().length) {
       Toast.show('Please Enter Center Name ', Toast.SHORT, Toast.TOP);
       valid = false;
+      return valid;
+    }
+    if (!centerPlace?.trim().length) {
+      Toast.show('Please Enter Center Place', Toast.SHORT, Toast.TOP);
+      valid = false;
+      centerPlaceRef.current.focus();
       return valid;
     }
     if (!contactName?.trim().length) {
@@ -248,12 +353,8 @@ const CreateNewCenter = ({}) => {
       contactNoRef.current.focus();
       return valid;
     }
-    if (!centerPlace?.trim().length) {
-      Toast.show('Please Enter Center Place', Toast.SHORT, Toast.TOP);
-      valid = false;
-      centerPlaceRef.current.focus();
-      return valid;
-    }
+
+    // console.log(meetingDay);
     if (!meetingDay?.trim().length) {
       Toast.show('Please Select Meeting Day', Toast.SHORT, Toast.TOP);
       valid = false;
@@ -277,6 +378,16 @@ const CreateNewCenter = ({}) => {
     return valid;
   };
 
+  const handleDaySelect = itemValue => {
+    if (DATA_[new Date(meetingDate).getDay()] == itemValue) {
+      setMeetingDay(itemValue);
+    } else {
+      Alert.alert(
+        `${moment(meetingDate).format('DD-MMM-YYYY')} is not ${itemValue}`,
+      );
+    }
+  };
+
   const validateAndSubmit = async () => {
     try {
       setLoading(true);
@@ -292,7 +403,7 @@ const CreateNewCenter = ({}) => {
           cename: centerName,
           staffid: user?.staffid,
           ceaddress: centerAddress,
-          cedate: moment(new Date()).format('YYYY-MM-DD'),
+          cedate: meetingDate, // moment(meetingDate).format('DD MMM YYYY'),
           cetime: meetingTime?.toLocaleTimeString(),
           ceday: meetingDay,
           mobile: contactNo,
@@ -302,12 +413,18 @@ const CreateNewCenter = ({}) => {
           DateNextMeeting: null, //moment(futureDate).format('YYYY-MM-DD')
           Pincode: pincode,
           LeaderName: contactName,
+          centerPlace: centerPlace,
         };
         const res = await new UserApi().createCenter(data);
         if (res && res.success) {
           fetchMaxCenterNo();
           navigation.goBack();
           Toast.show('Center Created Successfully', Toast.TOP, Toast.SHORT);
+        } else {
+          Alert.alert(`Time slot ${res?.data?.cetime} already assigned to Center No ${res?.data?.centreid}. 
+          Please Change Meeting Time`);
+          // fetchMaxCenterNo();
+          // Toast.show('Center Created Successfully', Toast.TOP, Toast.SHORT);
         }
       }
       setLoading(false);
@@ -371,6 +488,28 @@ const CreateNewCenter = ({}) => {
           </View>
           <View style={{marginBottom: 10}}>
             <TextInput
+              label="Center Place*"
+              value={centerPlace}
+              onChangeText={setCenterPlace}
+              mode="flat"
+              ref={centerPlaceRef}
+              style={[
+                styles.input,
+                {
+                  borderBottomWidth: focused === 'centerPlace' ? 1.5 : 1,
+                },
+              ]}
+              activeUnderlineColor={
+                focused === 'centerPlace'
+                  ? R.colors.primary
+                  : R.colors.PRIMARI_DARK
+              }
+              onFocus={() => setFocused('centerPlace')}
+              onBlur={() => setFocused(null)}
+            />
+          </View>
+          <View style={{marginBottom: 10}}>
+            <TextInput
               label="Contact Name*"
               value={contactName}
               onChangeText={setContactName}
@@ -415,32 +554,21 @@ const CreateNewCenter = ({}) => {
               keyboardType="phone-pad"
             />
           </View>
-          <View style={{marginBottom: 10}}>
-            <TextInput
-              label="Center Place*"
-              value={centerPlace}
-              onChangeText={setCenterPlace}
-              mode="flat"
-              ref={centerPlaceRef}
-              style={[
-                styles.input,
-                {
-                  borderBottomWidth: focused === 'centerPlace' ? 1.5 : 1,
-                },
-              ]}
-              activeUnderlineColor={
-                focused === 'centerPlace'
-                  ? R.colors.primary
-                  : R.colors.PRIMARI_DARK
-              }
-              onFocus={() => setFocused('centerPlace')}
-              onBlur={() => setFocused(null)}
-            />
-          </View>
+
           <View style={[pickerSelectStyles.viewInput]}>
             <Picker
               selectedValue={meetingDay}
-              onValueChange={(itemValue, itemIndex) => setMeetingDay(itemValue)}
+              onValueChange={(itemValue, itemIndex) => {
+                if (
+                  moment(new Date()).format('DD/MM/YYYY') ==
+                  moment(meetingDate).format('DD/MM/YYYY')
+                ) {
+                  setMeetingDay(itemValue);
+                } else {
+                  handleDaySelect(itemValue);
+                  // Alert.alert('Please select Meeting Day First');
+                }
+              }}
               mode="dropdown"
               style={[
                 styles.picker,
@@ -478,35 +606,60 @@ const CreateNewCenter = ({}) => {
                   ? '-- Select Meeting Date --'
                   : moment(meetingDate).format('DD-MMM-YYYY')}
               </Text>
-              <DatePicker
-                modal
-                open={open}
-                mode="date"
-                date={meetingDate}
-                onConfirm={date => {
-                  setOpen(false);
-                  setMeetingDate(date);
-                }}
-                onCancel={() => {
-                  setOpen(false);
-                }}
-                minimumDate={new Date()}
-              />
+              {open && (
+                <Calendar
+                  style={{
+                    borderWidth: 1,
+                    borderColor: 'gray',
+                    height: 350,
+                  }}
+                  onDayPress={day => {
+                    if (moment(new Date(day?.dateString)).day() === 0) {
+                      Alert.alert('It is holiday on Sunday');
+                      return;
+                    }
+                    if (
+                      moment(new Date(day?.dateString)).format('MM-DD-YYYY') !==
+                      moment(new Date()).format('MM-DD-YYYY')
+                    ) {
+                      const selectedDay =
+                        DATA_[moment(new Date(day?.dateString)).day()]; // Get day name directly using moment
+                      if (meetingDay == null) {
+                        setMeetingDay(selectedDay); // Set the day name
+                        setOpen(false);
+                      } else {
+                        if (meetingDay != selectedDay) {
+                          Alert.alert(
+                            `${moment(new Date(day?.dateString)).format(
+                              'MM-DD-YYYY',
+                            )} is not ${meetingDay}. It is ${selectedDay} `,
+                          );
+                          setMeetingDate(new Date());
+                        } else {
+                          setMeetingDate(new Date(day?.dateString));
+                          setOpen(false);
+                        }
+                      }
+                    }
+                  }}
+                  minDate={moment(tomorrow).format('YYYY-MM-DD')}
+                  maxDate={moment(afterOneMonth).format('YYYY-MM-DD')}
+                  markedDates={selectedDays}
+                />
+              )}
             </Pressable>
           </View>
-     
+
           <View style={{marginBottom: 10}}>
             <Pressable onPress={showTimePicker} style={styles.input}>
               <Text
                 style={[
-                  //   styles.input,
                   {
                     height: 60,
                     paddingBottom: 10,
                     fontSize: 16,
                     color: R.colors.PRIMARI_DARK,
                     textAlignVertical: 'center',
-                    // borderWidth:1
                   },
                 ]}>
                 {'    Meeting Time* :  '}
@@ -520,6 +673,7 @@ const CreateNewCenter = ({}) => {
               mode="time"
               onConfirm={handleTimeConfirm}
               onCancel={hideTimePicker}
+              display="inline"
               customStyles={{
                 datePicker: {
                   backgroundColor: '#ccc', // Set your desired background color
@@ -592,7 +746,7 @@ const CreateNewCenter = ({}) => {
           textStyle={{fontWeight: 'bold'}}
         />
       </View>
-      <Loader loading={loading} message={'Fetching Current Location'} />
+      <Loader loading={loading} message={'please wait'} />
     </ScreenWrapper>
   );
 };
@@ -618,6 +772,27 @@ const styles = StyleSheet.create({
     color: R.colors.PRIMARI_DARK,
     marginRight: 10,
     alignSelf: 'left',
+  },
+  pickerStyle: {
+    backgroundColor: '#ddd',
+    borderRadius: 10,
+  },
+  confirmTextStyle: {
+    color: '#000',
+    fontSize: 16,
+  },
+  cancelTextStyle: {
+    color: '#ff0000',
+    fontSize: 16,
+  },
+  titleTextStyle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  timeText: {
+    marginTop: 20,
+    fontSize: 18,
+    color: '#000',
   },
 });
 

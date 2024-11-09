@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, Pressable} from 'react-native';
-import React from 'react';
+import React, {useCallback} from 'react';
 import R from '../../resources/R';
 import CircularProgress from '../../components/CircularProgress';
 import {useNavigation} from '@react-navigation/native';
@@ -7,11 +7,24 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
 const CollectionItem = ({item}) => {
   const navigation = useNavigation();
+  console.log('item', item);
+  const percentage = useCallback(
+    () =>
+      (parseInt(item?.Coll_Amount == null ? 0:item?.Coll_Amount) /
+        parseInt(item?.Due != null ? item?.Due : 0)) *
+      100,
+    [item?.Coll_Amount, item?.Due],
+  );
+  const {Center_Time} = item;
+  const res = parseInt(Center_Time.split(':')[0]);
+  const time = `${Center_Time?.substring(0, 5)}${res < 12 ? ' AM' : ' PM'}`;
   return (
     <Pressable
       style={styles.item}
       onPress={() =>
-        navigation.navigate(ScreensNameEnum.CENTER_COLECTION_SCREEN)
+        navigation.navigate(ScreensNameEnum.CENTER_COLECTION_SCREEN, {
+          centerData: {...item, percentage: percentage(), Meeting_Time: time},
+        })
       }>
       <View style={{flexDirection: 'row'}}>
         <Text
@@ -21,7 +34,7 @@ const CollectionItem = ({item}) => {
             flex: 1,
             fontSize: R.fontSize.M,
           }}>
-          Center : {item.center}
+          Center : {item.Centerid}
         </Text>
         <Text
           style={{
@@ -30,30 +43,30 @@ const CollectionItem = ({item}) => {
             flex: 1,
             fontSize: R.fontSize.M,
           }}>
-          Center Time : {item.time}
+          Center Time : {time}
         </Text>
-        <Text style={styles.uplaod}>Upload</Text>
+        {/* <Text style={styles.uplaod}>Upload</Text> */}
       </View>
       <View style={{flexDirection: 'row'}}>
         <CircularProgress
-          percentage={item?.percentage}
+          percentage={percentage().toFixed(2)}
           fillColor={R.colors.GREEN}
           backgroundColor={R.colors.LIGHTGRAY}
         />
         <View style={styles.view}>
           <Text style={styles.label}>Target</Text>
-          <Text style={styles.value}>{item?.target}</Text>
+          <Text style={styles.value}>₹ {item?.Due ? item?.Due:0}</Text>
         </View>
         <View style={styles.view}>
           <Text style={styles.label}>Received</Text>
           <Text style={[styles.value, {color: R.colors.GREEN}]}>
-            {item?.received}
+            ₹ {item?.Coll_Amount ? item?.Coll_Amount:0}
           </Text>
         </View>
         <View style={styles.view}>
           <Text style={styles.label}>Balance</Text>
           <Text style={[styles.value, {color: R.colors.primary}]}>
-            {item?.balance}
+            ₹ {item?.Due  ? item.Due :0 - item?.Coll_Amount ? item?.Coll_Amount:0}
           </Text>
         </View>
       </View>

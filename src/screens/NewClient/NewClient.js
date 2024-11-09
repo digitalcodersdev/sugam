@@ -1,4 +1,12 @@
-import {StyleSheet, Text, View, FlatList, Pressable} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Pressable,
+  TextInput,
+  Platform,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -6,7 +14,6 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from '../../resources/R';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import {useNavigation} from '@react-navigation/native';
-import {TextInput} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
 import {getCentres} from '../../store/actions/userActions';
 import {centresSelector} from '../../store/slices/user/user.slice';
@@ -19,7 +26,7 @@ const NewClient = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-
+console.log(centre);
   useEffect(() => {
     fetchCentresData();
   }, []);
@@ -50,69 +57,67 @@ const NewClient = () => {
   };
 
   const Item = ({item, index}) => (
-    <View style={[styles.cardView, {marginTop: index === 0 ? 0 : 20}]}>
-      <Pressable
-        onPress={() =>
-          navigation.navigate(ScreensNameEnum.CLIENT_PHONE_VERIFY, {
-            center: item,
-          })
-        }
-        style={{
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-        <View style={styles.view}>
-          <Text style={styles.label}>Center Name:</Text>
-          <Text style={styles.value}>{item?.cename}</Text>
-        </View>
-        <View style={styles.view}>
-          <Text style={styles.label}>Contact Number :</Text>
-          <Text style={styles.value}>{item?.mobile}</Text>
-        </View>
-        <View style={styles.view}>
-          <Text style={styles.label}>Address :</Text>
-          <Text style={styles.value}>
-            {item?.ceaddress?.length >= 60
-              ? `${item?.ceaddress?.slice(0, 60)}... `
-              : item?.ceaddress}
-          </Text>
-        </View>
-        <View style={styles.view}>
-          <Text style={styles.label}>Centre No :</Text>
-          <Text style={styles.value}>{item?.centreid}</Text>
-        </View>
-      </Pressable>
-    </View>
+    <Pressable
+      onPress={() =>
+        navigation.navigate(ScreensNameEnum.CLIENT_PHONE_VERIFY, {
+          center: item,
+        })
+      }
+      style={[styles.cardView, {marginTop: index === 0 ? 0 : 20}]}>
+      <View style={styles.view}>
+        <Text style={styles.label}>Centre No :</Text>
+        <Text style={styles.value}>{item?.centreid}</Text>
+      </View>
+      <View style={styles.view}>
+        <Text style={styles.label}>Center Name:</Text>
+        <Text style={styles.value}>{item?.cename}</Text>
+      </View>
+      <View style={styles.view}>
+        <Text style={styles.label}>Center Place:</Text>
+        <Text style={styles.value}>{item?.CenterPlace}</Text>
+      </View>
+      <View style={styles.view}>
+        <Text style={styles.label}>Contact Number :</Text>
+        <Text style={styles.value}>{item?.mobile}</Text>
+      </View>
+      <View style={styles.view}>
+        <Text style={styles.label}>Address :</Text>
+        <Text style={styles.value}>
+          {item?.ceaddress?.length >= 60
+            ? `${item?.ceaddress?.slice(0, 60)}... `
+            : item?.ceaddress}
+        </Text>
+      </View>
+    </Pressable>
   );
 
   return (
     <ScreenWrapper header={false}>
       <ChildScreensHeader screenName={'New Client Enrollment'} />
-      <View style={styles.categoryView}>
+      <View style={styles.container}>
         <View style={styles.searchView}>
           <TextInput
             value={search}
             onChangeText={setSearch}
             style={styles.searchInput}
-            placeholder="Type here to search..."
+            placeholder="Search by Centre ID or Name"
             placeholderTextColor={R.colors.DARKGRAY}
           />
           <Icon
             name="magnify"
             color={R.colors.primary}
-            style={{position: 'absolute', right: 10, top: 5}}
-            size={40}
+            style={styles.searchIcon}
+            size={30}
           />
         </View>
-        {data?.length >= 1 ? (
-          <View style={{flex: 1, paddingBottom: 10}}>
-            <FlatList
-              data={data}
-              renderItem={({item, index}) => <Item item={item} index={index} />}
-              keyExtractor={item => item.id}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
+        {data?.length ? (
+          <FlatList
+            data={data}
+            renderItem={({item, index}) => <Item item={item} index={index} />}
+            keyExtractor={item => item.centreid.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.flatListContent}
+          />
         ) : (
           <Text style={styles.noDataFound}>No Data Found</Text>
         )}
@@ -125,65 +130,75 @@ const NewClient = () => {
 export default NewClient;
 
 const styles = StyleSheet.create({
-  categoryView: {
-    justifyContent: 'space-between',
-    padding: 10,
-    textAlignVertical: 'center',
+  container: {
     flex: 1,
-    backgroundColor: 'white',
-    // borderWidth:1
+    padding: 10,
+    backgroundColor: R.colors.white,
+  },
+  searchView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: R.colors.DARKGRAY,
+    paddingHorizontal: 10,
+    color: R.colors.DARKGRAY,
+    height: 40,
+  },
+  searchIcon: {
+    marginLeft: 10,
+    position: 'absolute',
+    right: 10,
   },
   cardView: {
     backgroundColor: R.colors.PRIMARY_LIGHT,
-    borderRadius: 10,
-    padding: 10,
-    paddingVertical: 10,
-    width: '100%',
-    borderColor: '#ccc', // Updated border color for consistency
-    borderWidth: 0.5,
-    height: 150, // Adjust as needed
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    // Shadow properties for iOS
-    shadowOffset: {height: 1, width: 0}, // Adjust as needed
-    shadowOpacity: 0.5, // Adjust as needed
-    shadowRadius: 5, // Adjust as needed
-    shadowColor: R.colors.LIGHTGRAY,
-
-    // Elevation for Android
-    elevation: 10,
+    borderRadius: 4, // Slightly larger for a smoother look
+    padding: 15, // Increased padding for better spacing
+    marginVertical: 12, // Adds vertical spacing between cards
+    borderColor: R.colors.BLUE , // Lighter border color for contrast
+    borderWidth: .5, // Slightly wider border for better visibility
+    elevation: 5, // Increased elevation for a clearer shadow
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25, // Higher opacity for more visible shadow
+    shadowRadius: 5, // Increased radius for a more spread-out shadow
+    shadowColor: 'rgba(0, 0, 0, 0.15)', // Softer shadow color for better visibility
+    alignItems: 'flex-start', // Left-align content for readability
   },
   label: {
-    color: R.colors.black,
-    flex: 1.5,
-    alignItems: 'center',
+    fontSize: 14,
+    fontWeight: '600',
     color: R.colors.PRIMARI_DARK,
-    fontWeight: '500',
+    flex: 1.5,
   },
   value: {
+    fontSize: 14,
     color: R.colors.PRIMARI_DARK,
-    fontWeight: '400',
-    flex: 2.5,
     flexWrap: 'wrap',
-    fontSize:R.fontSize.M
+    flex:2.5
   },
-  view: {flexDirection: 'row', margin: 5, alignItems: 'center'},
-  searchView: {},
-  searchInput: {
-    borderWidth: 0.5,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderColor: R.colors.DARKGRAY,
-    padding: 10,
-    color: R.colors.DARKGRAY,
+  view: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: R.colors.LIGHTGRAY,
+    flexWrap:"wrap",
+    borderBottomWidth:1,
+    padding:3
+  },
+  flatListContent: {
+    paddingBottom: 20,
   },
   noDataFound: {
-    color: R.colors.DARKGRAY,
-    fontSize: R.fontSize.XXL,
-    height: '100%',
+    fontSize: 18,
     textAlign: 'center',
-    textAlignVertical: 'center',
-    fontWeight: '600',
+    color: R.colors.DARKGRAY,
   },
 });

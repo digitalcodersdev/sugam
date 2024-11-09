@@ -15,6 +15,7 @@ import com.faizal.OtpVerify.OtpVerifyPackage;
 import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 import com.AlexanderZaytsev.RNI18n.RNI18nPackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage; 
+import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 
 class MainApplication : Application(), ReactApplication {
 

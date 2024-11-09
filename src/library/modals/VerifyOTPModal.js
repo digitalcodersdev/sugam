@@ -70,11 +70,18 @@ const VerifyOTPModal = ({
             onConfirm && onConfirm({...res?.model});
             setLoading(false);
             Toast.show('OTP Verified...', Toast.BOTTOM);
-            onModalClose(false)
+            onModalClose(false);
           }
           if (res?.code == 500 && res?.msg == 'success') {
-            Toast.show('something Went wrong please try again...', Toast.BOTTOM);
- 
+            Toast.show(
+              'something Went wrong please try again...',
+              Toast.BOTTOM,
+            );
+
+            setLoading(false);
+          }
+          if (res?.code == 500 && res?.msg == 'Invalid OTP') {
+            Toast.show(res?.msg + '...', Toast.BOTTOM);
             setLoading(false);
           }
         })

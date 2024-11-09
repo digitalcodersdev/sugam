@@ -7,7 +7,7 @@ class AuthenticationApi extends BaseApi {
   async generateOtp(data) {
     try {
       const response = await this.axios.post(getApiUri(`/send-otp`), data);
-      if (response.data?.transactionId) {
+      if (response?.data?.transactionId) {
         return response;
       }
       return response;
@@ -18,13 +18,27 @@ class AuthenticationApi extends BaseApi {
       return false;
     }
   }
-  
 
   async verifyMobileOtp(data) {
     try {
       const response = await this.axios.post(getApiUri('/verify-otp'), data);
       if (response.data && response.success) {
         await sInfoUtil.save('JWT', response?.data?.token);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      return false;
+    }
+  }
+
+  async verifyMobileOtpClient(data) {
+    try {
+      const response = await this.axios.post(getApiUri('/verify-otp-client'), data);
+      if (response.data && response.success) {
         return true;
       }
       return false;

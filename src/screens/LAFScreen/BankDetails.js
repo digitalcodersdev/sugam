@@ -94,6 +94,7 @@ const BankDetails = ({route}) => {
   };
   const closeModal = () => {
     onModalClose(false); // Function to close modal
+    navigation.navigate(ScreensNameEnum.NEW_CLIENT)
   };
 
   const styles = createStyles(colorScheme);
@@ -119,17 +120,91 @@ const BankDetails = ({route}) => {
                   dropdownIconColor={R.colors.primary}
                   style={styles.input}>
                   {formData?.bankName === null && (
-                    <Picker.Item label="-- Select Bank Name --" value={null} />
+                    <Picker.Item
+                      label="-- Select Bank Name --"
+                      value={null}
+                      enabled={false}
+                    />
                   )}
-                  <Picker.Item label="Husband" value="Husband" />
-                  <Picker.Item label="Wife" value="Wife" />
-                  <Picker.Item label="Father" value="Father" />
-                  <Picker.Item label="Mother" value="Mother" />
-                  <Picker.Item label="Son" value="Son" />
-                  <Picker.Item label="Daughter" value="Daughter" />
-                  <Picker.Item label="Father-in-law" value="  Father-in-law" />
-                  <Picker.Item label="Mother-in-law" value="Mother-in-law" />
-                  <Picker.Item label="Brother-in-law" value="Brother-in-law" />
+                  <Picker.Item
+                    label="State Bank of India"
+                    value="State Bank of India"
+                  />
+                  <Picker.Item label="HDFC Bank" value="HDFC Bank" />
+                  <Picker.Item label="ICICI Bank" value="ICICI Bank" />
+                  <Picker.Item
+                    label="Punjab National Bank"
+                    value="Punjab National Bank"
+                  />
+                  <Picker.Item label="Axis Bank" value="Axis Bank" />
+                  <Picker.Item
+                    label="Kotak Mahindra Bank"
+                    value="Kotak Mahindra Bank"
+                  />
+                  <Picker.Item label="Bank of Baroda" value="Bank of Baroda" />
+                  <Picker.Item label="Canara Bank" value="Canara Bank" />
+                  <Picker.Item
+                    label="Union Bank of India"
+                    value="Union Bank of India"
+                  />
+                  <Picker.Item label="IndusInd Bank" value="IndusInd Bank" />
+                  <Picker.Item
+                    label="IDFC First Bank"
+                    value="IDFC First Bank"
+                  />
+                  <Picker.Item label="Yes Bank" value="Yes Bank" />
+                  <Picker.Item label="Bank of India" value="Bank of India" />
+                  <Picker.Item
+                    label="Central Bank of India"
+                    value="Central Bank of India"
+                  />
+                  <Picker.Item label="Indian Bank" value="Indian Bank" />
+                  <Picker.Item label="UCO Bank" value="UCO Bank" />
+                  <Picker.Item
+                    label="Indian Overseas Bank"
+                    value="Indian Overseas Bank"
+                  />
+                  <Picker.Item
+                    label="Bank of Maharashtra"
+                    value="Bank of Maharashtra"
+                  />
+                  <Picker.Item
+                    label="Punjab & Sind Bank"
+                    value="Punjab & Sind Bank"
+                  />
+                  <Picker.Item label="Federal Bank" value="Federal Bank" />
+                  <Picker.Item
+                    label="South Indian Bank"
+                    value="South Indian Bank"
+                  />
+                  <Picker.Item label="Karnataka Bank" value="Karnataka Bank" />
+                  <Picker.Item label="RBL Bank" value="RBL Bank" />
+                  <Picker.Item label="Dhanlaxmi Bank" value="Dhanlaxmi Bank" />
+                  <Picker.Item label="IDBI Bank" value="IDBI Bank" />
+                  <Picker.Item
+                    label="Jammu & Kashmir Bank"
+                    value="Jammu & Kashmir Bank"
+                  />
+                  <Picker.Item
+                    label="Suryoday Small Finance Bank"
+                    value="Suryoday Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="Equitas Small Finance Bank"
+                    value="Equitas Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="AU Small Finance Bank"
+                    value="AU Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="Ujjivan Small Finance Bank"
+                    value="Ujjivan Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="ESAF Small Finance Bank"
+                    value="ESAF Small Finance Bank"
+                  />
                 </Picker>
               </View>
               {errors.bankName && (
@@ -215,17 +290,91 @@ const BankDetails = ({route}) => {
                   dropdownIconColor={R.colors.primary}
                   style={styles.input}>
                   {coAppData?.bankName === null && (
-                    <Picker.Item label="-- Select Bank Name --" value={null} />
+                    <Picker.Item
+                      label="-- Select Bank Name --"
+                      value={null}
+                      enabled={false}
+                    />
                   )}
-                  <Picker.Item label="Husband" value="Husband" />
-                  <Picker.Item label="Wife" value="Wife" />
-                  <Picker.Item label="Father" value="Father" />
-                  <Picker.Item label="Mother" value="Mother" />
-                  <Picker.Item label="Son" value="Son" />
-                  <Picker.Item label="Daughter" value="Daughter" />
-                  <Picker.Item label="Father-in-law" value="  Father-in-law" />
-                  <Picker.Item label="Mother-in-law" value="Mother-in-law" />
-                  <Picker.Item label="Brother-in-law" value="Brother-in-law" />
+                  <Picker.Item
+                    label="State Bank of India"
+                    value="State Bank of India"
+                  />
+                  <Picker.Item label="HDFC Bank" value="HDFC Bank" />
+                  <Picker.Item label="ICICI Bank" value="ICICI Bank" />
+                  <Picker.Item
+                    label="Punjab National Bank"
+                    value="Punjab National Bank"
+                  />
+                  <Picker.Item label="Axis Bank" value="Axis Bank" />
+                  <Picker.Item
+                    label="Kotak Mahindra Bank"
+                    value="Kotak Mahindra Bank"
+                  />
+                  <Picker.Item label="Bank of Baroda" value="Bank of Baroda" />
+                  <Picker.Item label="Canara Bank" value="Canara Bank" />
+                  <Picker.Item
+                    label="Union Bank of India"
+                    value="Union Bank of India"
+                  />
+                  <Picker.Item label="IndusInd Bank" value="IndusInd Bank" />
+                  <Picker.Item
+                    label="IDFC First Bank"
+                    value="IDFC First Bank"
+                  />
+                  <Picker.Item label="Yes Bank" value="Yes Bank" />
+                  <Picker.Item label="Bank of India" value="Bank of India" />
+                  <Picker.Item
+                    label="Central Bank of India"
+                    value="Central Bank of India"
+                  />
+                  <Picker.Item label="Indian Bank" value="Indian Bank" />
+                  <Picker.Item label="UCO Bank" value="UCO Bank" />
+                  <Picker.Item
+                    label="Indian Overseas Bank"
+                    value="Indian Overseas Bank"
+                  />
+                  <Picker.Item
+                    label="Bank of Maharashtra"
+                    value="Bank of Maharashtra"
+                  />
+                  <Picker.Item
+                    label="Punjab & Sind Bank"
+                    value="Punjab & Sind Bank"
+                  />
+                  <Picker.Item label="Federal Bank" value="Federal Bank" />
+                  <Picker.Item
+                    label="South Indian Bank"
+                    value="South Indian Bank"
+                  />
+                  <Picker.Item label="Karnataka Bank" value="Karnataka Bank" />
+                  <Picker.Item label="RBL Bank" value="RBL Bank" />
+                  <Picker.Item label="Dhanlaxmi Bank" value="Dhanlaxmi Bank" />
+                  <Picker.Item label="IDBI Bank" value="IDBI Bank" />
+                  <Picker.Item
+                    label="Jammu & Kashmir Bank"
+                    value="Jammu & Kashmir Bank"
+                  />
+                  <Picker.Item
+                    label="Suryoday Small Finance Bank"
+                    value="Suryoday Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="Equitas Small Finance Bank"
+                    value="Equitas Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="AU Small Finance Bank"
+                    value="AU Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="Ujjivan Small Finance Bank"
+                    value="Ujjivan Small Finance Bank"
+                  />
+                  <Picker.Item
+                    label="ESAF Small Finance Bank"
+                    value="ESAF Small Finance Bank"
+                  />
                 </Picker>
               </View>
               {errors.bankName && (
@@ -442,7 +591,7 @@ const createStyles = colorScheme =>
       paddingHorizontal: 20,
       backgroundColor: R.colors.primary,
       borderRadius: 6,
-      width:100
+      width: 100,
     },
     modalButtonText: {
       color: '#fff',

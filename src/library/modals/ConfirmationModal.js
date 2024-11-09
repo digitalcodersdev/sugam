@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import Modal from 'react-native-modal';
-import R from 'resources/R';
 import Button from '../commons/Button';
+import R from '../../resources/R';
 /*
  * This function is used to create the confirmation modal
  * @author Kindajobs <mohitkumar.webdev@gmail.com>
@@ -15,7 +15,7 @@ const ConfirmationModal = ({
 }) => {
   const handleConfirm = () => {
     onModalClose();
-    onConfirm && onConfirm();
+    onConfirm && onConfirm('confirm');
   };
   return (
     <Modal
@@ -39,11 +39,13 @@ const ConfirmationModal = ({
             buttonStyle={styles.buttonText}
             backgroundColor={R.colors.PRIMARY_LIGHT}
             textColor={R.colors.SECONDRY_DARK}
+            textStyle={{fontWeight: '800'}}
           />
           <Button
             title={'Confirm'}
             onPress={handleConfirm}
             buttonStyle={styles.buttonText}
+            textStyle={{fontWeight: '800'}}
           />
         </View>
       </View>
@@ -58,9 +60,10 @@ const styles = StyleSheet.create({
     color: R.colors.PRIMARI_DARK,
     textAlign: 'center',
     fontFamily: R.fonts.Regular,
-    fontSize: R.fontSize.S,
+    fontSize: R.fontSize.L,
     paddingVertical: 10,
     marginBottom: 10,
+    fontWeight: '700',
   },
   backgroundColor: {
     backgroundColor: 'white',
@@ -78,7 +81,7 @@ const styles = StyleSheet.create({
   },
   modalInnerContainer: {
     backgroundColor: 'white',
-    minHeight: 150,
+    minHeight: 200,
     borderRadius: 20,
     justifyContent: 'space-between',
     padding: 10,
@@ -86,5 +89,10 @@ const styles = StyleSheet.create({
   modalFooterText: {
     flexDirection: 'row',
   },
-  buttonText: {flex: 1, marginHorizontal: 5},
+  buttonText: {
+    flex: 1,
+    marginHorizontal: 5,
+    fontWeight: 'bold',
+    borderRadius: 12,
+  },
 });

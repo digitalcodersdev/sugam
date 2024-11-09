@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View, FlatList, Pressable} from 'react-native';
+import {StyleSheet, Text, View, FlatList, Pressable,Platform} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -26,14 +26,6 @@ const Enrollment = () => {
       color: R.colors.RED,
       image: require('../../assets/Images/icon2.png'),
     },
-    // {
-    //   id: 3,
-    //   icon: 'party-popper',
-    //   title: 'Holiday',
-    //   screen: ScreensNameEnum.HOLIDAY_SCREEN,
-    //   color: '#FFA201',
-    //   image: require('../../assets/Images/icon3.png'),
-    // },
     // {
     //   id: 4,
     //   icon: 'gift-open-outline',
@@ -86,27 +78,32 @@ const styles = StyleSheet.create({
   },
   cardView: {
     backgroundColor: R.colors.PRIMARY_LIGHT,
-    borderRadius: 5,
-    padding: 5,
-    paddingVertical: 10,
-    borderColor: R.colors.LIGHTGRAY,
-    width: '100%',
-    // Add elevation for Android
-    elevation: 5,
-    // Set shadow properties for iOS
+    borderRadius: 10, // Slightly larger for a smoother look
+    padding: 10, // Increased padding for better spacing
+    marginVertical: 10, // Adds vertical spacing between cards
+    // width: '90%', // Slightly narrower to allow for screen padding
+    elevation: 4, // Consistent shadow depth for Android
     shadowOffset: {
-      height: 5,
-      width: 0, // Adjust as needed
+      height: 4,
+      width: 0,
     },
-    shadowOpacity: 0.5, // Adjust as needed
-    shadowRadius: 5, // Adjust as needed
-    shadowColor: R.colors.LIGHTGRAY,
-    // Add dimensions to the container
-    // width: 200, // Adjust as needed
-    height: 150, // Adjust as needed
-    borderColor: '#ccc',
-    borderWidth: 0.5,
+    shadowOpacity: 0.2, // Reduced opacity for subtler shadow
+    shadowRadius: 8, // Increased radius for a softer shadow
+    shadowColor: R.colors.DARKGRAY, // Darker shadow color for better contrast
+    borderColor: '#ddd', // Lighter border color for a softer look
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 160, // Adjusted height for better content accommodation
+    ...Platform.select({
+      ios: {
+        shadowOffset: {width: 0, height: 4}, // Consistent shadow on iOS
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4, // Consistent elevation on Android
+      },
+    }),
   },
 });

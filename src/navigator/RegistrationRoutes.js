@@ -56,6 +56,15 @@ import MyApplication from '../screens/MyApplication/MyApplication';
 import KYCCustomer from '../screens/LAFScreen/KYCCustomer';
 import KYCCoApplicant from '../screens/LAFScreen/KYCCoApplicant';
 import BankDetails from '../screens/LAFScreen/BankDetails';
+import ClientInformation from '../screens/ClientInformation/ClientInformation';
+import Disbursement from '../screens/Disbursement/Disbursement';
+import PendingEnrollments from '../screens/PendingEnrollments/PendingEnrollments';
+import HRScreens from '../screens/HRScreens/HRScreens';
+import MarkAttendance from '../screens/HRScreens/MarkAttendance';
+import AttendanceList from '../screens/HRScreens/AttendanceList';
+import MyLeavesList from '../screens/HRScreens/MyLeavesList';
+import AppliedLeaves from '../screens/HRScreens/AppliedLeaves';
+import LeaveApproval from '../screens/HRScreens/LeaveApproval';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -225,6 +234,47 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             name={ScreensNameEnum.BANK_DETAILS_SCREEN}
             options={{headerShown: false}}
           />
+          <RegistrationStack.Screen
+            component={ClientInformation}
+            name={ScreensNameEnum.CLIENT_INFORMATION}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={Disbursement}
+            name={ScreensNameEnum.DISBURSEMENT_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={PendingEnrollments}
+            name={ScreensNameEnum.PENDING_ENROLLMENT}
+            options={{headerShown: false}}
+          />
+
+          <RegistrationStack.Screen
+            component={MarkAttendance}
+            name={ScreensNameEnum.MARK_ATTENDANCE_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={AttendanceList}
+            name={ScreensNameEnum.ATTENDANCE_LIST_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={MyLeavesList}
+            name={ScreensNameEnum.MY_LEAVES_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={AppliedLeaves}
+            name={ScreensNameEnum.APPLIED_LEAVES_SCREENS}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={LeaveApproval}
+            name={ScreensNameEnum.LEAVE_APPROVAL_SCREENS}
+            options={{headerShown: false}}
+          />
         </>
       )}
     </RegistrationStack.Navigator>
@@ -244,9 +294,13 @@ function MyTabs() {
 
           if (route.name === ScreensNameEnum.HOME_SCREEN) {
             iconName = 'home';
-          } else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
-            iconName = 'account-outline';
-          } else if (route.name === ScreensNameEnum.TASK_SCREEN) {
+          } else if (route.name === ScreensNameEnum.HR_SCREENS) {
+            iconName = 'human-male-board-poll';
+          }
+          // else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
+          //   iconName = 'account-outline';
+          // }
+          else if (route.name === ScreensNameEnum.TASK_SCREEN) {
             iconName = 'bell';
           } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
             iconName = 'bell';
@@ -265,9 +319,13 @@ function MyTabs() {
           let label;
           if (route.name === ScreensNameEnum.HOME_SCREEN) {
             label = 'Home';
-          } else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
-            label = 'Mark OD';
-          } else if (route.name === ScreensNameEnum.TASK_SCREEN) {
+          } else if (route.name === ScreensNameEnum.HR_SCREENS) {
+            label = 'HR';
+          }
+          // else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
+          //   label = 'Mark OD';
+          // }
+          else if (route.name === ScreensNameEnum.TASK_SCREEN) {
             label = 'Notifications';
           } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
             label = 'Leave Notification';
@@ -288,12 +346,19 @@ function MyTabs() {
         }}
       />
       <Tab.Screen
+        name={ScreensNameEnum.HR_SCREENS}
+        component={HRScreens}
+        options={{
+          headerShown: false,
+        }}
+      />
+      {/* <Tab.Screen
         name={ScreensNameEnum.ACCOUNT_SCREEN}
         component={Account}
         options={{
           headerShown: false,
         }}
-      />
+      /> */}
       <Tab.Screen
         name={ScreensNameEnum.TASK_SCREEN}
         component={TaskScreen}

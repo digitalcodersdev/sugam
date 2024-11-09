@@ -9,16 +9,12 @@ import {
   Image,
 } from 'react-native';
 import R from '../../resources/R';
-import Modal from 'react-native-modal';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
-import axios from 'axios';
 import {OtpInput} from 'react-native-otp-entry';
 import Button from '../../library/commons/Button';
-import LoaderAnimation from '../../library/commons/LoaderAnimation';
-import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ValidationHelper from '../../helpers/ValidationHelper';
@@ -27,6 +23,7 @@ import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
 import I18n from 'react-native-i18n';
 import {useNavigation} from '@react-navigation/native';
+import axios from 'axios';
 
 const VerifyAadhar = ({route}) => {
   const navigation = useNavigation();
@@ -40,7 +37,7 @@ const VerifyAadhar = ({route}) => {
   const aadharNoRef = useRef();
   const loaderMessage = useRef();
   const {center} = route?.params;
-  // console.log(center);
+  const otpRef = useRef(null);
   function calculateAge(dob) {
     const [day, month, year] = dob.split('-').map(Number);
     const birthDate = new Date(year, month - 1, day);
@@ -54,7 +51,15 @@ const VerifyAadhar = ({route}) => {
     return age;
   }
 
+  // Step 2: Function to clear the OTP input
+  const clearOTP = () => {
+    if (otpRef.current) {
+      otpRef.current.clear(); // Call the clear method if available
+    }
+  };
+
   const verifyOtp = async () => {
+    
     try {
       setLoading(true);
       loaderMessage.current = 'Verifying Otp...';
@@ -87,27 +92,41 @@ const VerifyAadhar = ({route}) => {
         .then(response => response.text())
         .then(result => {
           const res = JSON.parse(result);
-          const age = calculateAge(res?.model?.dob); //
-          if (age >= 18 && age < 59) {
-            setOtp('');
-            console.log('result', result);
-            if (res?.code == 200 && res?.msg == 'success') {
-              setUserDetails(res?.model);
-              navigation.navigate(ScreensNameEnum.AADHAR_INFORMATION_USER, {
-                data: {...res?.model, ...center},
-              });
+          console.log('RESPONSE', res);
+          if (res?.code != '400' && res?.code != '500') {
+            const age = calculateAge(res?.model?.dob); //
+            if (age >= 18 && age < 59) {
+              setOtp('');
+              // console.log('result', result);
+              if (res?.code == 200 && res?.msg == 'success') {
+                setUserDetails(res?.model);
+                navigation.navigate(ScreensNameEnum.AADHAR_INFORMATION_USER, {
+                  data: {...res?.model, ...center},
+                });
+                setLoading(false);
+                Toast.show('Aadhar Verified...', Toast.BOTTOM);
+              }
+            } else {
+              Alert.alert(
+                'आवेदक ऋण प्रक्रिया के लिए पात्र नहीं है। आयु 59 वर्ष से कम और 18 वर्ष से अधिक या 18 वर्ष के बराबर होनी चाहिए',
+              );
+              setOtpEnabled(false);
+              setAAdhar('');
               setLoading(false);
-              Toast.show('OTP Verified...', Toast.BOTTOM);
+              navigation.navigate(ScreensNameEnum.NEW_CLIENT);
             }
-          } else {
+          } else if (res?.errorCode == 'E0013') {
             Alert.alert(
-              'आवेदक ऋण प्रक्रिया के लिए पात्र नहीं है। आयु 59 वर्ष से कम और 18 वर्ष से अधिक या 18 वर्ष के बराबर होनी चाहिए',
+              'आपका आधार OTP Expire हो गया है कृपया ओटीपी पुनः भेजें और पुनः प्रयास करें',
             );
-            setOtpEnabled(false);
-            setAAdhar('');
             setLoading(false);
-            navigation.navigate(ScreensNameEnum.NEW_CLIENT);
+            clearOTP();
+          } else {
+            Alert.alert(res?.msg);
+            clearOTP();
+            setLoading(false);
           }
+          clearOTP();
         })
         .catch(error => {
           console.error({error});
@@ -261,6 +280,7 @@ const VerifyAadhar = ({route}) => {
                 },
                 pinCodeTextStyle: {color: 'black'},
               }}
+              ref={otpRef}
             />
           </View>
         )}

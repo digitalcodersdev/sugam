@@ -80,9 +80,19 @@ const ScreensNameEnum = {
   LAF_GROUP_SCREEN: 'Loan Appl. Form (LAF) - Group Loan',
   LAF_GROUP_SCREEN1: 'Loan Appl. Form (LAF) - Group Loan 1',
   LAF_GROUP_SCREEN2: 'Loan Appl. Form (LAF) - Group Loan 2',
-  MY_APPLICATION_SCREEN:"My Application Details",
-  KYC_CUSTOMER_SCREEN:"KYC Applicant",
-  KYC_CO_CUSTOMER_SCREEN:"KYC Co-Applicant",
-  BANK_DETAILS_SCREEN:"Bank Details"
+  MY_APPLICATION_SCREEN: 'My Application Details',
+  KYC_CUSTOMER_SCREEN: 'KYC Applicant',
+  KYC_CO_CUSTOMER_SCREEN: 'KYC Co-Applicant',
+  BANK_DETAILS_SCREEN: 'Bank Details',
+  CLIENT_INFORMATION: 'Client Infromation',
+  DISBURSEMENT_SCREEN: 'Disbursment',
+  PENDING_ENROLLMENT: 'Pending Enrollments',
+  //HR SCREENS
+  HR_SCREENS: 'HR',
+  MARK_ATTENDANCE_SCREEN: 'Mark Attendance',
+  ATTENDANCE_LIST_SCREEN: 'Attendance List',
+  MY_LEAVES_SCREEN: 'My Leaves',
+  APPLIED_LEAVES_SCREENS: 'My Applied Leaves',
+  LEAVE_APPROVAL_SCREENS: 'Leave Approval',
 };
 export default Object.freeze(ScreensNameEnum);

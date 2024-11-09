@@ -573,14 +573,15 @@ const createStyles = colorScheme =>
       borderRadius: 6,
       marginVertical: 10,
       padding: 5,
-      width: '70%',
+      width: '80%',
       alignSelf: 'center',
-      fontSize: R.fontSize.XL
+      fontSize: R.fontSize.XL,
+      // borderWidth:1
     },
     label: {
       color: R.colors.PRIMARI_DARK,
       textAlign: 'center',
-      width: '60%',
+      width: '65%',
       alignSelf: 'center',
       fontSize: R.fontSize.XL,
       flex:1

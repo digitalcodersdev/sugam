@@ -16,6 +16,9 @@ import {
   fetchHolidays,
   getUserDetails,
   getCentres,
+  fetchCurrentDayCollectionByBranchId,
+  fetchCurrentDayCollectionByCenterId,
+  getPendingEnrollments,
 } from '../../actions/userActions';
 // TODO: Should we have api based status and errors for more fine grained control
 
@@ -31,9 +34,12 @@ const initialState = {
   centres: [],
   tasks: [],
   projects: [],
+  pendingEnrollments: [],
   clockin: null,
   attendanceReport: [],
   holidays: [],
+  currentDayCollection: [],
+  currentDayCollectionCenter: [],
   getUserByIdStatus: initialThunkState,
   updateUserStatus: initialThunkState,
   uploadProfilePicStatus: initialThunkState,
@@ -72,6 +78,57 @@ const userSlice = createSlice({
         error: action.payload,
       };
     });
+    builder.addCase(fetchCurrentDayCollectionByBranchId.pending, state => {
+      state.getUserByIdStatus = defaultThunkLoadingState;
+    });
+    builder.addCase(
+      fetchCurrentDayCollectionByBranchId.fulfilled,
+      (state, action) => {
+        state.getUserByIdStatus = defaultThunkSuccessState;
+        state.currentDayCollection = action.payload;
+      },
+    );
+    builder.addCase(
+      fetchCurrentDayCollectionByBranchId.rejected,
+      (state, action) => {
+        state.getUserByIdStatus = {
+          ...defaultThunkFailureState,
+          error: action.payload,
+        };
+      },
+    );
+    builder.addCase(fetchCurrentDayCollectionByCenterId.pending, state => {
+      state.getUserByIdStatus = defaultThunkLoadingState;
+    });
+    builder.addCase(
+      fetchCurrentDayCollectionByCenterId.fulfilled,
+      (state, action) => {
+        state.getUserByIdStatus = defaultThunkSuccessState;
+        state.currentDayCollectionCenter = action.payload;
+      },
+    );
+    builder.addCase(
+      fetchCurrentDayCollectionByCenterId.rejected,
+      (state, action) => {
+        state.getUserByIdStatus = {
+          ...defaultThunkFailureState,
+          error: action.payload,
+        };
+      },
+    );
+    builder.addCase(getPendingEnrollments.pending, state => {
+      state.getUserByIdStatus = defaultThunkLoadingState;
+    });
+    builder.addCase(getPendingEnrollments.fulfilled, (state, action) => {
+      state.getUserByIdStatus = defaultThunkSuccessState;
+      state.pendingEnrollments = action.payload;
+    });
+    builder.addCase(getPendingEnrollments.rejected, (state, action) => {
+      state.getUserByIdStatus = {
+        ...defaultThunkFailureState,
+        error: action.payload,
+      };
+    });
   },
 });
 
@@ -86,3 +143,13 @@ export const attendanceReportSelector = state =>
   state?.user?.attendanceReport || [];
 export const holidaysSelector = state => state?.user?.holidays || [];
 export const centresSelector = state => state?.user?.centres || [];
+
+export const currentDayCollectionSelector = state =>
+  state?.user?.currentDayCollection || [];
+export const currentDayCollectionCenterSelector = state =>
+  state?.user?.currentDayCollectionCenter || [];
+
+
+
+  export const pendingEnrollmentsSelector  = state =>
+  state?.user?.pendingEnrollments || [];

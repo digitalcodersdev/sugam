@@ -6,6 +6,7 @@ import {
   Animated,
   Modal,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import R from '../../resources/R';
@@ -13,32 +14,40 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import LinearGradient from 'react-native-linear-gradient';
+import {Calendar, LocaleConfig} from 'react-native-calendars';
+import moment from 'moment';
 
-const ClientItem = ({item, centerId}) => {
+const ClientItem = ({item, centerId, meeting}) => {
   const navigation = useNavigation();
   const [selected, setSelected] = useState('');
   const [expandAnim] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
   const [attendance, setAttendance] = useState(null); // State for attendance
+  const [open, setOpen] = useState(false);
+  const [promiseToPayDate, setPromiseToPayDate] = useState(new Date());
 
   const {
     Borrower_Name,
-    LoanID,
-    EMI_Amount,
-    SanctionAmount,
+    customerid,
+    TodayEMI,
+    financeamt,
     CollAmount,
+    TotalColl,
     Collection_Status,
+    Interest,
+    TodayColl,
   } = item;
-
-  const remainingCollection = parseInt(SanctionAmount) - parseInt(CollAmount);
-  const isPaid = Collection_Status == 1;
+  console.log(item, Collection_Status);
+  const remainingCollection = parseInt(financeamt) - parseInt(CollAmount);
+  const isPaid = TodayColl == TodayEMI;
+  // const isPaid = Collection_Status == 1;
   const statusColor = isPaid ? R.colors.GREEN : R.colors.RED;
   const statusText = isPaid ? 'Paid' : 'Pending';
-  const icon = selected == LoanID ? 'chevron-up' : 'chevron-down';
+  const icon = selected == customerid ? 'chevron-up' : 'chevron-down';
 
   useEffect(() => {
     Animated.timing(expandAnim, {
-      toValue: selected == LoanID ? 1 : 0,
+      toValue: selected == customerid ? 1 : 0,
       duration: 400,
       useNativeDriver: true,
     }).start();
@@ -50,10 +59,10 @@ const ClientItem = ({item, centerId}) => {
   });
 
   const handleExpand = () => {
-    if (selected == LoanID) {
+    if (selected == customerid) {
       setSelected(''); // Collapse
     } else {
-      setSelected(LoanID); // Expand
+      setSelected(customerid); // Expand
     }
   };
 
@@ -70,20 +79,32 @@ const ClientItem = ({item, centerId}) => {
     closeModal();
   };
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  const afterOneMonth = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  afterOneMonth.setDate(today.getDate() + 5);
+
   return (
     <Pressable style={styles.item}>
       <View style={styles.statusRow}>
         <Pressable
           style={styles.statusContainer}
-          onPress={() =>
-            navigation.navigate(ScreensNameEnum.CLIENT_COLLECTION_SCREEN, {
-              dt: {
-                ...item,
-                remainingCollection,
-                centerId,
-              },
-            })
-          }>
+          onPress={() => {
+            if (meeting && meeting?.EndTime == null) {
+              navigation.navigate(ScreensNameEnum.CLIENT_COLLECTION_SCREEN, {
+                dt: {
+                  ...item,
+                  remainingCollection,
+                  centerId,
+                },
+              });
+            } else if (meeting && meeting?.EndTime?.length >= 1) {
+              Alert.alert('Center Meeting Is Already Finished.');
+            } else {
+              Alert.alert('Please Start Center Meeting First.');
+            }
+          }}>
           <Text
             style={[
               styles.statusText,
@@ -133,11 +154,11 @@ const ClientItem = ({item, centerId}) => {
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Loan ID:</Text>
-          <Text style={styles.value}>{LoanID}</Text>
+          <Text style={styles.value}>{customerid}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>EMI Amount:</Text>
-          <Text style={[styles.value, styles.emiAmount]}>₹{EMI_Amount}</Text>
+          <Text style={[styles.value, styles.emiAmount]}>₹{TodayEMI}</Text>
         </View>
       </View>
 
@@ -154,27 +175,108 @@ const ClientItem = ({item, centerId}) => {
           styles.financialSummary,
           {
             transform: [{scaleY}],
-            borderTopWidth: selected == LoanID ? 1 : 0,
+            borderTopWidth: selected == customerid ? 1 : 0,
             borderTopColor: R.colors.SLATE_GRAY,
           },
         ]}>
-        {selected == LoanID && (
+        {selected == customerid && (
           <>
-            <SummaryItem
+            <View style={{marginBottom: 10}}>
+              <Pressable onPress={() => setOpen(!open)} style={styles.input}>
+                <Text
+                  style={[
+                    //   styles.input,
+                    {
+                      height: 60,
+                      paddingBottom: 10,
+                      fontSize: 16,
+                      color: R.colors.PRIMARI_DARK,
+                      textAlignVertical: 'center',
+                      // borderWidth:1
+                    },
+                  ]}>
+                  {'   Promise To Pay* :      '}
+                  {moment(promiseToPayDate).format('DD MMM YYYY') ==
+                  moment(new Date()).format('DD MMM YYYY')
+                    ? 'Promise To Pay'
+                    : moment(promiseToPayDate).format('DD-MMM-YYYY')}
+                </Text>
+                {open && (
+                  <LinearGradient
+                    colors={['#3b5998', '#192f6a']}
+                    style={{
+                      borderRadius: 10,
+                      padding: 10,
+                      marginBottom: 10,
+                    }}>
+                    <Calendar
+                      style={{
+                        backgroundColor: 'transparent', // Ensures the gradient is visible
+                        borderTopWidth: 1,
+                        borderColor: 'gray',
+                        height: 350,
+                      }}
+                      theme={{
+                        selectedDayBackgroundColor: '#4caf50', // Color for selected days
+                        calendarBackground: 'transparent', // Makes the calendar itself transparent
+                        textSectionTitleColor: '#b6c1cd', // Color for day headers (e.g., Mon, Tue)
+                        textSectionTitleDisabledColor: '#d9e1e8', // Color for disabled section titles
+                        todayTextColor: '#00adf5', // Color for today
+                        dayTextColor: '#ffffff', // Ensure selectable dates are clearly visible
+                        textDisabledColor: '#8c8c8c', // Grey out disabled dates
+                        monthTextColor: 'white', // Month title color
+                        arrowColor: 'white', // Arrow colors
+                      }}
+                      onDayPress={day => {
+                        if (moment(new Date(day?.dateString)).day() === 0) {
+                          Alert.alert('It is holiday on Sunday');
+                          return;
+                        }
+                        setPromiseToPayDate(new Date(day?.dateString));
+                        setOpen(!open);
+                      }}
+                      minDate={moment(tomorrow).format('YYYY-MM-DD')} // Tomorrow as the minimum date
+                      maxDate={moment(afterOneMonth).format('YYYY-MM-DD')} // Limit to one month ahead
+                      // markedDates={selectedDays}
+                    />
+                  </LinearGradient>
+                )}
+              </Pressable>
+
+              {moment(promiseToPayDate).format('DD MMM YYYY') !==
+                moment(new Date()).format('DD MMM YYYY') && (
+                <Text
+                  style={{
+                    fontWeight: 'bold',
+                    backgroundColor: R.colors.DARK_BLUE,
+                    padding: 10,
+                    textAlign: 'center',
+                    color: R.colors.PRIMARY_LIGHT,
+                  }}>
+                  Update Promise To Pay
+                </Text>
+              )}
+            </View>
+            {/* <SummaryItem
               label="Total Disbursed:"
-              value={`₹${SanctionAmount}`}
+              value={`₹${financeamt}`}
+              valueStyle={styles.greenText}
+            />
+            <SummaryItem
+              label="Total Interest:"
+              value={`₹${Interest}`}
               valueStyle={styles.greenText}
             />
             <SummaryItem
               label="Total Collected:"
-              value={`₹${CollAmount}`}
+              value={`₹${TotalColl}`}
               valueStyle={styles.yellowText}
             />
             <SummaryItem
               label="Remaining:"
-              value={`₹${remainingCollection}`}
+              value={`₹${financeamt + Interest - TotalColl}`}
               valueStyle={styles.redText}
-            />
+            /> */}
           </>
         )}
       </Animated.View>
@@ -389,6 +491,14 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     width: 300,
+  },
+  input: {
+    borderBottomWidth: 1,
+    color: R.colors.PRIMARI_DARK,
+    textAlignVertical: 'bottom',
+    fontSize: 16,
+    fontWeight: '500',
+    backgroundColor: R.colors.WHITE,
   },
 });
 

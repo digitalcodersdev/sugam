@@ -1,4 +1,11 @@
-import {StyleSheet, Text, View, FlatList} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
 import React, {useState, useEffect, useCallback} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
@@ -9,104 +16,118 @@ import {useNavigation} from '@react-navigation/native';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   currentDayCollectionCenterSelector,
-  // collectionSelectorByCenterId,
-  // currentDayCollectionCenterSelector,
   currentUserSelector,
 } from '../../store/slices/user/user.slice';
-// import {fetchCurrentDayCollectionByCenterId} from '../../store/actions/userActions';
+
 import Loader from '../../library/commons/Loader';
-import { fetchCurrentDayCollectionByCenterId } from '../../store/actions/userActions';
+import {fetchCurrentDayCollectionByCenterId} from '../../store/actions/userActions';
+import UserAPi from '../../datalib/services/user.api';
+import moment from 'moment';
 
 const CenterCollection = ({route}) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const user = useSelector(currentUserSelector);
   const collections = useSelector(currentDayCollectionCenterSelector);
-  console.log("collections",collections);
-  const {Centerid, Meeting_Time} = route?.params?.centerData;
+  const {CenterID, Meeting_Time, BranchName, cename, ceday, BranchID} =
+    route?.params?.centerData;
+
   const [loading, setLoading] = useState(false);
-  const collection = [
-    {
-      Centerid: 2,
-      center: 385,
-      Meeting_Time: '10:00 AM',
-      TARGET: '7,400.0',
-      RECEIVED: '760.0',
-      duebalance: '0.0',
-      percentage: 100,
-      Borrower_Name: 'Sunita Kumari',
-      Collection_Status: 0,
-      LoanID: 1024,
-      EMI_Amount: 760,
-      SanctionAmount: 50000,
-      CollAmount: 17800,
-      Branch_Name: 'Sctor 6',
-      TotalEMI: '15/1',
-      mblenumber: 8265809176,
-    },
-    {
-      Centerid: 2,
-      center: 721,
-      Meeting_Time: '08:00 AM',
-      TARGET: '16200.0',
-      RECEIVED: '0',
-      duebalance: '5400.0',
-      percentage: 66,
-      Borrower_Name: 'Rahul',
-      Collection_Status: 0,
-      LoanID: 1058,
-      EMI_Amount: 1080,
-      SanctionAmount: 30000,
-      CollAmount: 1200,
-      Branch_Name: 'Sctor 6',
-      TotalEMI: '25/3',
-      mblenumber: 8265809176,
-    },
-  ];
+  const [meeting, setMeeting] = useState(null);
 
-  // console.log('collection', collection);
+  console.log(Meeting_Time);
 
-  // const data = useSelector(state =>
-  //   collectionSelectorByCenterId(state, Centerid),
-  // );
+  const data = collections?.find(item => item.centreid === CenterID);
 
-  const data = collection.find(item => item.Centerid == Centerid);
-  const target = collection.reduce((acc, current) => {
-    return acc + parseInt(current.EMI_Amount);
-  }, 0);
-  const received = collection.reduce((acc, current) => {
-    return acc + parseInt(current.RECEIVED);
-  }, 0);
+  const target = collections?.reduce(
+    (acc, current) => acc + parseInt(current.TodayEMI, 10),
+    0,
+  );
+
+  const received = collections?.reduce(
+    (acc, current) => acc + parseInt(current.TodayColl, 10),
+    0,
+  );
+
   const finData = {
     TARGET: target,
     RECEIVED: received,
     duebalance: target - received,
   };
-  //   const target = collection.reduce((acc,current)=>{
-  // return acc+ parseInt(current.EMI_Amount)
 
-  //   },0)
-
-  // Fetch collection data when the component mounts or when the user changes
-  useEffect(() => {
-    if (user?.branchid && collections?.length === 0) {
-      fetchFloCollection();
-    }
-  }, [user, collection]);
-
-  // Memoize percentage calculation to prevent recalculating on every render
   const percentage = useCallback(() => {
     if (finData?.RECEIVED && finData?.TARGET) {
-      return (parseInt(finData?.RECEIVED) / parseInt(finData?.TARGET)) * 100;
+      return (
+        (parseInt(finData?.RECEIVED, 10) / parseInt(finData?.TARGET, 10)) * 100
+      );
     }
     return 0;
   }, [finData?.RECEIVED, finData?.TARGET]);
+
+  useEffect(() => {
+    fetchMeetingStatus();
+  }, [CenterID, BranchID]);
+  const fetchMeetingStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await new UserAPi().fetchMeetingStatus({
+        CenterID,
+        BranchID,
+        MeetingDate: moment(new Date()).format('YYYY-MM-DD'),
+      });
+      console.log('Start Meeting', response);
+      if (response?.data?.length >= 1) {
+        setMeeting(response?.data[0]);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const startMeeting = async () => {
+    try {
+      const response = await new UserAPi().startMeeting({
+        CenterID,
+        BranchID,
+      });
+      if (response) {
+        fetchMeetingStatus();
+      }
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const endMeeting = async () => {
+    try {
+      setLoading(true);
+      const response = await new UserAPi().endMeeting({
+        CenterID,
+        BranchID,
+      });
+      if (response) {
+        fetchMeetingStatus();
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.branchid) {
+      fetchFloCollection();
+    }
+  }, [user, CenterID]);
+
   const fetchFloCollection = async () => {
     try {
       setLoading(true);
       await dispatch(
         fetchCurrentDayCollectionByCenterId({
-          centerId: Centerid,
+          centerId: CenterID,
           branchId: user?.branchid,
         }),
       );
@@ -116,6 +137,35 @@ const CenterCollection = ({route}) => {
       setLoading(false);
     }
   };
+
+  function canStartMeeting(meetingTime) {
+    // Get the current date and time
+    const now = new Date();
+
+    // Parse the meeting time
+    const [time, modifier] = meetingTime.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    // Adjust hours for AM/PM
+    if (modifier === 'PM' && hours !== 12) {
+      hours += 12;
+    }
+    if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+
+    // Create a Date object for the meeting time on the same day
+    const meetingDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      hours,
+      minutes,
+    );
+
+    // Compare the current time with the meeting time
+    return now >= meetingDate;
+  }
 
   return (
     <ScreenWrapper header={false}>
@@ -130,28 +180,90 @@ const CenterCollection = ({route}) => {
           />
           <CenterInfo
             data={data}
-            Centerid={Centerid}
+            Centerid={CenterID}
             Meeting_Time={Meeting_Time}
+            BranchName={BranchName}
+            cename={cename}
+            ceday={ceday}
           />
         </View>
         <FinancialOverview data={finData} />
+        {/* Fixed-position button */}
+        <TouchableOpacity
+          style={[
+            styles.fixedButton,
+            {
+              backgroundColor:
+                meeting && meeting.EndTime == null
+                  ? R.colors.RED
+                  : meeting && meeting.EndTime?.length >= 1
+                  ? R.colors.orange
+                  : R.colors.BLUE,
+            },
+          ]}
+          onPress={() => {
+            if (canStartMeeting(Meeting_Time)) {
+              if (meeting && meeting?.EndTime?.length) {
+                Alert.alert('Meeting Already Finished..');
+                return;
+              }
+              if (meeting == null) {
+                startMeeting();
+                return;
+              }
+              if (meeting && meeting?.EndTime == null) {
+                endMeeting();
+              }
+            } else {
+              Alert.alert(
+                'You can not start the meeting before the center meeting time...',
+              );
+            }
+          }}>
+          <Text
+            style={[
+              styles.buttonText,
+              {
+                backgroundColor:
+                  meeting && meeting.EndTime == null
+                    ? R.colors.RED
+                    : meeting && meeting.EndTime?.length >= 1
+                    ? R.colors.orange
+                    : R.colors.BLUE,
+              },
+            ]}>
+            {meeting && meeting?.EndTime?.length >= 1
+              ? 'Meeting Finished'
+              : meeting && meeting.EndTime == null
+              ? 'End Meeting'
+              : 'Start Meeting'}
+          </Text>
+        </TouchableOpacity>
       </View>
       <ClientsList
-        collection={collection}
-        Centerid={Centerid}
+        collection={collections}
+        Centerid={CenterID}
         loading={loading}
-        // fetchFloCollection={fetchFloCollection}
+        meeting={meeting}
       />
       <Loader loading={loading} />
     </ScreenWrapper>
   );
 };
 
-const CenterInfo = ({data, Centerid, Meeting_Time}) => (
+const CenterInfo = ({
+  data,
+  Centerid,
+  Meeting_Time,
+  BranchName,
+  cename,
+  ceday,
+}) => (
   <View style={styles.centerInfo}>
-    <Text style={styles.value}>Branch Name: {data?.Branch_Name}</Text>
-    <Text style={styles.value}>Center Name: {data?.Center_Name}</Text>
+    <Text style={styles.value}>Branch Name: {BranchName}</Text>
+    <Text style={styles.value}>Center Name: {cename}</Text>
     <Text style={styles.value}>Center ID: {Centerid}</Text>
+    <Text style={styles.value}>Meeting Day: {ceday}</Text>
     <Text style={styles.value}>Meeting Time: {Meeting_Time}</Text>
   </View>
 );
@@ -176,23 +288,27 @@ const FinancialOverview = ({data}) => (
   </View>
 );
 
-const ClientsList = ({collection, Centerid, loading, fetchFloCollection}) => (
+const ClientsList = ({collection, Centerid, loading, meeting}) => (
   <View style={styles.container}>
     {collection.length > 0 && (
       <FlatList
         data={collection}
-        keyExtractor={item => item?.LoanID?.toString()}
+        keyExtractor={item => item?.customerid?.toString()}
         renderItem={({item, index}) => (
-          <ClientItem item={item} index={index} centerId={Centerid} />
+          <ClientItem
+            item={item}
+            index={index}
+            centerId={Centerid}
+            meeting={meeting}
+          />
         )}
         refreshing={loading}
-        onRefresh={fetchFloCollection}
+        onRefresh={() => console.log('Refresh triggered')}
       />
     )}
   </View>
 );
 
-// Reusable component for displaying label and value
 const InfoBlock = ({label, value, valueStyle}) => (
   <View style={styles.view}>
     <Text style={styles.label}>{label}</Text>
@@ -244,6 +360,18 @@ const styles = StyleSheet.create({
   view: {
     flex: 1,
     justifyContent: 'center',
+  },
+  fixedButton: {
+    position: 'absolute',
+    right: 10,
+    backgroundColor: R.colors.PRIMARI_DARK,
+    borderRadius: 12,
+    padding: 8,
+  },
+  buttonText: {
+    color: R.colors.WHITE,
+    fontWeight: '800',
+    fontSize: R.fontSize.M,
   },
 });
 

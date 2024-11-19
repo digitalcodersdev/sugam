@@ -7,7 +7,7 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
 const CollectionItem = ({item}) => {
   const navigation = useNavigation();
-  console.log('item', item);
+  // console.log('item', item);
   const percentage = useCallback(
     () =>
       (parseInt(item?.Coll_Amount == null ? 0:item?.Coll_Amount) /
@@ -34,7 +34,7 @@ const CollectionItem = ({item}) => {
             flex: 1,
             fontSize: R.fontSize.M,
           }}>
-          Center : {item.Centerid}
+          Center : {item.CenterID}
         </Text>
         <Text
           style={{

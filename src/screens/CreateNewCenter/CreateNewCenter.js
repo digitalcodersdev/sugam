@@ -25,11 +25,9 @@ import ValidationHelper from '../../helpers/ValidationHelper';
 import {useSelector} from 'react-redux';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import moment from 'moment';
-import env from '../../../env';
 import Loader from '../../library/commons/Loader';
-import DatePicker from 'react-native-date-picker';
-import {Calendar, LocaleConfig} from 'react-native-calendars';
-// import {TimerPicker} from 'react-native-timer-picker';
+import {Calendar,} from 'react-native-calendars';
+
 const DATA = {
   Monday: '1',
   Tuesday: '2',

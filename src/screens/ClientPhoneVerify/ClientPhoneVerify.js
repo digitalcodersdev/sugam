@@ -67,16 +67,18 @@ const ClientPhoneVerify = ({route}) => {
     if (valid) {
       setLoading(true);
       const res = await new UserApi().sendClientOtp({phone});
-      if (
-        res?.success &&
-        !res?.message?.includes('phone number already exists')
-      ) {
+      console.log(res);
+      if (res && res?.success) {
         Toast.show('OTP sent successfully', Toast.LONG, Toast.TOP);
         setOtpEnabled(true);
         setTrasactionId(res?.data?.transactionId);
         setTime(30);
-      } else {
+      } else if (res.message) {
         Toast.show(res.message, Toast.LONG, Toast.TOP);
+      } else {
+        Alert.alert(
+          'Something went wrong while sending OTP. Please try again later...',
+        );
       }
       setLoading(false);
     }
@@ -92,6 +94,7 @@ const ClientPhoneVerify = ({route}) => {
           phone: phone,
         };
         const res = await new AuthApi().verifyMobileOtpClient(data);
+        console.log(res);
         if (res) {
           const userData = await dispatch(getUserDetails());
           if (userData?.type?.includes('fulfilled')) {

@@ -9,7 +9,7 @@ class AuthenticationApi extends SecuredBaseApi {
       const response = await this.securedAxios.post(
         getApiUri(`/send/otp/client/${phone}`),
       );
-      if (response.data?.transactionId) {
+      if (response?.data?.transactionId) {
         return response;
       }
       return response;
@@ -28,6 +28,59 @@ class AuthenticationApi extends SecuredBaseApi {
       );
       if (response.data && response.success) {
         await sInfoUtil.save('USER_CONTEXT', JSON.stringify(response.data));
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
+
+  async fetchMeetingStatus({CenterID, BranchID, MeetingDate}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/get/meeting/status/${BranchID}/${CenterID}/${MeetingDate}`),
+      );
+      if (response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
+
+  async startMeeting({CenterID, BranchID}) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/start/meeting/${BranchID}/${CenterID}`),
+      );
+      if (response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
+  async endMeeting({CenterID, BranchID}) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri(`/end/meeting/${BranchID}/${CenterID}`),
+      );
+      if (response.success) {
         return response.data;
       }
       return false;
@@ -606,9 +659,6 @@ class AuthenticationApi extends SecuredBaseApi {
     }
   }
 
-
-
-
   async getCurrentDayAttendance(data) {
     try {
       const response = await this.securedAxios.post(
@@ -698,7 +748,6 @@ class AuthenticationApi extends SecuredBaseApi {
     }
   }
 
-
   async fetchMyAppliedLeaves() {
     try {
       const response = await this.securedAxios.get(
@@ -742,7 +791,35 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-
+  async createPaymentLink(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/generate/payment/link'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchPreClosAmt({customerid}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/foreclose/amount/${customerid}`),
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
 }
 
 export default AuthenticationApi;

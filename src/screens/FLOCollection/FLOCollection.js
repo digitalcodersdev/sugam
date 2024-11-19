@@ -3,7 +3,6 @@ import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import R from '../../resources/R';
-import {Picker} from '@react-native-picker/picker';
 import CollectionItem from '../../library/commons/CollectionItem';
 import {useDispatch, useSelector} from 'react-redux';
 import {
@@ -12,6 +11,7 @@ import {
 } from '../../store/slices/user/user.slice';
 import {fetchCurrentDayCollectionByBranchId} from '../../store/actions/userActions';
 import Loader from '../../library/commons/Loader';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const FLOCollection = () => {
   const dispatch = useDispatch();
@@ -23,7 +23,7 @@ const FLOCollection = () => {
   const [collectionType, setCollectionType] = useState(null);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    if (user?.branchid && collection?.length == 0 ) {
+    if (user?.branchid && collection?.length == 0) {
       fetchFloCollection();
     }
   }, [user]);
@@ -96,81 +96,112 @@ const FLOCollection = () => {
       CollAmount: 1200,
     },
   ];
+  const Target = collection?.reduce(
+    (accumulator, current) => accumulator + parseInt(current?.Due),
+    0,
+  );
+  const Received = collection?.reduce(
+    (accumulator, current) =>
+      accumulator + parseInt(current.Coll_Amount ? current?.Coll_Amount : 0),
+    0,
+  );
 
+  // const CollectionCard = ({Target, Received}) => {
+  //   const Balance = Target - Received;
+
+  //   return (
+  //     <View style={styles.card}>
+  //       <Text style={styles.heading}>Branch Collection Summary</Text>
+  //       <View style={styles.divider} />
+  //       <Text style={styles.text}>
+  //         <Text style={styles.label}>Target: </Text>₹{Target.toLocaleString()}
+  //       </Text>
+  //       <Text style={styles.text}>
+  //         <Text style={styles.label}>Received: </Text>₹
+  //         {Received.toLocaleString()}
+  //       </Text>
+  //       <Text
+  //         style={[
+  //           styles.text,
+  //           Balance < 0 ? styles.negativeBalance : styles.balance,
+  //         ]}>
+  //         <Text style={styles.label}>Balance: </Text>₹{Balance.toLocaleString()}
+  //       </Text>
+  //     </View>
+  //   );
+  // };
+
+  const CollectionCard = ({Target, Received}) => {
+    const Balance = Target - Received;
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.heading}>Center Collection Summary</Text>
+        <View style={styles.divider} />
+
+        <View style={styles.row}>
+          <Icon name="flag" size={24} color="#00796b" />
+          <Text style={styles.text}>
+            <Text style={styles.label}>Target: </Text>₹{Target.toLocaleString()}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Icon name="cash-100" size={24} color="#00796b" />
+          <Text style={styles.text}>
+            <Text style={styles.label}>Received: </Text>₹
+            {Received.toLocaleString()}
+          </Text>
+        </View>
+
+        <View style={styles.row}>
+          <Icon
+            name={Balance < 0 ? 'alert-circle-outline' : 'check-circle'}
+            size={24}
+            color={Balance < 0 ? '#d32f2f' : '#388e3c'}
+          />
+          <Text
+            style={[
+              styles.text,
+              Balance < 0 ? styles.negativeBalance : styles.balance,
+            ]}>
+            <Text style={styles.label}>Balance: </Text>₹
+            {Balance.toLocaleString()}
+          </Text>
+        </View>
+      </View>
+    );
+  };
   return (
     <ScreenWrapper header={false}>
-      <ChildScreensHeader screenName={'FLO'} />
-      <View style={{flexDirection: 'row'}}>
-        <Text
-          style={[
-            styles.tabText,
-            {
-              borderBottomWidth: selectedTab === 'Collection' ? 3 : 0,
-              borderColor: R.colors.primary,
-            },
-          ]}
-          onPress={() => setSelectedTab('Collection')}>
-          Today Collection
-        </Text>
-        <Text
-          style={[
-            styles.tabText,
-            {
-              borderBottomWidth: selectedTab === 'Arrear' ? 3 : 0,
-              borderColor: R.colors.primary,
-            },
-          ]}
-          onPress={() => setSelectedTab('Arrear')}>
-          Arrear Collection
-        </Text>
-      </View>
+      <ChildScreensHeader screenName={'FLO Today Collection'} />
       <View style={styles.container}>
-        {selectedTab === 'Collection' && DATA?.length >= 1 ? (
-          <FlatList
-            data={collection}
-            // data={DATA}
-            keyExtractor={item => item?.Centerid}
-            renderItem={({item, index}) => (
-              <CollectionItem item={item} index={index} />
-            )}
-            // refreshing={loading}
-            // onRefresh={fetchFloCollection}
-          />
-        ) : null}
-        {/* {selectedTab === 'Arrear' && DATA?.length >= 1 ? (
-          <View style={{}}>
-            <View style={[styles.viewInput]}>
-              <Picker
-                selectedValue={collectionType}
-                onValueChange={(itemValue, itemIndex) =>
-                  setCollectionType(itemValue)
-                }
-                mode="dropdown"
-                style={[
-                  styles.picker,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
-                ]}
-                dropdownIconColor={R.colors.DARKGRAY}>
-                {collectionType === null && (
-                  <Picker.Item
-                    label="-- Select --"
-                    value={null}
-                    enabled={false}
-                  />
-                )}
-                <Picker.Item label="Arrear" value="Arrear" />
-                <Picker.Item label="PTP" value="PTP" />
-              </Picker>
-            </View>
+        {collection?.length >= 1 ? (
+          <>
+            <CollectionCard Target={Target} Received={Received} />
             <FlatList
-              data={DATA}
-              keyExtractor={item => item?.id}
+              data={collection}
+              // data={DATA}
+              keyExtractor={item => item?.CenterID + '/' + item?.BranchID}
               renderItem={({item, index}) => (
                 <CollectionItem item={item} index={index} />
               )}
+              refreshing={loading}
+              onRefresh={fetchFloCollection}
             />
-          </View>
-        ) : null} */}
+          </>
+        ) : (
+          <Text
+            style={{
+              color: R.colors.DARKGRAY,
+              flex: 1,
+              textAlign: 'center',
+              textAlignVertical: 'center',
+              fontSize: R.fontSize.L,
+            }}>
+            No Data Available
+          </Text>
+        )}
       </View>
       <Loader loading={loading} />
     </ScreenWrapper>
@@ -209,166 +240,48 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignSelf: 'left',
   },
+  card: {
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4, // Shadow for Android
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: R.colors.DARK_BLUE,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#b2dfdb',
+    marginVertical: 12,
+  },
+  text: {
+    fontSize: 18,
+    color: '#004d40',
+    marginLeft: 10,
+  },
+  label: {
+    fontWeight: 'bold',
+  },
+  balance: {
+    color: '#388e3c', // Green for positive balance
+  },
+  negativeBalance: {
+    color: '#d32f2f', // Red for negative balance
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
 });
-
-// import {StyleSheet, Text, View, FlatList, useColorScheme} from 'react-native';
-// import React, {useState} from 'react';
-// import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-// import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
-// import R from '../../resources/R';
-// import {Picker} from '@react-native-picker/picker';
-// import CollectionItem from '../../library/commons/CollectionItem';
-
-// const FLOCollection = () => {
-//   const colorScheme = useColorScheme();
-//   const isDarkMode = colorScheme === 'dark';
-//   const [selectedTab, setSelectedTab] = useState('Collection');
-//   const [collectionType, setCollectionType] = useState(null);
-//   const DATA = [
-//     {
-//       id: 1,
-//       center: 385,
-//       time: '10:00 AM',
-//       target: '₹ 7,400.0',
-//       received: '₹ 7,400.0',
-//       balance: '₹ 0.0',
-//       percentage: 100,
-//     },
-//     {
-//       id: 2,
-//       center: 721,
-//       time: '08:00 AM',
-//       target: '₹ 16,200.0',
-//       received: '₹ 10,800.0',
-//       balance: '₹ 5400.0',
-//       percentage: 66,
-//     },
-//     {
-//       id: 3,
-//       center: 732,
-//       time: '10:00 AM',
-//       target: '₹ 2,700.0',
-//       received: '₹ 0.0',
-//       balance: '₹ 2,700.0',
-//       percentage: 0,
-//     },
-//     {
-//       id: 4,
-//       center: 733,
-//       time: '11:00 AM',
-//       target: '₹ 7,700.0',
-//       received: '₹ 0.0',
-//       balance: '₹ 2,700.0',
-//       percentage: 20,
-//     },
-//   ];
-
-//   return (
-//     <ScreenWrapper header={false}>
-//       <ChildScreensHeader screenName={'FLO Collection'} />
-//       <View style={{flexDirection: 'row'}}>
-//         <Text
-//           style={[
-//             styles.tabText,
-//             {
-//               borderBottomWidth: selectedTab === 'Collection' ? 3 : 0,
-//               borderColor: R.colors.primary,
-//             },
-//           ]}
-//           onPress={() => setSelectedTab('Collection')}>
-//           Collection
-//         </Text>
-//         <Text
-//           style={[
-//             styles.tabText,
-//             {
-//               borderBottomWidth: selectedTab === 'Arrear' ? 3 : 0,
-//               borderColor: R.colors.primary,
-//             },
-//           ]}
-//           onPress={() => setSelectedTab('Arrear')}>
-//           Arrear
-//         </Text>
-//       </View>
-//       <View style={styles.container}>
-//         {selectedTab === 'Collection' && DATA?.length >= 1 ? (
-//           <FlatList
-//             data={DATA}
-//             keyExtractor={item => item?.id}
-//             renderItem={({item, index}) => (
-//               <CollectionItem item={item} index={index} />
-//             )}
-//           />
-//         ) : null}
-//         {selectedTab === 'Arrear' && DATA?.length >= 1 ? (
-//           <View style={{}}>
-//             <View style={[styles.viewInput]}>
-//               <Picker
-//                 selectedValue={collectionType}
-//                 onValueChange={(itemValue, itemIndex) =>
-//                   setCollectionType(itemValue)
-//                 }
-//                 mode="dropdown"
-//                 style={[
-//                   styles.picker,
-//                   {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
-//                 ]}
-//                 dropdownIconColor={R.colors.DARKGRAY}>
-//                 {collectionType === null && (
-//                   <Picker.Item
-//                     label="-- Select --"
-//                     value={null}
-//                     enabled={false}
-//                   />
-//                 )}
-//                 <Picker.Item label="Arrear" value="Arrear" />
-//                 <Picker.Item label="PTP" value="PTP" />
-//               </Picker>
-//             </View>
-//             <FlatList
-//               data={DATA}
-//               keyExtractor={item => item?.id}
-//               renderItem={({item, index}) => (
-//                 <CollectionItem item={item} index={index} />
-//               )}
-//             />
-//           </View>
-//         ) : null}
-//       </View>
-//     </ScreenWrapper>
-//   );
-// };
-
-// export default FLOCollection;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 10,
-//   },
-//   tabText: {
-//     flex: 1,
-//     textAlign: 'center',
-//     color: R.colors.PRIMARY_LIGHT,
-//     backgroundColor: R.colors.SLATE_GRAY,
-//     textAlignVertical: 'center',
-//     height: 60,
-//     fontWeight: '700',
-//     fontSize: R.fontSize.L,
-//   },
-//   viewInput: {
-//     flexDirection: 'row',
-//     paddingHorizontal: 10,
-//     justifyContent: 'flex-end',
-//     marginVertical: 5,
-//     borderWidth: 0.5,
-//     borderRadius: 6,
-//     marginBottom: 10,
-//   },
-//   picker: {
-//     width: '100%',
-//     color: R.colors.PRIMARI_DARK,
-//     marginRight: 10,
-//     alignSelf: 'left',
-//   },
-// });

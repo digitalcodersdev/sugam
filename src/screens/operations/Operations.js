@@ -36,6 +36,14 @@ const Operations = () => {
       color: R.colors.DARK_ORANGE,
       image: require('../../assets/Images/collection.png'),
     },
+    {
+      id: 5,
+      icon: 'cash-multiple',
+      title: 'Arrear Collection',
+      screen: ScreensNameEnum.FLO_ARREAR_COLLECTION_SCREEN,
+      color: R.colors.DARK_ORANGE,
+      image: require('../../assets/Images/arrear.png'),
+    },
     // {
     //   id: 5,
     //   icon: 'check-circle-outline',

@@ -59,7 +59,6 @@ const VerifyAadhar = ({route}) => {
   };
 
   const verifyOtp = async () => {
-    
     try {
       setLoading(true);
       loaderMessage.current = 'Verifying Otp...';
@@ -181,7 +180,7 @@ const VerifyAadhar = ({route}) => {
         const res1 = await new UserApi().sendAadharOtp({
           aadharNo: aadharNumber,
         });
-
+        console.log('res1', res1);
         // Handle response if `data` is a string
         let res = res1;
         if (typeof res1?.data === 'string') {

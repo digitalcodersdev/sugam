@@ -17,7 +17,7 @@ import R from '../../resources/R';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {TextInput} from 'react-native-paper';
 import Button from '../../library/commons/Button';
-// import UserApi from '../../datalib/services/user.api';
+import UserApi from '../../datalib/services/user.api';
 import {useDispatch, useSelector} from 'react-redux';
 // import {
 //   fetchCurrentDayCollectionByBranchId,
@@ -27,6 +27,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import {useNavigation} from '@react-navigation/native';
 import ConfirmationModal from '../../library/modals/ConfirmationModal';
+import DynamicQRCode from '../../components/GenerateQr';
 
 const ClientCollection = ({route}) => {
   const dispatch = useDispatch();
@@ -40,19 +41,20 @@ const ClientCollection = ({route}) => {
     mblenumber,
     Center_Name,
     Co_BorrowerName,
-    EMI_Amount,
-    LoanID,
+    TodayEMI,
+    customerid,
     remainingCollection,
     centerId,
     Collection_Status,
     preclose_status,
   } = route?.params?.dt;
   const [selectedValue, setSelectedValue] = useState(null);
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
   const [amount, setAmount] = useState(null);
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
   const [preAmt, setPreAmt] = useState('');
-  console.log('preclose_status', preclose_status);
+  console.log('preclose_status', route?.params?.dt);
   const amountRef = useRef();
   const radioButtonsData = [
     {label: 'Full', value: 'full'},
@@ -61,7 +63,6 @@ const ClientCollection = ({route}) => {
     {label: 'Advance', value: 'advance'},
     {label: 'Pre-Closure', value: 'preClo'},
     {label: 'Full-Settlement.', value: 'full_settl'},
-
   ];
   const radioButtonsAmount = [
     {label: 'QR', value: 'QR'},
@@ -69,34 +70,34 @@ const ClientCollection = ({route}) => {
     {label: 'AEPS(AADHAR)', value: 'AEPS(AADHAR)'},
     {label: 'Other Online Transafer', value: 'other'}, //Transaction ID and date and payment made to
   ];
+  console.log(amount);
+  useEffect(() => {
+    if (amount > preAmt) {
+      Alert.alert('Amount cannot be greater than outstanding amount...');
+    }
+    if (preAmt == '') {
+      fetchPreClosureAmt();
+    }
+  }, [amount, TodayEMI]);
 
-  // useEffect(() => {
-  //   if (amount > preAmt) {
-  //     Alert.alert('Amount cannot be greater than outstanding amount...');
-  //   }
-  // if (preAmt == '') {
-  //   fetchPreClosureAmt();
-  // }
-  // }, [amount, EMI_Amount]);
-
-  // const fetchPreClosureAmt = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const res = await new UserApi().fetchPreClosAmt({loanId: LoanID});
-  //     if (res) {
-  //       setPreAmt(res[0]?.Foreclose_Amount);
-  //     }
-  //     setLoading(false);
-  //   } catch (error) {
-  //     console.log(error);
-  //     setLoading(false);
-  //   }
-  // };
+  const fetchPreClosureAmt = async () => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchPreClosAmt({customerid: customerid});
+      if (res) {
+        setPreAmt(res[0]?.Foreclose_Amount);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
 
   const handleSetAmount = val => {
     setSelectedValue(val);
     if (val == 'full') {
-      setAmount(EMI_Amount);
+      setAmount(parseInt(TodayEMI));
     } else if (val == 'partial') {
       setAmount(null);
     } else if (val === 'preClo') {
@@ -110,7 +111,7 @@ const ClientCollection = ({route}) => {
     //   const response = await dispatch(
     //     updateCollectionAmt({
     //       amount,
-    //       loanId: LoanID,
+    //       customerid: customerid,
     //       type: selectedValue,
     //       BranchID: user?.BranchId,
     //       CenterID: centerId,
@@ -176,7 +177,7 @@ const ClientCollection = ({route}) => {
       >
         <ScrollView keyboardShouldPersistTaps="handled">
           <View style={styles.top}>
-            <View style={styles.card}>
+            {/* <View style={styles.card}>
               <Icon name="lan-pending" size={24} color={R.colors.DARK_ORANGE} />
               <View style={styles.cardContent}>
                 <Text style={styles.cardLabel}>EMI Status</Text>
@@ -190,6 +191,13 @@ const ClientCollection = ({route}) => {
                   ]}>
                   {Collection_Status != 1 ? 'Pending' : 'Paid'}
                 </Text>
+              </View>
+            </View> */}
+            <View style={styles.card}>
+              <Icon name="credit-card" size={24} color={R.colors.DARK_BLUE} />
+              <View style={styles.cardContent}>
+                <Text style={styles.cardLabel}>Customer ID</Text>
+                <Text style={styles.cardValue}>{customerid}</Text>
               </View>
             </View>
             <View style={styles.card}>
@@ -210,14 +218,8 @@ const ClientCollection = ({route}) => {
                 <Text style={styles.cardValue}>{Branch_Name}</Text>
               </View>
             </View> */}
-            <View style={styles.card}>
-              <Icon name="credit-card" size={24} color={R.colors.DARK_BLUE} />
-              <View style={styles.cardContent}>
-                <Text style={styles.cardLabel}>Customer ID</Text>
-                <Text style={styles.cardValue}>{LoanID}</Text>
-              </View>
-            </View>
-            <View style={styles.card}>
+
+            {/* <View style={styles.card}>
               <Icon
                 name="calendar-month"
                 size={24}
@@ -227,7 +229,7 @@ const ClientCollection = ({route}) => {
                 <Text style={styles.cardLabel}>EMI No</Text>
                 <Text style={styles.cardValue}>{TotalEMI}</Text>
               </View>
-            </View>
+            </View> */}
             {/* <Pressable style={styles.card} onPress={handlePhoneCall}>
               <Icon name="phone" size={24} color={R.colors.DARK_BLUE} />
               <View style={styles.cardContent}>
@@ -241,7 +243,7 @@ const ClientCollection = ({route}) => {
               <Icon name="currency-inr" size={24} color={R.colors.DARK_BLUE} />
               <View style={styles.cardContent}>
                 <Text style={styles.cardLabel}>Amount</Text>
-                <Text style={styles.cardValue}>₹{EMI_Amount}</Text>
+                <Text style={styles.cardValue}>{TodayEMI}</Text>
               </View>
             </View>
             <View style={[styles.card, {}]}>
@@ -296,32 +298,38 @@ const ClientCollection = ({route}) => {
                     <RadioButton
                       label={item.label}
                       value={item.value}
-                      selectedValue={selectedValue}
-                      onPress={handleSetAmount}
+                      selectedValue={selectedPaymentMode}
+                      onPress={setSelectedPaymentMode}
                     />
                   )}
                 />
 
-                {Collection_Status != 1 && preclose_status == null && (
-                  <Button
-                    title={
-                      selectedValue === 'full'
-                        ? 'Confirm'
-                        : selectedValue === 'partial'
-                        ? 'Confirm'
-                        : 'Request'
-                    }
-                    buttonStyle={styles.btn}
-                    backgroundColor={
-                      selectedValue === 'full'
-                        ? R.colors.GREEN
-                        : R.colors.PRIMARY
-                    }
-                    textStyle={styles.btnText}
-                    disabled={!amount}
-                    onPress={() => setVis(true)}
-                  />
+                {amount && selectedPaymentMode == 'QR' && (
+                  <DynamicQRCode amount={amount} />
                 )}
+
+                {Collection_Status != 1 &&
+                  preclose_status == null &&
+                  selectedPaymentMode !== 'QR' && (
+                    <Button
+                      title={
+                        selectedValue === 'full'
+                          ? 'Confirm'
+                          : selectedValue === 'partial'
+                          ? 'Confirm'
+                          : 'Request'
+                      }
+                      buttonStyle={styles.btn}
+                      backgroundColor={
+                        selectedValue === 'full'
+                          ? R.colors.GREEN
+                          : R.colors.PRIMARY
+                      }
+                      textStyle={styles.btnText}
+                      disabled={!amount}
+                      onPress={() => setVis(true)}
+                    />
+                  )}
               </View>
             </View>
           </View>

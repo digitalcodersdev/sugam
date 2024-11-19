@@ -65,6 +65,9 @@ import AttendanceList from '../screens/HRScreens/AttendanceList';
 import MyLeavesList from '../screens/HRScreens/MyLeavesList';
 import AppliedLeaves from '../screens/HRScreens/AppliedLeaves';
 import LeaveApproval from '../screens/HRScreens/LeaveApproval';
+import FLOArrearCollection from '../screens/FLOCollection/FLOArrearCollection';
+import CenterArrearCollection from '../screens/CenterCollection/CenterArrearCollection';
+import ClientArrearCollection from '../screens/ClientCollection/ClientArrearCollection';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -185,13 +188,28 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             options={{headerShown: false}}
           />
           <RegistrationStack.Screen
+            component={FLOArrearCollection}
+            name={ScreensNameEnum.FLO_ARREAR_COLLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
             component={CenterCollection}
             name={ScreensNameEnum.CENTER_COLECTION_SCREEN}
             options={{headerShown: false}}
           />
           <RegistrationStack.Screen
+            component={CenterArrearCollection}
+            name={ScreensNameEnum.CENTER_ARREAR_COLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
             component={ClientCollection}
             name={ScreensNameEnum.CLIENT_COLLECTION_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={ClientArrearCollection}
+            name={ScreensNameEnum.CLIENT_ARREAR_COLLECTION_SCREEN}
             options={{headerShown: false}}
           />
           <RegistrationStack.Screen

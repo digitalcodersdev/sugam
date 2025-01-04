@@ -1,6 +1,6 @@
 /*
  * Api error related constants
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const ApiErrorEnum = {
   RESOURCE_NOT_FOUND_ERROR: 'RESOURCE_NOT_FOUND_ERROR',

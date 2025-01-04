@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, View, Pressable, ActivityIndicator} from 'react-native';
 /*
  * This function is used to create the button wrapper
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const ButtonWrapper = ({
   title,

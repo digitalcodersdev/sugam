@@ -3,12 +3,12 @@ import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
 /*
  * Here we handle all job related Api's
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 class JobApi extends SecuredBaseApi {
   /*
    * This function is used to post a new job
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async createJob(data) {
     try {
@@ -28,7 +28,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to update a job
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async updateJob(job, jobId) {
     try {
@@ -49,7 +49,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to fetch all jobs posted by an user
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async getMyJobs(userId) {
     try {
@@ -67,7 +67,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to fetch curre job of an user
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async getCurrentJob() {
     try {
@@ -85,7 +85,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to cancel a job
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async cancelJob(jobId) {
     try {
@@ -103,7 +103,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to cancel a job
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async completeJob(jobId) {
     try {
@@ -121,7 +121,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to delete a job
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async deleteJob(jobId) {
     try {
@@ -139,7 +139,7 @@ class JobApi extends SecuredBaseApi {
   }
   /*
    * This function is used to fetch all common skills
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async getSkills() {
     try {

@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import R from 'resources/R';
 /*
  * This class is used to print common skills that we select during creating a job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export default class Accordian extends Component {
   constructor(props) {

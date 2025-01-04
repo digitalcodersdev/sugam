@@ -4,10 +4,10 @@ import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
 
 class AuthenticationApi extends SecuredBaseApi {
-  async sendClientOtp({phone}) {
+  async sendClientOtp({phone, name}) {
     try {
       const response = await this.securedAxios.post(
-        getApiUri(`/send/otp/client/${phone}`),
+        getApiUri(`/send/otp/client/${phone}/${name}`),
       );
       if (response?.data?.transactionId) {
         return response;
@@ -28,6 +28,23 @@ class AuthenticationApi extends SecuredBaseApi {
       );
       if (response.data && response.success) {
         await sInfoUtil.save('USER_CONTEXT', JSON.stringify(response.data));
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
+  async getBankDropdown() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri('/get/bank/dropdowns'),
+      );
+      if (response.data && response.success) {
         return response.data;
       }
       return false;
@@ -75,6 +92,7 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+
   async endMeeting({CenterID, BranchID}) {
     try {
       const response = await this.securedAxios.put(
@@ -285,10 +303,10 @@ class AuthenticationApi extends SecuredBaseApi {
     }
   }
 
-  async fetchCurrentDayCollectionByBranchId({branchId}) {
+  async fetchCurrentDayCollectionByBranchId({branchId, date}) {
     try {
       const response = await this.securedAxios.get(
-        getApiUri(`/fetch/current-day/collection/pending/${branchId}`),
+        getApiUri(`/fetch/current-day/collection/pending/${branchId}/${date}`),
       );
       console.log(response, 'response');
       if (response.data) {
@@ -335,6 +353,62 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async insertApplicant(data) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri(`/insert/appl`),
+        data,
+      );
+      if (response.success) {
+        return response.success;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
+
+  async insertCoApplicant(data) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri(`/insert/coappl`),
+        data,
+      );
+      if (response.success) {
+        return response.success;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
+
+  async insertLoanPurpose(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/create/loan/purpose`),
+        data,
+      );
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
   async createEnrollmentHis(data) {
     try {
       const response = await this.securedAxios.post(
@@ -353,7 +427,6 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-
   async sendAadharOtp({aadharNo}) {
     try {
       const response = await this.securedAxios.post(
@@ -806,13 +879,118 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async sendCashRequestApproval(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/send/cash/request'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async createPaymentQR(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/generate/payment/qr'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
   async fetchPreClosAmt({customerid}) {
     try {
       const response = await this.securedAxios.get(
         getApiUri(`/fetch/foreclose/amount/${customerid}`),
       );
+      console.log('response_____', response);
+      if (response.data && response.success) {
+        return response.data[0];
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async getCashApprovalRequests() {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/cash/request`),
+      );
       if (response.data && response.success) {
         return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async updatePaymentStatus(data) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri(`/update/cash/request`),
+        data,
+      );
+      if (response.data && response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async updateBorrowerDocuments(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/update/borrower/documents'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async updateCoBorrowerDocuments(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/update/co-borrower/documents'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async saveBankDetails(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri('/save/bank/details'),
+        data,
+      );
+      if (response.data && response.success) {
+        return response;
       }
       return false;
     } catch (err) {

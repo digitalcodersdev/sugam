@@ -7,7 +7,7 @@ import R from '../../resources/R';
 // const btnTypes = ['primary', 'secondry', 'danger', 'info']
 /*
  * This function is used to create our Universal Button
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const Button = ({
   title = '',

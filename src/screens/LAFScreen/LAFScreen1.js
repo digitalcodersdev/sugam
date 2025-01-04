@@ -5,6 +5,7 @@ import {
   View,
   useColorScheme,
   TextInput,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState, useRef} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -14,6 +15,7 @@ import {useNavigation} from '@react-navigation/native';
 import {Picker} from '@react-native-picker/picker';
 import UserApi from '../../datalib/services/user.api';
 import Button from '../../library/commons/Button';
+import Loader from '../../library/commons/Loader';
 
 const LAFScreen1 = props => {
   const navigation = useNavigation();
@@ -21,7 +23,8 @@ const LAFScreen1 = props => {
   const isDarkMode = colorScheme === 'dark';
   const [phone, setPhone] = useState('');
   const {userData, coAppData} = props.route?.params?.data;
-  // console.log(userData);
+  console.log('userData', userData, props.route?.params?.data);
+  const {enrollmentId} = props.route?.params?.data;
   //new States
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
@@ -34,7 +37,9 @@ const LAFScreen1 = props => {
   const [gender, setGender] = useState(null);
   const [noOfDependent, setnoOfDependent] = useState(null);
   const [occupation, setOccupation] = useState('');
+  const [education, setEductaion] = useState('');
   const [maritalStatus, setMaritalStatus] = useState(null);
+  const [houseType, setHouseType] = useState(null);
   const [village, setVillage] = useState('');
   const [address, setAddress] = useState('');
   const [pincode, setPincode] = useState('');
@@ -44,6 +49,9 @@ const LAFScreen1 = props => {
   const [yearsAtAddress, setYearsAtCurrAdd] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [businessYears, setBusinessYears] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [caste, setCaste] = useState(null);
+  const [religion, setReligion] = useState(null);
 
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
@@ -52,6 +60,7 @@ const LAFScreen1 = props => {
   const motherNameRef = useRef(null);
   const noOfDependentRef = useRef(null);
   const occupationRef = useRef(null);
+  const educationRef = useRef(null);
   useEffect(() => {
     if (userData) {
       const {
@@ -67,12 +76,17 @@ const LAFScreen1 = props => {
         pincode,
         state,
         careOf,
+        gender,
+        dist,
+        vtc,
       } = userData;
+      const {coApplicantName} = coAppData;
       const names = name?.split(' ');
       if (names?.length == 2) {
         setFirstName(names[0]);
         setLastName(names[1]);
       }
+      setSpouseName(coApplicantName?.split(' ')[0]);
       if (names?.length == 3) {
         setFirstName(names[0]);
         setMiddleName(names[1]);
@@ -84,15 +98,189 @@ const LAFScreen1 = props => {
 
       setDob(dob);
       setPhone(phone);
-      setFatherName(careOf?.split(':')[1]);
+      setFatherName(
+        careOf?.split(' ').slice(1).toString()?.replaceAll(',', ' '),
+      );
       setPincode(pincode);
       setState(state);
       setAddress(address);
+      setGender(gender);
+      setDistrict(dist);
+      setVillage(vtc);
     }
   }, []);
-  console.log(firstName);
+  console.log(userData?.careOf);
+  const valid = () => {
+    const errors = {};
+    let valid = true;
+
+    // Validate Occupation
+    if (!occupation || occupation.trim() === '') {
+      errors.occupation = 'Occupation is required';
+      valid = false;
+      Alert.alert('Occupation is required');
+      return valid;
+    }
+    // Validate Education
+    if (!education || education.trim() === '') {
+      errors.occupation = 'Education is required';
+      valid = false;
+      Alert.alert('Education is required');
+      return valid;
+    }
+
+    if (!motherName || motherName.trim() === '') {
+      errors.motherName = 'Mother name is required';
+      valid = false;
+      Alert.alert('Mother name is required');
+      return valid;
+    }
+    // Validate Spouse Name
+    if (maritalStatus === null) {
+      errors.spouseName = 'Spouse name is required for married individuals';
+      valid = false;
+      Alert.alert('Select Marital Status');
+      return valid;
+    }
+
+    // Validate Parent Names
+    if (!fatherName || fatherName.trim() === '') {
+      errors.fatherName = 'Father name is required';
+      valid = false;
+      Alert.alert('Father Name is required');
+      return valid;
+    }
+
+    // Validate Number of Dependents
+    if (noOfDependent !== null && (isNaN(noOfDependent) || noOfDependent < 0)) {
+      errors.noOfDependent = 'Number of dependents must be a positive number';
+      valid = false;
+      Alert.alert('No of dependent is required');
+      return valid;
+    }
+
+    // Validate Marital Status
+    if (maritalStatus == null) {
+      errors.maritalStatus = 'Please select a valid marital status';
+      valid = false;
+      Alert.alert('Merital Status id required');
+      return valid;
+    }
+
+    if (religion === null) {
+      Alert.alert('Please Select Religion');
+      valid = false;
+      return valid;
+    }
+    if (caste === null) {
+      Alert.alert('Please Select Caste');
+      valid = false;
+      return valid;
+    }
+
+    // Validate Address Fields
+    if (!village || village.trim() === '') {
+      errors.village = 'Village is required';
+      valid = false;
+      Alert.alert('Village is required');
+      return valid;
+    }
+
+    if (!pincode || !/^[0-9]{6}$/.test(pincode)) {
+      errors.pincode = 'Please enter a valid 6-digit pincode';
+      valid = false;
+      Alert.alert('Pincode is required');
+      return valid;
+    }
+    // if (!block || block.trim() === '') {
+    //   errors.block = 'Block is required';
+    //   valid = false;
+    //   Alert.alert('Block is required');
+    //   return valid;
+    // }
+    if (!district || district.trim() === '') {
+      errors.district = 'District is required';
+      valid = false;
+      Alert.alert('District is required');
+      return valid;
+    }
+    if (!state || state.trim() === '') {
+      errors.state = 'State is required';
+      valid = false;
+      Alert.alert('State is required');
+      return valid;
+    }
+
+    // Validate Years at Address
+    if (!yearsAtAddress || isNaN(yearsAtAddress) || yearsAtAddress < 0) {
+      errors.yearsAtAddress = 'Years at address must be a positive number';
+      valid = false;
+      Alert.alert('Years at current Add is required');
+      return valid;
+    }
+
+    // // Validate Business Details
+    // if (!businessType || businessType.trim() === '') {
+    //   errors.businessType = 'Business type is required';
+    //   valid = false
+    //   Alert.alert("Occupation is required")
+    //   return valid
+    // }
+    // if (!businessYears || isNaN(businessYears) || businessYears < 0) {
+    //   errors.businessYears = 'Business years must be a positive number';
+    // }
+
+    return valid;
+  };
+
+  const handleNext = async () => {
+    try {
+      setLoading(true);
+      if (valid()) {
+        const GENDER = {
+          M: 1,
+          F: 2,
+        };
+        const payload = {
+          applicant: {
+            name: firstName,
+            client_middle_name: middleName,
+            client_last_name: lastName,
+            client_gender: GENDER[gender],
+            client_no_of_depend: noOfDependent,
+            client_occupation: occupation,
+            surname: fatherName,
+            spousesurname: motherName,
+            client_marital_status: maritalStatus,
+            spousename: spouseName,
+            client_no_of_yrs: yearsAtAddress,
+            enrollmentid: enrollmentId,
+            client_housetype: houseType,
+            address: address,
+            district: district,
+            state: state,
+            village: village,
+            pincode: pincode,
+            block: block,
+            religion: religion,
+            caste: caste,
+            education: education,
+          },
+        };
+        const response = await new UserApi().insertApplicant(payload);
+        if (response) {
+          navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN2, {
+            data: props.route?.params?.data,
+          });
+        }
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
   return (
-    <ScreenWrapper>
+    <ScreenWrapper header={false} backDisabled>
       <Text
         style={[
           styles.tagline,
@@ -127,6 +315,7 @@ const LAFScreen1 = props => {
                 value={firstName}
                 onChangeText={text => setFirstName(text)}
                 ref={firstNameRef}
+                editable={false}
                 style={[
                   styles.input,
                   {
@@ -146,6 +335,7 @@ const LAFScreen1 = props => {
               <TextInput
                 value={middleName}
                 onChangeText={text => setMiddleName(text)}
+                editable={false}
                 style={[
                   styles.input,
                   {
@@ -166,6 +356,7 @@ const LAFScreen1 = props => {
                 value={lastName}
                 onChangeText={text => setLastName(text)}
                 ref={lastNameRef}
+                editable={false}
                 style={[
                   styles.input,
                   {
@@ -186,6 +377,7 @@ const LAFScreen1 = props => {
                 value={dob}
                 onChangeText={text => setDob(text)}
                 // ref={lastNameRef}
+                editable={false}
                 style={[
                   styles.input,
                   {
@@ -206,6 +398,7 @@ const LAFScreen1 = props => {
                 selectedValue={gender}
                 onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
                 mode="dropdown"
+                enabled={false}
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
@@ -218,8 +411,8 @@ const LAFScreen1 = props => {
                     enabled={false}
                   />
                 )}
-                <Picker.Item label="Male" value="Male" />
-                <Picker.Item label="Female" value="Female" />
+                <Picker.Item label="Male" value="M" />
+                <Picker.Item label="Female" value="F" />
               </Picker>
             </View>
             <View style={styles.viewInput}>
@@ -228,6 +421,7 @@ const LAFScreen1 = props => {
                 value={phone}
                 onChangeText={setPhone}
                 //   ref={noOfDependentRef}
+                editable={false}
                 keyboardType="decimal-pad"
                 style={[
                   styles.input,
@@ -262,6 +456,7 @@ const LAFScreen1 = props => {
                 ]}
                 onFocus={() => setFocused('noOfDependent')}
                 onBlur={() => setFocused(null)}
+                maxLength={1}
               />
             </View>
             <View style={styles.viewInput}>
@@ -284,6 +479,26 @@ const LAFScreen1 = props => {
                 onBlur={() => setFocused(null)}
               />
             </View>
+            <View style={styles.viewInput}>
+              <Text style={styles.label}>Higher Education*</Text>
+              <TextInput
+                value={education}
+                onChangeText={setEductaion}
+                ref={educationRef}
+                style={[
+                  styles.input,
+                  {
+                    borderColor:
+                      focused === 'education'
+                        ? R.colors.primary
+                        : R.colors.PRIMARI_DARK,
+                    borderBottomWidth: focused === 'education' ? 1.5 : 1,
+                  },
+                ]}
+                onFocus={() => setFocused('education')}
+                onBlur={() => setFocused(null)}
+              />
+            </View>
 
             <View style={styles.viewInput}>
               <Text style={styles.label}>Father's Name*</Text>
@@ -291,6 +506,7 @@ const LAFScreen1 = props => {
                 value={fatherName}
                 onChangeText={text => setFatherName(text)}
                 ref={fatherNameRef}
+                editable={false}
                 style={[
                   styles.input,
                   {
@@ -345,8 +561,59 @@ const LAFScreen1 = props => {
                     enabled={false}
                   />
                 )}
-                <Picker.Item label="Married" value="Married" />
-                <Picker.Item label="Unmarried" value="Unmarried" />
+                <Picker.Item label="Single" value="1" />
+                <Picker.Item label="Married" value="2" />
+              </Picker>
+            </View>
+
+            <View style={styles.viewInput}>
+              <Text style={styles.label}>Religion*</Text>
+              <Picker
+                selectedValue={religion}
+                onValueChange={(itemValue, itemIndex) => setReligion(itemValue)}
+                mode="dropdown"
+                dropdownIconColor={R.colors.PRIMARI_DARK}
+                style={[
+                  styles.input,
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                ]}>
+                {religion === null && (
+                  <Picker.Item
+                    label="Select Religion"
+                    value={null}
+                    enabled={false}
+                  />
+                )}
+                <Picker.Item label="Hindu" value="Hindu" />
+                <Picker.Item label="Muslim" value="Muslim" />
+                <Picker.Item label="Christian" value="Christian" />
+                <Picker.Item label="Sikh" value="Sikh" />
+                <Picker.Item label="Buddh" value="Buddh" />
+                <Picker.Item label="Jain" value="Jain" />
+              </Picker>
+            </View>
+            <View style={styles.viewInput}>
+              <Text style={styles.label}>Caste*</Text>
+              <Picker
+                selectedValue={caste}
+                onValueChange={(itemValue, itemIndex) => setCaste(itemValue)}
+                mode="dropdown"
+                dropdownIconColor={R.colors.PRIMARI_DARK}
+                style={[
+                  styles.input,
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                ]}>
+                {caste === null && (
+                  <Picker.Item
+                    label="Select Caste"
+                    value={null}
+                    enabled={false}
+                  />
+                )}
+                <Picker.Item label="General" value="General" />
+                <Picker.Item label="SC" value="SC" />
+                <Picker.Item label="ST" value="ST" />
+                <Picker.Item label="OBC" value="OBC" />
               </Picker>
             </View>
             <View style={styles.viewInput}>
@@ -408,6 +675,7 @@ const LAFScreen1 = props => {
                 ]}
                 onFocus={() => setFocused('address')}
                 onBlur={() => setFocused(null)}
+                editable={false}
               />
             </View>
             <View style={styles.viewInput}>
@@ -487,6 +755,30 @@ const LAFScreen1 = props => {
               />
             </View>
             <View style={styles.viewInput}>
+              <Text style={styles.label}>House Type*</Text>
+              <Picker
+                selectedValue={houseType}
+                onValueChange={(itemValue, itemIndex) =>
+                  setHouseType(itemValue)
+                }
+                mode="dropdown"
+                dropdownIconColor={R.colors.PRIMARI_DARK}
+                style={[
+                  styles.input,
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                ]}>
+                {houseType === null && (
+                  <Picker.Item
+                    label="Select House Type"
+                    value={null}
+                    enabled={false}
+                  />
+                )}
+                <Picker.Item label="Own" value="Own" />
+                <Picker.Item label="Rented" value="Rented" />
+              </Picker>
+            </View>
+            <View style={styles.viewInput}>
               <Text style={styles.label}>Years At Current Address*</Text>
               <TextInput
                 value={yearsAtAddress}
@@ -505,7 +797,7 @@ const LAFScreen1 = props => {
                 onBlur={() => setFocused(null)}
               />
             </View>
-            <View style={styles.viewInput}>
+            {/* <View style={styles.viewInput}>
               <Text style={styles.label}>Business Type*</Text>
               <TextInput
                 value={businessType}
@@ -542,7 +834,7 @@ const LAFScreen1 = props => {
                 onFocus={() => setFocused('businessYears')}
                 onBlur={() => setFocused(null)}
               />
-            </View>
+            </View> */}
           </View>
           <Button
             title="NEXT"
@@ -553,14 +845,11 @@ const LAFScreen1 = props => {
               margin: 10,
             }}
             textStyle={{fontWeight: 'bold'}}
-            onPress={() =>
-              navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN2, {
-                data: props.route?.params?.data,
-              })
-            }
+            onPress={handleNext}
           />
         </ScrollView>
       </View>
+      <Loader loading={loading} message={'please wait...'} />
     </ScreenWrapper>
   );
 };

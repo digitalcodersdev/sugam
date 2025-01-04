@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import R from 'resources/R';
 /*
  * This function is used to create rating component
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export default function Rating() {
   const star = [1, 2, 3, 4, 5];

@@ -15,6 +15,8 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import BTextInput from '../../library/commons/BTextInput';
 import AuthApi from '../../datalib/services/authentication.api';
@@ -36,7 +38,6 @@ import {
   openSettings,
 } from 'react-native-permissions';
 import {startOtpListener, useOtpVerify} from 'react-native-otp-verify';
-import {MD2Colors} from 'react-native-paper';
 import Loader from '../../library/commons/Loader';
 
 const LogInScreen = () => {
@@ -52,6 +53,9 @@ const LogInScreen = () => {
   const intervalRef = useRef(null);
   const [time, setTime] = useState(30);
   const [permissionCount, setPermissionCount] = useState(0);
+  const [loginType, setLoginType] = useState('OTP');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   console.log(otp);
   const {
     otp: receivedOtp,
@@ -217,6 +221,49 @@ const LogInScreen = () => {
     },
     [transactionId, phone, authContext, dispatch],
   );
+  const valid = () => {
+    let valid = true;
+    const err = {};
+    if (!ValidationHelper.isPhone(username)) {
+      valid = false;
+      err.username = 'Please enter a valid phone number...';
+    }
+    if (password?.length <= 6 || password?.length <= 1) {
+      valid = false;
+      err.password = 'Please enter valid password';
+    }
+    setError(err);
+    return valid;
+  };
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      if (valid()) {
+        const payload = {
+          data: {
+            username,
+            password,
+          },
+        };
+        const response = await new AuthApi().login(payload);
+        console.log('response', response);
+        if (response) {
+          const userData = await dispatch(getUserDetails());
+          if (userData?.type?.includes('fulfilled')) {
+            authContext.signIn();
+            Toast.show('Signin Successfully', Toast.LONG, Toast.TOP);
+          }
+        } else {
+          Toast.show('Invalid Username or Password', Toast.LONG, Toast.TOP);
+        }
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
 
   const resendOtp = () => {
     if (otpEnabled) {
@@ -233,27 +280,111 @@ const LogInScreen = () => {
           source={require('../../assets/Images/mainbg.png')}
           style={{flex: 1}}
           resizeMode="stretch">
-          <Image
-            source={require('../../assets/Images/APP_LOGO.png')}
-            style={{width: '85%', alignSelf: 'center'}}
-            resizeMode="center"
-          />
-          <View style={styles.inputBlock}>
-            <View style={styles.inputContainer}>
-              {!otpEnabled ? (
-                <View>
+          <ScrollView>
+            <Image
+              source={require('../../assets/Images/APP_LOGO.png')}
+              style={{width: '85%', alignSelf: 'center'}}
+              resizeMode="center"
+            />
+
+            <View style={styles.inputBlock}>
+              {loginType === 'OTP' ? (
+                <View style={styles.inputContainer}>
+                  {!otpEnabled ? (
+                    <View>
+                      <View style={styles.mobileContainer}>
+                        <Icon
+                          name="phone"
+                          size={22}
+                          color={R.colors.primary}
+                          style={styles.phoneIcon}
+                        />
+                        <BTextInput
+                          autoFocus
+                          placeholder="Enter Your Phone Number..."
+                          value={phone}
+                          onChangeText={setPhone}
+                          placeholderTextColor={R.colors.DARKGRAY}
+                          maxLength={10}
+                          style={styles.textInput}
+                          keyboardType="numeric"
+                          onFocus={() => setError({})}
+                        />
+                      </View>
+                      {err.phone && (
+                        <Text style={styles.errorText}>{err.phone}</Text>
+                      )}
+                    </View>
+                  ) : (
+                    <>
+                      <View style={styles.verificationTextContainer}>
+                        <Text style={styles.verificationText}>
+                          A verification code has been sent to
+                        </Text>
+                        <Text
+                          style={styles.phoneNumberText}>{`+91${phone}`}</Text>
+                      </View>
+                      <OtpInput
+                        numberOfDigits={4}
+                        focusColor="green"
+                        focusStickBlinkingDuration={300}
+                        onTextChange={code => setOtp(code)}
+                        onFilled={text => console.log(`OTP is ${text}`)}
+                        theme={{
+                          containerStyle: {
+                            width: '80%',
+                            alignSelf: 'center',
+                          },
+                          pinCodeContainerStyle: {
+                            height: 50,
+                            width: 50,
+                            backgroundColor: R.colors.PRIMARY_LIGHT,
+                          },
+                          pinCodeTextStyle: styles.pinCodeText,
+                        }}
+                        value={otp?.toString()}
+                      />
+                    </>
+                  )}
+                  <View style={styles.buttonContainer}>
+                    {otpEnabled && time > 0 ? (
+                      <Text style={styles.resendText}>
+                        Resend OTP in {time} Seconds
+                      </Text>
+                    ) : otpEnabled ? (
+                      <TouchableOpacity onPress={() => handleOnSubmit('')}>
+                        <Text style={styles.resend}>Resend OTP</Text>
+                      </TouchableOpacity>
+                    ) : null}
+                    {/* {!otpEnabled && ( */}
+                    <Button
+                      title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
+                      onPress={
+                        otpEnabled ? () => handleVerifyOtp(otp) : handleOnSubmit
+                      }
+                      disabled={
+                        !otpEnabled ? phone.length !== 10 : otp.length !== 4
+                      }
+                      buttonStyle={styles.button}
+                      textStyle={styles.buttonText}
+                    />
+                    {/* )} */}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.inputContainer}>
                   <View style={styles.mobileContainer}>
                     <Icon
-                      name="phone"
+                      name="account-circle-outline"
                       size={22}
                       color={R.colors.primary}
                       style={styles.phoneIcon}
                     />
                     <BTextInput
                       autoFocus
-                      placeholder="Enter Your Phone Number..."
-                      value={phone}
-                      onChangeText={setPhone}
+                      placeholder="Enter Your Username(Phone No)..."
+                      value={username}
+                      onChangeText={setUsername}
                       placeholderTextColor={R.colors.DARKGRAY}
                       maxLength={10}
                       style={styles.textInput}
@@ -261,80 +392,76 @@ const LogInScreen = () => {
                       onFocus={() => setError({})}
                     />
                   </View>
-                  {err.phone && (
-                    <Text style={styles.errorText}>{err.phone}</Text>
+                  {err.username && (
+                    <Text style={styles.errorText}>{err.username}</Text>
                   )}
-                </View>
-              ) : (
-                <>
-                  <View style={styles.verificationTextContainer}>
-                    <Text style={styles.verificationText}>
-                      A verification code has been sent to
-                    </Text>
-                    <Text style={styles.phoneNumberText}>{`+91${phone}`}</Text>
+
+                  <View style={styles.mobileContainer}>
+                    <Icon
+                      name="lock"
+                      size={22}
+                      color={R.colors.primary}
+                      style={styles.phoneIcon}
+                    />
+                    <BTextInput
+                      autoFocus
+                      placeholder="Enter Your Password..."
+                      value={password}
+                      onChangeText={setPassword}
+                      placeholderTextColor={R.colors.DARKGRAY}
+                      maxLength={15}
+                      style={styles.textInput}
+                      // keyboardType="numeric"
+                      onFocus={() => setError({})}
+                    />
                   </View>
-                  <OtpInput
-                    numberOfDigits={4}
-                    focusColor="green"
-                    focusStickBlinkingDuration={300}
-                    onTextChange={code => setOtp(code)}
-                    onFilled={text => console.log(`OTP is ${text}`)}
-                    theme={{
-                      containerStyle: {
-                        width: '80%',
-                        alignSelf: 'center',
-                        // marginVertical: 20,
-                      },
-                      pinCodeContainerStyle: {
-                        height: 50,
-                        width: 50,
-                        backgroundColor: R.colors.PRIMARY_LIGHT,
-                      },
-                      pinCodeTextStyle: styles.pinCodeText,
-                    }}
-                    value={otp?.toString()}
-                  />
-                  {/* <ActivityIndicator
-                    animating={true}
-                    color={MD2Colors.red800}
-                    size="large"
-                  />
-                  <Text style={styles.waitingText}>
-                    Please wait while we verify your number
-                  </Text> */}
-                </>
+                  {err.password && (
+                    <Text style={styles.errorText}>{err.password}</Text>
+                  )}
+
+                  <View style={styles.buttonContainer}>
+                    <Button
+                      title="Login"
+                      onPress={() => {
+                        if (loginType === 'OTP') {
+                          if (otpEnabled) {
+                            handleVerifyOtp(otp);
+                          } else {
+                            handleOnSubmit();
+                          }
+                        } else {
+                          handleLogin();
+                        }
+                      }}
+                      buttonStyle={styles.button}
+                      textStyle={styles.buttonText}
+                    />
+                    {/* )} */}
+                  </View>
+                </View>
               )}
-              <View style={styles.buttonContainer}>
-                {otpEnabled && time > 0 ? (
-                  <Text style={styles.resendText}>
-                    Resend OTP in {time} Seconds
-                  </Text>
-                ) : otpEnabled ? (
-                  <TouchableOpacity onPress={() => handleOnSubmit('')}>
-                    <Text style={styles.resend}>Resend OTP</Text>
-                  </TouchableOpacity>
-                ) : null}
-                {/* {!otpEnabled && ( */}
-                <Button
-                  title={otpEnabled ? 'VERIFY OTP' : 'CONTINUE'}
-                  onPress={
-                    otpEnabled ? () => handleVerifyOtp(otp) : handleOnSubmit
+              <Text
+                style={styles.changeLoginType}
+                onPress={() => {
+                  if (loginType === 'OTP') {
+                    setLoginType('Username Password');
+                  } else {
+                    setLoginType('OTP');
                   }
-                  disabled={
-                    !otpEnabled ? phone.length !== 10 : otp.length !== 4
-                  }
-                  buttonStyle={styles.button}
-                  textStyle={styles.buttonText}
-                />
-                {/* )} */}
-              </View>
-            </View>
-            {!otpEnabled && (
-              <Text style={styles.appVersion}>
-                {`Current App Version ${APP_CONSTANTS.APP_VERSION}`}
+                }}>
+                {`Login With ${
+                  loginType === 'Username Password'
+                    ? 'OTP'
+                    : 'Username Password'
+                }`}
               </Text>
-            )}
-          </View>
+              {!otpEnabled && (
+                <Text style={styles.appVersion}>
+                  {`Current App Version ${APP_CONSTANTS.APP_VERSION}`}
+                </Text>
+              )}
+            </View>
+          </ScrollView>
         </ImageBackground>
         <Loader loading={isLoading} />
       </KeyboardAvoidingView>
@@ -349,7 +476,8 @@ const styles = StyleSheet.create({
   inputBlock: {
     width: '90%',
     alignSelf: 'center',
-    flex: 1,
+    height: Dimensions.get('window').height / 2.5,
+    justifyContent: 'space-around',
   },
   inputContainer: {
     paddingVertical: 20,
@@ -407,7 +535,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   buttonContainer: {
-    height: '30%',
+    height: '40%',
     justifyContent: 'space-around',
   },
   resendText: {
@@ -437,6 +565,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
     fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  changeLoginType: {
+    color: R.colors.BLUE,
+    fontSize: R.fontSize.L,
+    textAlign: 'center',
+    padding: 20,
+    fontWeight: '800',
     textDecorationLine: 'underline',
   },
   pinCodeText: {color: 'black'},

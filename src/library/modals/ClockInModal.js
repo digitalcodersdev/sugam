@@ -16,7 +16,7 @@ import {fetchClockinStatus} from '../../store/actions/userActions';
 import Loader from '../commons/Loader';
 /*
  * This function is used to create the confirmation modal
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 
 // Initialize Geocoder with your API key

@@ -198,7 +198,7 @@ const ClientItem = ({item, centerId, meeting}) => {
                   {'   Promise To Pay* :      '}
                   {moment(promiseToPayDate).format('DD MMM YYYY') ==
                   moment(new Date()).format('DD MMM YYYY')
-                    ? 'Promise To Pay'
+                    ? '-- Select Date --'
                     : moment(promiseToPayDate).format('DD-MMM-YYYY')}
                 </Text>
                 {open && (

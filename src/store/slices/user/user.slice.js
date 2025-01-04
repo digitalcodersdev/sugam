@@ -24,7 +24,7 @@ import {
 
 /*
  * This function is used to create user slice
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 
 const initialThunkState = {status: ThunkStatusEnum.IDLE, error: null};

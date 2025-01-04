@@ -414,6 +414,7 @@ const CreateNewCenter = ({}) => {
           centerPlace: centerPlace,
         };
         const res = await new UserApi().createCenter(data);
+        console.log(res);
         if (res && res.success) {
           fetchMaxCenterNo();
           navigation.goBack();
@@ -733,7 +734,7 @@ const CreateNewCenter = ({}) => {
               }
               onFocus={() => setFocused('pincode')}
               onBlur={() => setFocused(null)}
-              editable={false}
+              // editable={false}
             />
           </View>
         </ScrollView>

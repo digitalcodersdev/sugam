@@ -59,7 +59,7 @@ console.log(centre);
   const Item = ({item, index}) => (
     <Pressable
       onPress={() =>
-        navigation.navigate(ScreensNameEnum.CLIENT_PHONE_VERIFY, {
+        navigation.navigate(ScreensNameEnum.VERIFY_AADHAR_SCREEN, {
           center: item,
         })
       }

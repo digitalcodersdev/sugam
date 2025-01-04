@@ -18,7 +18,7 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from 'resources/R';
 /*
  * This function Component is used to render all Candidate profile
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const ViewCandidateScreen = () => {
   const navigation = useNavigation();

@@ -29,13 +29,11 @@ const CenterCollection = ({route}) => {
   const dispatch = useDispatch();
   const user = useSelector(currentUserSelector);
   const collections = useSelector(currentDayCollectionCenterSelector);
-  const {CenterID, Meeting_Time, BranchName, cename, ceday, BranchID} =
+  const {CenterID, Meeting_Time, BranchName, cename, ceday, BranchID,branchname} =
     route?.params?.centerData;
 
   const [loading, setLoading] = useState(false);
   const [meeting, setMeeting] = useState(null);
-
-  console.log(Meeting_Time);
 
   const data = collections?.find(item => item.centreid === CenterID);
 
@@ -69,22 +67,22 @@ const CenterCollection = ({route}) => {
   }, [CenterID, BranchID]);
   const fetchMeetingStatus = async () => {
     try {
-      setLoading(true);
+      // setLoading(true);
       const response = await new UserAPi().fetchMeetingStatus({
         CenterID,
         BranchID,
         MeetingDate: moment(new Date()).format('YYYY-MM-DD'),
       });
-      console.log('Start Meeting', response);
       if (response?.data?.length >= 1) {
         setMeeting(response?.data[0]);
       }
-      setLoading(false);
+      // setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
     }
   };
+
   const startMeeting = async () => {
     try {
       const response = await new UserAPi().startMeeting({
@@ -99,6 +97,7 @@ const CenterCollection = ({route}) => {
       setLoading(false);
     }
   };
+
   const endMeeting = async () => {
     try {
       setLoading(true);
@@ -182,7 +181,7 @@ const CenterCollection = ({route}) => {
             data={data}
             Centerid={CenterID}
             Meeting_Time={Meeting_Time}
-            BranchName={BranchName}
+            BranchName={branchname}
             cename={cename}
             ceday={ceday}
           />

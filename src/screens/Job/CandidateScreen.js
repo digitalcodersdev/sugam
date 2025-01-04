@@ -10,7 +10,7 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from 'resources/R';
 /*
  * This Component is used to render  Accepted  Candidate
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const CandidateScreen = () => {
   const navigation = useNavigation();

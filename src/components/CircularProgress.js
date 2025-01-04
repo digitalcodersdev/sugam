@@ -6,6 +6,8 @@ const CircularProgress = ({
   fillColor = 'blue',
   backgroundColor = 'gray',
   textColor = 'black',
+  height="80",
+  width="80",
 }) => {
   const radius = 50;
   const strokeWidth = 10;
@@ -13,7 +15,7 @@ const CircularProgress = ({
   const strokeDashoffset = circumference - (circumference * percentage) / 100;
 
   return (
-    <Svg height="80" width="80" viewBox="0 0 120 120">
+    <Svg height={height} width={width} viewBox="0 0 120 120">
       <Circle
         cx="60"
         cy="60"
@@ -38,6 +40,7 @@ const CircularProgress = ({
         textAnchor="middle"
         dy=".3em"
         fontSize="20"
+        fontWeight="600"
         fill={textColor}>
         {`${percentage}%`}
       </Text>

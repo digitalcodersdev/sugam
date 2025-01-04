@@ -13,7 +13,7 @@ import R from 'resources/R';
 import {uploadFile} from 'datalib/services/utility.api';
 /*
  * This function is used to select image and then upload
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const AddPicture = ({images = [], onImageChange}) => {
   const [imagePlaces] = useState([1, 2, 3]);

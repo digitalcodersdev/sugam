@@ -5,7 +5,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 import R from 'resources/R';
 /*
  * This function is used to take picture and set 
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export default function Images() {
   const [img1, setImg1] = useState('');

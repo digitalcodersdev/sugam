@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
       /*
    * This component is the bottom bar 
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
 export default function BottomBar(title) {
   return (

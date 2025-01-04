@@ -9,7 +9,7 @@ import {
 import Header from '../commons/Header';
 /*
  * This function is used to create Screen Wrapper
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const ScreenWrapper = ({
   children,

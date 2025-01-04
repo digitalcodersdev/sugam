@@ -3,7 +3,7 @@ import {Pressable, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 /*
  * This function is used to create our universal checkbox
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const CheckBox = ({defaultChecked, onCheck}) => {
   const [checked, setChecked] = useState(defaultChecked || false);

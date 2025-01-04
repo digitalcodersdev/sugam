@@ -1,6 +1,6 @@
 /*
  * Here we set the user related constant
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const SInfoTypeEnum = {
   JWT: 'JWT',

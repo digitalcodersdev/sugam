@@ -68,6 +68,8 @@ import LeaveApproval from '../screens/HRScreens/LeaveApproval';
 import FLOArrearCollection from '../screens/FLOCollection/FLOArrearCollection';
 import CenterArrearCollection from '../screens/CenterCollection/CenterArrearCollection';
 import ClientArrearCollection from '../screens/ClientCollection/ClientArrearCollection';
+import CashCollectionApproval from '../screens/CashCollectionApproval/CashCollectionApproval';
+import Grt from '../screens/Grt/Grt';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -293,6 +295,16 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             name={ScreensNameEnum.LEAVE_APPROVAL_SCREENS}
             options={{headerShown: false}}
           />
+          <RegistrationStack.Screen
+            component={CashCollectionApproval}
+            name={ScreensNameEnum.CASH_COLLCETION_APPROVAL_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={Grt}
+            name={ScreensNameEnum.GRT_SCREEN}
+            options={{headerShown: false}}
+          />
         </>
       )}
     </RegistrationStack.Navigator>
@@ -354,7 +366,7 @@ function MyTabs() {
             </Text>
           );
         },
-        tabBarStyle: {height: 100},
+        tabBarStyle: {height: 80},
       })}>
       <Tab.Screen
         name={ScreensNameEnum.HOME_SCREEN}
@@ -384,13 +396,13 @@ function MyTabs() {
           headerShown: false,
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name={ScreensNameEnum.EVENTS_SCREENS}
         component={Events}
         options={{
           headerShown: false,
         }}
-      />
+      /> */}
       {/* <Tab.Screen name="Settings" component={SettingsScreen} /> */}
     </Tab.Navigator>
   );

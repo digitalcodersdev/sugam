@@ -17,7 +17,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import R from 'resources/R';
 /*
  * This function Component is used to render  Select A Card  Screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 var cards = [
   {

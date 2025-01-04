@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 /*
  * This function is used to create  search bar
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const SearchBar = () => {
   return (

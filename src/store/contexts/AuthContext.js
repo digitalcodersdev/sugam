@@ -1,7 +1,7 @@
 /* eslint-disable no-void */
 /*
  * This function is used to return global methods
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 import React from 'react';
 

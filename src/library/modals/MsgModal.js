@@ -5,7 +5,7 @@ import Button from '../commons/Button';
 import R from '../../resources/R';
 /*
  * This function is used to create the confirmation modal
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const MsgModal = ({
   isVisible,

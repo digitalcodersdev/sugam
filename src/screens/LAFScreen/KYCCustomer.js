@@ -12,7 +12,6 @@ import {
 import {launchCamera} from 'react-native-image-picker';
 ScreensNameEnum;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-// import {uploadFile} from '../datalib/services/utility.api';
 
 import {useNavigation} from '@react-navigation/native';
 import Button from '../../library/commons/Button';
@@ -20,6 +19,9 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import R from '../../resources/R';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
+import {uploadFile} from '../../datalib/services/utility.api';
+import UserApi from '../../datalib/services/user.api';
+import Loader from '../../library/commons/Loader';
 
 const KYCCustomer = ({route}) => {
   const navigation = useNavigation();
@@ -32,9 +34,10 @@ const KYCCustomer = ({route}) => {
   const [panCard, setPanCard] = useState(null);
   const [housePhoto, setHousePhoto] = useState(null);
   const [err, setErr] = useState({});
-  //   console.log("route",route?.params);
+  const [loading,setLoading] = useState(false)
+  console.log('route', route?.params?.data);
 
-  //   const {EnrollmentID} = route?.params?.data;
+  const {userData, enrollmentId} = route?.params?.data;
 
   const handleImagePick = setter => {
     launchCamera({mediaType: 'photo', quality: 0.8}, response => {
@@ -48,7 +51,6 @@ const KYCCustomer = ({route}) => {
       }
     });
   };
-  console.log(voterIdBack);
 
   const validateForm = useCallback(() => {
     let valid = true;
@@ -71,29 +73,39 @@ const KYCCustomer = ({route}) => {
       return valid;
     }
 
-    if ((!voterId || !voterIdBack) && !panCard) {
-      if (!voterId && voterIdBack) {
-        newErrors.voterId = !voterId;
+    if (userData?.panNo !== '') {
+      if (!panCard) {
+        newErrors.panCard = !panCard;
         valid = false;
         setErr(newErrors);
-        Alert.alert('Please Upload Voter ID Front');
+        Alert.alert('Please Upload Pan card Front');
         return valid;
       }
-      if (voterId && !voterIdBack) {
-        console.log('_______', {voterId, voterIdBack});
+    }
+    if (userData?.voterId !== '') {
+      if (!voterId || !voterIdBack) {
+        if (!voterId && voterIdBack) {
+          newErrors.voterId = !voterId;
+          valid = false;
+          setErr(newErrors);
+          Alert.alert('Please Upload Voter ID Front');
+          return valid;
+        }
+        if (voterId && !voterIdBack) {
+          console.log('_______', {voterId, voterIdBack});
+          newErrors.voterIdBack = !voterIdBack;
+          valid = false;
+          setErr(newErrors);
+          Alert.alert('Please Upload Voter ID Back');
+          return valid;
+        }
+        newErrors.voterId = !voterId;
         newErrors.voterIdBack = !voterIdBack;
         valid = false;
         setErr(newErrors);
-        Alert.alert('Please Upload Voter ID Back');
+        Alert.alert('Please Upload PAN OR Voter ID ');
         return valid;
       }
-      newErrors.voterId = !voterId;
-      newErrors.voterIdBack = !voterIdBack;
-      newErrors.panCard = !panCard;
-      valid = false;
-      setErr(newErrors);
-      Alert.alert('Please Upload PAN OR Voter ID ');
-      return valid;
     }
 
     if (!housePhoto) {
@@ -109,87 +121,91 @@ const KYCCustomer = ({route}) => {
   }, [clientPhoto, aadharFront, aadharBack, voterId, panCard, housePhoto]);
 
   const handleSubmit = async () => {
+    try {
+      setLoading(true)
     if (validateForm()) {
       const formData = new FormData();
       // Append files to FormData
       formData.append('clientPhoto', {
         uri: clientPhoto.uri,
         type: clientPhoto.type,
-        name: clientPhoto.fileName,
+        name: `clientPhoto-${enrollmentId}.jpg`,
       });
       formData.append('aadharFront', {
         uri: aadharFront.uri,
         type: aadharFront.type,
-        name: aadharFront.fileName,
+        name: `aadharFront-${enrollmentId}.jpg`,
       });
       formData.append('aadharBack', {
         uri: aadharBack.uri,
         type: aadharBack.type,
-        name: aadharBack.fileName,
+        name: `aadharBack-${enrollmentId}.jpg`,
       });
       if (voterId) {
         formData.append('voterId', {
           uri: voterId.uri,
           type: voterId.type,
-          name: voterId.fileName,
+          name: `voterId-${enrollmentId}.jpg`,
         });
       }
       if (voterIdBack) {
         formData.append('voterIdBack', {
           uri: voterId.uri,
           type: voterId.type,
-          name: voterId.fileName,
+          name: `voterIdBack-${enrollmentId}.jpg`,
         });
       }
       if (panCard) {
         formData.append('panCard', {
           uri: panCard.uri,
           type: panCard.type,
-          name: panCard.fileName,
+          name: `panCard-${enrollmentId}.jpg`,
         });
       }
       formData.append('housePhoto', {
         uri: housePhoto.uri,
         type: housePhoto.type,
-        name: housePhoto.fileName,
+        name: `housePhoto-${enrollmentId}.jpg`,
       });
+      formData.append('enrollmentId', enrollmentId);
 
-      try {
-        navigation.navigate(ScreensNameEnum.KYC_CO_CUSTOMER_SCREEN)
-        // const response = await uploadFile(formData);
-        // if (response?.success) {
-        //   const payload = {
-        //     borrowerDocuments: {
-        //       ClientImage: response?.files?.clientPhoto,
-        //       ClientAadharFront: response?.files?.aadharFront,
-        //       ClientAadharBack: response?.files?.aadharBack,
-        //       ClientPAN: response?.files?.panCard,
-        //       ClientVoterFront: response?.files?.voterId,
-        //       ClientVoterBack: response?.files?.voterIdBack,
-        //       HouseImage: response?.files?.housePhoto,
-        //       Enrollment_ID: EnrollmentID,
-        //     },
-        //   };
-        //   const res = await new UserApi().updateBorrowerDocuments(payload);
-        //   if (res?.success) {
-        //     Alert.alert("Client Documents Uploaded Successfully...");
-        //     navigation.navigate(ScreensNameEnum.CO_BORROWER_KYC_SCREEN, {
-        //       EnrollmentID,
-        //     });
-        //   }
-        // } else {
-        //   Alert.alert(response.message);
-        // }
-      } catch (error) {
-        console.error('Fetch error:', error);
+   
+        const response = await uploadFile(formData);
+        if (response?.success) {
+          const payload = {
+            borrowerDocuments: {
+              ClientImage: response?.files?.clientPhoto,
+              ClientAadharFront: response?.files?.aadharFront,
+              ClientAadharBack: response?.files?.aadharBack,
+              ClientPAN: response?.files?.panCard,
+              ClientVoterFront: response?.files?.voterId,
+              ClientVoterBack: response?.files?.voterIdBack,
+              HouseImage: response?.files?.housePhoto,
+              Enrollment_ID: enrollmentId,
+            },
+          };
+          const res = await new UserApi().updateBorrowerDocuments(payload);
+          if (res?.success) {
+            Alert.alert('Client Documents Uploaded Successfully...');
+            navigation.navigate(ScreensNameEnum.KYC_CO_CUSTOMER_SCREEN, {
+              data: route?.params?.data,
+            });
+          }
+        } else {
+          Alert.alert(response.message);
+        }
       }
+      setLoading(false)
+    } catch (error) {
+      console.error('Fetch error:', error);
+      setLoading(false)
     }
   };
 
   const styles = createStyles(colorScheme);
-  console.log(voterIdBack);
+
   return (
-    <ScreenWrapper header={false} backDisabled title="Client KYC">
+    <ScreenWrapper header={true} backDisabled title="Client KYC">
       {/* <ChildScreensHeader screenName={ScreensNameEnum.CLIENT_KYC_FORM} /> */}
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.container}>
@@ -303,139 +319,142 @@ const KYCCustomer = ({route}) => {
               </View>
             </TouchableOpacity>
           </View>
+
           <View style={styles.textView}>
             <Text style={styles.label}>Aadhar No.</Text>
-            <Text
-              style={styles.value}>
-              {'968081693804'}
-            </Text>
+            <Text style={styles.value}>{userData?.aadharNo}</Text>
           </View>
-          <View style={styles.sectionRow}>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setVoterId)}
-              style={[
-                styles.smallUploadButton,
-                {
-                  borderColor: err?.voterId
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.voterId ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Voter ID Front</Text>
-              <View>
-                {voterId && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setVoterId(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    voterId
-                      ? {uri: voterId?.uri}
-                      : require('../../assets/Images/VoterId.png')
-                  }
-                  style={styles.image}
-                  resizeMode="cover"
-                />
-              </View>
-            </TouchableOpacity>
+          {userData?.voterId && (
+            <>
+              <View style={styles.sectionRow}>
+                <TouchableOpacity
+                  onPress={() => handleImagePick(setVoterId)}
+                  style={[
+                    styles.smallUploadButton,
+                    {
+                      borderColor: err?.voterId
+                        ? R.colors.primary
+                        : R.colors.PRIMARI_DARK,
+                      borderWidth: err?.voterId ? 1.5 : 1,
+                    },
+                  ]}>
+                  <Text style={styles.buttonText}>Upload Voter ID Front</Text>
+                  <View>
+                    {voterId && (
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setVoterId(null);
+                        }}
+                      />
+                    )}
+                    <Image
+                      source={
+                        voterId
+                          ? {uri: voterId?.uri}
+                          : require('../../assets/Images/VoterId.png')
+                      }
+                      style={styles.image}
+                      resizeMode="cover"
+                    />
+                  </View>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => handleImagePick(setVoterIdBack)}
-              style={[
-                styles.smallUploadButton,
-                {
-                  borderColor: err?.voterIdBack
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.voterIdBack ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Voter ID Back</Text>
-              <View>
-                {voterIdBack && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setVoterIdBack(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    voterIdBack
-                      ? {uri: voterIdBack?.uri}
-                      : require('../../assets/Images/VoterId.png')
-                  }
-                  style={styles.image}
-                  resizeMode="cover"
-                />
+                <TouchableOpacity
+                  onPress={() => handleImagePick(setVoterIdBack)}
+                  style={[
+                    styles.smallUploadButton,
+                    {
+                      borderColor: err?.voterIdBack
+                        ? R.colors.primary
+                        : R.colors.PRIMARI_DARK,
+                      borderWidth: err?.voterIdBack ? 1.5 : 1,
+                    },
+                  ]}>
+                  <Text style={styles.buttonText}>Upload Voter ID Back</Text>
+                  <View>
+                    {voterIdBack && (
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setVoterIdBack(null);
+                        }}
+                      />
+                    )}
+                    <Image
+                      source={
+                        voterIdBack
+                          ? {uri: voterIdBack?.uri}
+                          : require('../../assets/Images/VoterId.png')
+                      }
+                      style={styles.image}
+                      resizeMode="cover"
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.textView}>
-            <Text style={styles.label}>Voter ID No.</Text>
-            <Text
-              style={styles.value}>
-              {'XQC4496545'}
-            </Text>
-          </View>
+              <View style={styles.textView}>
+                <Text style={styles.label}>Voter ID No.</Text>
+                <Text style={styles.value}>
+                  {userData?.voterId?.toUpperCase()}
+                </Text>
+              </View>{' '}
+            </>
+          )}
 
-          <View style={styles.section}>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setPanCard)}
-              style={[
-                styles.uploadButton,
-                {
-                  borderColor: err?.panCard
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.panCard ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload PAN Card</Text>
-              <View>
-                {panCard && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setPanCard(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    panCard
-                      ? {uri: panCard?.uri}
-                      : require('../../assets/Images/panCard.png')
-                  }
-                  resizeMode="center"
-                  style={[styles.image, {width: 180}]}
-                />
+          {userData?.panNo !== '' && (
+            <>
+              <View style={styles.section}>
+                <TouchableOpacity
+                  onPress={() => handleImagePick(setPanCard)}
+                  style={[
+                    styles.uploadButton,
+                    {
+                      borderColor: err?.panCard
+                        ? R.colors.primary
+                        : R.colors.PRIMARI_DARK,
+                      borderWidth: err?.panCard ? 1.5 : 1,
+                    },
+                  ]}>
+                  <Text style={styles.buttonText}>Upload PAN Card</Text>
+                  <View>
+                    {panCard && (
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setPanCard(null);
+                        }}
+                      />
+                    )}
+                    <Image
+                      source={
+                        panCard
+                          ? {uri: panCard?.uri}
+                          : require('../../assets/Images/panCard.png')
+                      }
+                      resizeMode="center"
+                      style={[styles.image, {width: 180}]}
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.textView}>
-            <Text style={styles.label}>PAN Card No.</Text>
-            <Text
-              style={styles.value}>
-              {'EQUPK1336K'}
-            </Text>
-          </View>
-
+              <View style={styles.textView}>
+                <Text style={styles.label}>PAN Card No.</Text>
+                <Text style={styles.value}>
+                  {userData?.panNo?.toUpperCase()}
+                </Text>
+              </View>
+            </>
+          )}
           <View style={styles.section}>
             <TouchableOpacity
               onPress={() => handleImagePick(setHousePhoto)}
@@ -482,6 +501,7 @@ const KYCCustomer = ({route}) => {
           />
         </View>
       </ScrollView>
+      <Loader loading={loading} message={"please wait..."} />
     </ScreenWrapper>
   );
 };
@@ -575,7 +595,7 @@ const createStyles = colorScheme =>
       padding: 5,
       width: '75%',
       alignSelf: 'center',
-      fontSize: R.fontSize.XL
+      fontSize: R.fontSize.XL,
     },
     label: {
       color: R.colors.PRIMARI_DARK,
@@ -583,17 +603,17 @@ const createStyles = colorScheme =>
       width: '60%',
       alignSelf: 'center',
       fontSize: R.fontSize.XL,
-      flex:1
+      flex: 1,
     },
-    value:{
-        color: R.colors.PRIMARI_DARK,
-        textAlign: 'center',
-        borderBottomWidth: 1,
-        fontSize: R.fontSize.XL,
-        alignSelf: 'center',
-        flex:1,
-        borderColor:R.colors.LIGHTGRAY
-      }
+    value: {
+      color: R.colors.PRIMARI_DARK,
+      textAlign: 'center',
+      borderBottomWidth: 1,
+      fontSize: R.fontSize.XL,
+      alignSelf: 'center',
+      flex: 1,
+      borderColor: R.colors.LIGHTGRAY,
+    },
   });
 
 export default KYCCustomer;

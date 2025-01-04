@@ -26,6 +26,7 @@ import {useSelector} from 'react-redux';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import {AuthContext} from '../../store/contexts/AuthContext';
 import Video from 'react-native-video';
+import ConfirmationModal from '../../library/modals/ConfirmationModal';
 
 const DATA = [
   {
@@ -79,7 +80,7 @@ const DATA = [
 ];
 
 const HomeScreen = ({navigation}) => {
-  const [isModalVisible, setModalVisible] = useState(true);
+  const [isModalVisible, setModalVisible] = useState(false);
   const [canCloseModal, setCanCloseModal] = useState(false);
   const authContext = useContext(AuthContext);
   const user = useSelector(currentUserSelector);
@@ -108,13 +109,19 @@ const HomeScreen = ({navigation}) => {
 
   const keyExtractor = useCallback(item => item.id.toString(), []);
 
+  const handleConfirm = data => {
+    if (data == 'confirm') {
+      handleLogout();
+    }
+  };
+
   return (
     <ScreenWrapper header={false}>
       <StatusBar
         backgroundColor={R.colors.SLATE_GRAY}
         barStyle={'light-content'}
       />
-      <Modal
+      {/* <Modal
         visible={isModalVisible}
         transparent={true}
         animationType="slide"
@@ -137,10 +144,10 @@ const HomeScreen = ({navigation}) => {
               style={{
                 backgroundColor: R.colors.DARK_BLUE,
                 borderRadius: 30,
-                padding: 10,
+                padding: 20,
                 position: 'absolute',
                 right: 5,
-                top: 75,
+                top: 250,
                 zIndex: 999,
               }}
               onPress={() => setModalVisible(false)}
@@ -167,7 +174,7 @@ const HomeScreen = ({navigation}) => {
             </TouchableOpacity>
           )}
         </View>
-      </Modal>
+      </Modal> */}
       <ImageBackground
         source={require('../../assets/Images/mainbg.png')}
         resizeMode="stretch"
@@ -191,7 +198,7 @@ const HomeScreen = ({navigation}) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={handleLogout}>
+          <TouchableOpacity onPress={()=>setModalVisible(true)}>
             <Icon name="power" size={40} color={R.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -208,6 +215,12 @@ const HomeScreen = ({navigation}) => {
           />
         </View>
       </ImageBackground>
+      <ConfirmationModal
+        isVisible={isModalVisible}
+        onModalClose={setModalVisible}
+        onConfirm={handleConfirm}
+        confirmationText="are you sure you want to logout?"
+      />
     </ScreenWrapper>
   );
 };

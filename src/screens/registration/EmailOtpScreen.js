@@ -18,7 +18,7 @@ import Loader from 'library/commons/Loader';
 
 /*
  * This function Component is used to render EmailOtpScreen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const EmailOtpScreen = props => {
   const navigation = useNavigation();

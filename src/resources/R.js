@@ -4,7 +4,7 @@ import fontSize from './fonts/fontSize';
 // import {} from './icons/Icons';
 /*
  * Here we combined all the constants in R
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const R = {
   // icons: {},

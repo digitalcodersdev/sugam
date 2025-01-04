@@ -18,7 +18,7 @@ import {
 // TODO: Should we have api based status and errors for more fine grained control
 /*
  * This function is used to create job slice
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 
 const initialThunkState = {status: ThunkStatusEnum.IDLE, error: null};

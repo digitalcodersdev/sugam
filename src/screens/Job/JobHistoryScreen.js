@@ -18,7 +18,7 @@ import {getCurrentJob, cancelJob} from '../../store/actions/jobActions';
 import moment from 'moment';
 /*
  * This function Component is used to render Job History Screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const JobHistoryScreen = () => {
   const job = useSelector(state => state?.job.currentJob);

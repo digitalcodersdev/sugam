@@ -5,7 +5,7 @@ import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import ScreenWrapper from 'library/wrapper/ScreenWrapper';
 /*
  * This function Component is used to render Map screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export default function MapScreen() {
   const mapRef = useRef(null);

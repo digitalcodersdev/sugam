@@ -5,7 +5,7 @@ import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete'
 import R from 'resources/R';
 /*
  * This function is used to create our mapInput
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 
 const MapsInput = ({

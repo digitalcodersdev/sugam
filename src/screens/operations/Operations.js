@@ -44,25 +44,24 @@ const Operations = () => {
       color: R.colors.DARK_ORANGE,
       image: require('../../assets/Images/arrear.png'),
     },
-    // {
-    //   id: 5,
-    //   icon: 'check-circle-outline',
-    //   title: 'BM Approval',
-    //   screen: ScreensNameEnum.PROPOSAL_REVIEW_SCREEN,
-    //   screen: ScreensNameEnum.BM_OPERATIONS_SCREEN,
-    //   color: R.colors.DARK_ORANGE,
-    //   image: require('../../assets/Images/approve.png'),
-    // },
-    // {
-    //   id: 6,
-    //   icon: 'check-circle',
-    //   title: 'AM Approval',
-    //   screen: ScreensNameEnum.PROPOSAL_REVIEW_AM_SCREEN,
-    //   color: R.colors.DARK_ORANGE,
-    //   image: require('../../assets/Images/approve.png'),
-    // },
     {
       id: 6,
+      icon: 'check-circle-outline',
+      title: 'Cash Collection Approval',
+      screen: ScreensNameEnum.CASH_COLLCETION_APPROVAL_SCREEN,
+      color: R.colors.DARK_ORANGE,
+      image: require('../../assets/Images/cash_approval.png'),
+    },
+    {
+      id: 6,
+      icon: 'check-circle',
+      title: 'GRT',
+      screen: ScreensNameEnum.GRT_SCREEN,
+      color: R.colors.DARK_ORANGE,
+      image: require('../../assets/Images/grt.png'),
+    },
+    {
+      id: 7,
       icon: 'check-circle',
       title: 'Client Details',
       screen: ScreensNameEnum.CLIENT_INFORMATION,
@@ -230,6 +229,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     borderWidth: 1,
     borderColor: '#DDDDDD', // Light gray border
+    paddingVertical: 25,
   },
   iconWrapper: {
     backgroundColor: '#F0F0F0', // Light gray background for the icon

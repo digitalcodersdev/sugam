@@ -8,6 +8,9 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import R from './resources/R';
 import 'react-native-gesture-handler';
 navigator.geolocation = require('@react-native-community/geolocation');
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
+
 
 const App = () => {
   return (

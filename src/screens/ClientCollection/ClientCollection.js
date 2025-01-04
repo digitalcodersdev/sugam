@@ -9,6 +9,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -19,21 +21,18 @@ import {TextInput} from 'react-native-paper';
 import Button from '../../library/commons/Button';
 import UserApi from '../../datalib/services/user.api';
 import {useDispatch, useSelector} from 'react-redux';
-// import {
-//   fetchCurrentDayCollectionByBranchId,
-//   fetchCurrentDayCollectionByCenterId,
-//   updateCollectionAmt,
-// } from '../../store/actions/userActions';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import {useNavigation} from '@react-navigation/native';
 import ConfirmationModal from '../../library/modals/ConfirmationModal';
-import DynamicQRCode from '../../components/GenerateQr';
+import Loader from '../../library/commons/Loader';
+import {launchCamera} from 'react-native-image-picker';
 
 const ClientCollection = ({route}) => {
   const dispatch = useDispatch();
   const user = useSelector(currentUserSelector);
   const navigation = useNavigation();
   const [isVis, setVis] = useState(false);
+  const [qrCode, setQrCode] = useState(null);
   const {
     Borrower_Name,
     Branch_Name,
@@ -47,6 +46,7 @@ const ClientCollection = ({route}) => {
     centerId,
     Collection_Status,
     preclose_status,
+    Contact,
   } = route?.params?.dt;
   const [selectedValue, setSelectedValue] = useState(null);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
@@ -54,7 +54,9 @@ const ClientCollection = ({route}) => {
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
   const [preAmt, setPreAmt] = useState('');
-  console.log('preclose_status', route?.params?.dt);
+  const [clientImage, setClientImage] = useState(null);
+  const [isLinkSent, setIsLinkSent] = useState(false);
+
   const amountRef = useRef();
   const radioButtonsData = [
     {label: 'Full', value: 'full'},
@@ -62,30 +64,50 @@ const ClientCollection = ({route}) => {
     // {label: 'Interest', value: 'interest'},
     {label: 'Advance', value: 'advance'},
     {label: 'Pre-Closure', value: 'preClo'},
-    {label: 'Full-Settlement.', value: 'full_settl'},
+    // {label: 'Full-Settlement.', value: 'full_settl'},
   ];
   const radioButtonsAmount = [
     {label: 'QR', value: 'QR'},
+    {label: 'Link', value: 'link'},
     {label: 'Cash', value: 'Cash'},
     {label: 'AEPS(AADHAR)', value: 'AEPS(AADHAR)'},
-    {label: 'Other Online Transafer', value: 'other'}, //Transaction ID and date and payment made to
+    // {label: 'Deposit AT Bank', value: 'AEPS(AADHAR)'},
+    // {label: 'Other Online Transafer', value: 'other'}, //Transaction ID and date and payment made to
   ];
-  console.log(amount);
+  console.log(user);
   useEffect(() => {
-    if (amount > preAmt) {
+    function resetAllImages() {
+      setClientImage(null);
+      setQrCode(null);
+    }
+    resetAllImages();
+  }, [selectedPaymentMode, selectedValue]);
+
+  useEffect(() => {
+    if (amount > preAmt && selectedValue == 'advance') {
       Alert.alert('Amount cannot be greater than outstanding amount...');
+      setAmount(null);
+    }
+    if (amount > TodayEMI && selectedValue == 'partial') {
+      Alert.alert('Amount cannot be greater than Today EMI...');
+      setAmount(null);
     }
     if (preAmt == '') {
       fetchPreClosureAmt();
     }
   }, [amount, TodayEMI]);
+  useEffect(() => {
+    if (amount && selectedPaymentMode == 'QR') {
+      setQrCode(null);
+    }
+  }, [amount]);
 
   const fetchPreClosureAmt = async () => {
     try {
       setLoading(true);
       const res = await new UserApi().fetchPreClosAmt({customerid: customerid});
       if (res) {
-        setPreAmt(res[0]?.Foreclose_Amount);
+        setPreAmt(res[0]?.SettlementAmt);
       }
       setLoading(false);
     } catch (error) {
@@ -105,42 +127,85 @@ const ClientCollection = ({route}) => {
     }
   };
 
+  const handleImagePick = () => {
+    launchCamera({mediaType: 'photo', quality: 0.9}, response => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.errorMessage) {
+        console.log('ImagePicker Error: ', response.errorMessage);
+      } else if (response.assets && response.assets.length > 0) {
+        console.log(response.assets[0]);
+        setClientImage(response.assets[0]);
+      }
+    });
+  };
+
   const handleOnPress = async () => {
-    // try {
-    //   setLoading(true);
-    //   const response = await dispatch(
-    //     updateCollectionAmt({
-    //       amount,
-    //       customerid: customerid,
-    //       type: selectedValue,
-    //       BranchID: user?.BranchId,
-    //       CenterID: centerId,
-    //     }),
-    //   );
-    //   if (response?.type.includes('fulfilled')) {
-    //     await dispatch(
-    //       fetchCurrentDayCollectionByCenterId({
-    //         centerId,
-    //         branchId: user?.BranchId,
-    //       }),
-    //     );
-    //     await dispatch(
-    //       fetchCurrentDayCollectionByBranchId({branchId: user?.BranchId}),
-    //     );
-    //     if (selectedValue == 'full') {
-    //       Alert.alert('EMI Collected Successfully');
-    //     } else if (selectedValue == 'partial') {
-    //       Alert.alert('Amount Collected Successfully');
-    //     } else {
-    //       Alert.alert('Request Sent Successfully');
-    //     }
-    //     navigation.goBack();
-    //   }
-    //   setLoading(false);
-    // } catch (error) {
-    //   console.log(error);
-    //   setLoading(false);
-    // }
+    try {
+      setLoading(true);
+      const response = await new UserApi().sendCashRequestApproval({
+        data: {
+          amount: amount,
+          loanId: customerid,
+          paymentType: selectedValue,
+          branchId: user?.branchid,
+        },
+      });
+      if (response) {
+        Alert.alert('Request For Cash Approval Sent Successfully...');
+        setIsLinkSent(true);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
+  const handleGeneratePaymentLink = async () => {
+    try {
+      setLoading(true);
+      const response = await new UserApi().createPaymentLink({
+        data: {
+          amount: amount,
+          contact: 8265805176,
+          loanId: customerid,
+          paymentMode: selectedPaymentMode,
+          paymentType: selectedValue,
+        },
+      });
+      if ('upi_link' in response) {
+        Alert.alert('Payment link Send Successfully...');
+        setIsLinkSent(true);
+      }
+      console.log(response);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error generating payment link:', error);
+      setLoading(false);
+    }
+  };
+  const handleGeneratePaymentQR = async () => {
+    try {
+      setLoading(true);
+      const response = await new UserApi().createPaymentQR({
+        data: {
+          amount: amount,
+          contact: 7318340673,
+          loanId: customerid,
+          paymentMode: selectedPaymentMode,
+          paymentType: selectedValue,
+        },
+      });
+      console.log('HELLO', response);
+      if ('image_url' in response) {
+        setQrCode(response);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error generating payment link:', error);
+      setLoading(false);
+    }
   };
 
   const handleConfirm = data => {
@@ -291,7 +356,6 @@ const ClientCollection = ({route}) => {
                 <FlatList
                   data={radioButtonsAmount}
                   keyExtractor={item => item.value}
-                  // horizontal
                   numColumns={3}
                   showsHorizontalScrollIndicator={false}
                   renderItem={({item}) => (
@@ -303,33 +367,114 @@ const ClientCollection = ({route}) => {
                     />
                   )}
                 />
-
-                {amount && selectedPaymentMode == 'QR' && (
-                  <DynamicQRCode amount={amount} />
+                {qrCode?.image_url && selectedPaymentMode == 'QR' && (
+                  <Image
+                    source={{uri: qrCode?.image_url}}
+                    style={styles.qrImage}
+                    resizeMode="contain"
+                  />
                 )}
-
                 {Collection_Status != 1 &&
+                preclose_status == null &&
+                selectedPaymentMode === 'Cash' &&
+                clientImage !== null ? (
+                  <Button
+                    title={
+                      // selectedValue === 'full'
+                      //   ?
+                      'Request Cash Approval'
+                      // : selectedValue === 'partial'
+                      // ? 'Confirm'
+                      // : 'Request'
+                    }
+                    buttonStyle={styles.btn}
+                    backgroundColor={
+                      selectedValue === 'full'
+                        ? R.colors.GREEN
+                        : R.colors.PRIMARY
+                    }
+                    textStyle={styles.btnText}
+                    disabled={!amount}
+                    onPress={() => setVis(true)}
+                  />
+                ) : Collection_Status != 1 &&
                   preclose_status == null &&
-                  selectedPaymentMode !== 'QR' && (
-                    <Button
-                      title={
-                        selectedValue === 'full'
-                          ? 'Confirm'
-                          : selectedValue === 'partial'
-                          ? 'Confirm'
-                          : 'Request'
-                      }
-                      buttonStyle={styles.btn}
-                      backgroundColor={
-                        selectedValue === 'full'
-                          ? R.colors.GREEN
-                          : R.colors.PRIMARY
-                      }
-                      textStyle={styles.btnText}
-                      disabled={!amount}
-                      onPress={() => setVis(true)}
+                  selectedPaymentMode == 'link' ? (
+                  <Button
+                    title="Send Payment Link"
+                    onPress={handleGeneratePaymentLink}
+                    backgroundColor={R.colors.PRIMARY}
+                    textStyle={{fontWeight: '800'}}
+                    buttonStyle={{marginVertical: 20}}
+                    disabled={isLinkSent}
+                  />
+                ) : Collection_Status != 1 &&
+                  preclose_status == null &&
+                  selectedPaymentMode == 'QR' &&
+                  amount > 1 &&
+                  qrCode == null ? (
+                  <Button
+                    title="Generate Payment QR"
+                    onPress={handleGeneratePaymentQR}
+                    backgroundColor={R.colors.PRIMARY}
+                    textStyle={{fontWeight: '800'}}
+                    buttonStyle={{marginVertical: 20}}
+                  />
+                ) : null}
+
+                {selectedPaymentMode == 'Cash' &&
+                amount > 1 &&
+                clientImage === null ? (
+                  <TouchableOpacity
+                    onPress={handleImagePick}
+                    style={styles.imageSlot}>
+                    <Icon name="camera" size={35} color="#2A89F6" />
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: '#2A89F6',
+                        textAlign: 'center',
+                        fontWeight: '800',
+                      }}>
+                      Capture Client Image
+                    </Text>
+                  </TouchableOpacity>
+                ) : clientImage !== null &&
+                  selectedPaymentMode == 'Cash' &&
+                  amount > 1 ? (
+                  <>
+                    <Text
+                      onPress={() => {
+                        setClientImage(null);
+                        handleImagePick();
+                      }}
+                      style={{
+                        padding: 10,
+                        alignSelf: 'center',
+                        textAlign: 'center',
+                        color: R.colors.PRIMARY_LIGHT,
+                        backgroundColor: R.colors.DARK_BLUE,
+                        fontWeight: 'bold',
+                        fontSize: R.fontSize.L,
+                        marginBottom: 15,
+                        borderRadius: 12,
+                      }}>
+                      Retake Picture
+                    </Text>
+                    <Image
+                      source={{uri: clientImage.uri}}
+                      style={{
+                        width: '100%',
+                        height: 400,
+                        alignSelf: 'center',
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: R.colors.DARK_BLUE,
+                        resizeMode: 'cover',
+                      }}
                     />
-                  )}
+                  </>
+                ) : null}
               </View>
             </View>
           </View>
@@ -338,9 +483,10 @@ const ClientCollection = ({route}) => {
             isVisible={isVis}
             onModalClose={setVis}
             onConfirm={handleConfirm}
-            confirmationText="Are you sure you want to update EMI?"
+            confirmationText="Are you sure you want to send Cash Request for Approval?"
           />
         </ScrollView>
+        <Loader loading={loading} message={'please wait...'} />
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );
@@ -422,186 +568,22 @@ const styles = StyleSheet.create({
   contactNumber: {
     color: R.colors.BLUE,
   },
+  qrImage: {
+    height: 600,
+    width: '100%',
+    alignSelf: 'center',
+  },
+  imageSlot: {
+    width: '80%',
+    height: 100,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
+    marginRight: 10,
+    alignSelf: 'center',
+    flexDirection: 'row',
+  },
 });
-
-// import {StyleSheet, Text, View, FlatList, Pressable} from 'react-native';
-// import React, {useRef, useState} from 'react';
-// import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-// import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
-// import R from '../../resources/R';
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-// import {TextInput} from 'react-native-paper';
-// import Button from '../../library/commons/Button';
-
-// const ClientCollection = ({route}) => {
-//   const {dt} = route?.params;
-//   const [selectedValue, setSelectedValue] = useState(null);
-//   const [amount, setAmount] = useState(null);
-//   const [focused, setFocused] = useState(null);
-//   const amountRef = useRef();
-//   const radioButtonsData = [
-//     {label: 'Full', value: 'full'},
-//     {label: 'Partial', value: 'partial'},
-//     {label: 'Interest', value: 'interest'},
-//     {label: 'Adv.', value: 'adv'},
-//     {label: 'Pre-Clo.', value: 'preClo'},
-//   ];
-//   const radioButtonsAmount = [
-//     {label: 'Cash', value: 'Cash'},
-//     {label: 'AEPS(AADHAR)', value: 'AEPS(AADHAR)'},
-//     {label: 'QR', value: 'QR'},
-//   ];
-
-//   const RadioButton = ({label, value, selectedValue, onPress}) => (
-//     <Pressable style={styles.radioContainer} onPress={() => onPress(value)}>
-//       <Icon
-//         name={selectedValue === value ? 'radiobox-marked' : 'radiobox-blank'}
-//         size={24}
-//         color={selectedValue === value ? '#2196f3' : '#757575'}
-//       />
-//       <Text style={styles.radioLabel}>{label}</Text>
-//     </Pressable>
-//   );
-//   return (
-//     <ScreenWrapper header={false}>
-//       <ChildScreensHeader screenName={'Collection'} />
-//       <View style={styles.top}>
-//         <Text style={[styles.value]}>Branch Name : {dt?.name}</Text>
-//         <Text style={[styles.value]}>Customer ID : {dt?.laonId}</Text>
-//         <Text style={[styles.value]}>EMI No : {dt?.emi}</Text>
-//         <Text style={[styles.value]}>Contact No : {dt?.phone}</Text>
-//         {/* <Text style={[styles.value]}>Death Date : {dt?.laonId}</Text> */}
-//         <Text style={[styles.value]}> {dt?.dueBalance}</Text>
-//       </View>
-//       <View style={styles.container}>
-//         <FlatList
-//           data={radioButtonsData}
-//           keyExtractor={item => item?.value}
-//           horizontal
-//           showsHorizontalScrollIndicator={false}
-//           renderItem={({item, index}) => (
-//             <RadioButton
-//               key={item.value}
-//               label={item.label}
-//               value={item.value}
-//               selectedValue={selectedValue}
-//               onPress={setSelectedValue}
-//             />
-//           )}
-//         />
-//         {/* {radioButtonsData?.map(button => (
-//           <RadioButton
-//             key={button.value}
-//             label={button.label}
-//             value={button.value}
-//             selectedValue={selectedValue}
-//             onPress={setSelectedValue}
-//           />
-//         ))} */}
-
-//         <TextInput
-//           label="Amount*"
-//           value={amount}
-//           onChangeText={setAmount}
-//           ref={amountRef}
-//           mode="flat"
-//           style={[
-//             styles.input,
-//             {
-//               borderBottomWidth: focused === 'amount' ? 1.5 : 1,
-//             },
-//           ]}
-//           activeUnderlineColor={
-//             focused === 'amount' ? R.colors.primary : R.colors.PRIMARI_DARK
-//           }
-//           onFocus={() => setFocused('amount')}
-//           onBlur={() => setFocused(null)}
-//         />
-//         {selectedValue === 'partial' ||
-//           (selectedValue === 'interest' && (
-//             <>
-//               <Text
-//                 style={[
-//                   styles.value,
-//                   {
-//                     color: R.colors.PRIMARI_DARK,
-//                     textAlign: 'left',
-//                     width: '98%',
-//                     margin: 5,
-//                   },
-//                 ]}>
-//                 Choose Payment Mode :
-//               </Text>
-//               <FlatList
-//                 data={radioButtonsAmount}
-//                 keyExtractor={item => item?.value}
-//                 horizontal
-//                 showsHorizontalScrollIndicator={false}
-//                 renderItem={({item, index}) => (
-//                   <RadioButton
-//                     key={item.value}
-//                     label={item.label}
-//                     value={item.value}
-//                     selectedValue={selectedValue}
-//                     onPress={setSelectedValue}
-//                   />
-//                 )}
-//               />
-//             </>
-//           ))}
-//         <Button
-//           title={selectedValue === 'full' ? 'Confirmed' : 'Request'}
-//           buttonStyle={styles.btn}
-//           backgroundColor={
-//             selectedValue === 'full' ? R.colors.GREEN : R.colors.primary
-//           }
-//           disabled={amount == null ? true : false}
-//         />
-//       </View>
-//     </ScreenWrapper>
-//   );
-// };
-
-// export default ClientCollection;
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flexWrap: 'wrap',
-//     justifyContent: 'space-around',
-//     padding: 10,
-//   },
-//   top: {padding: 10, backgroundColor: R.colors.SLATE_GRAY, width: '100%'},
-//   value: {
-//     color: R.colors.PRIMARY_LIGHT,
-//     fontWeight: '500',
-//     fontSize: R.fontSize.L,
-//     textAlign: 'left',
-//     flexWrap: 'wrap',
-//     width: '80%',
-//     alignSelf: 'center',
-//   },
-//   radioContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     margin: 10,
-//     marginHorizontal: 5,
-//   },
-//   radioLabel: {
-//     marginLeft: 8,
-//     fontSize: 16,
-//     color: R.colors.PRIMARI_DARK,
-//   },
-//   input: {
-//     borderBottomWidth: 1,
-//     color: R.colors.PRIMARI_DARK,
-//     textAlignVertical: 'bottom',
-//     fontSize: 16,
-//     fontWeight: '800',
-//     backgroundColor: R.colors.WHITE,
-//     marginBottom: 5,
-//   },
-//   btn: {
-//     borderRadius: 4,
-//     marginVertical: 10,
-//   },
-// });

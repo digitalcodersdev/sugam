@@ -18,7 +18,7 @@ import {getCurrentJob, cancelJob} from '../../store/actions/jobActions';
 import moment from 'moment';
 /*
  * This function Component is used to render Single Job posted by the user
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const MyJobScreen = () => {
   const job = useSelector(state => state?.job.currentJob);

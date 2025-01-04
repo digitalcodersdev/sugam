@@ -1,4 +1,10 @@
-import {StyleSheet, Text, View, FlatList, useColorScheme} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  SectionList,
+  useColorScheme,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
@@ -12,6 +18,8 @@ import {
 import {fetchCurrentDayCollectionByBranchId} from '../../store/actions/userActions';
 import Loader from '../../library/commons/Loader';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import DatePicker from 'react-native-date-picker';
+import moment from 'moment';
 
 const FLOCollection = () => {
   const dispatch = useDispatch();
@@ -21,20 +29,28 @@ const FLOCollection = () => {
   const user = useSelector(currentUserSelector);
   const [selectedTab, setSelectedTab] = useState('Collection');
   const [collectionType, setCollectionType] = useState(null);
+  const [date, setDate] = useState(new Date());
+  const [open, setOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    if (user?.branchid && collection?.length == 0) {
+    if (user?.branchid && collection?.length === 0) {
       fetchFloCollection();
     }
   }, [user]);
 
-  const fetchFloCollection = async () => {
+  const fetchFloCollection = async (
+    date = moment(new Date()).format('YYYY-MM-DD'),
+  ) => {
     try {
       setLoading(true);
-      const response = await dispatch(
-        fetchCurrentDayCollectionByBranchId({branchId: user?.branchid}),
+      await dispatch(
+        fetchCurrentDayCollectionByBranchId({
+          branchId: user?.branchid,
+          date: date,
+        }),
       );
-      console.log(response);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -42,154 +58,125 @@ const FLOCollection = () => {
     }
   };
 
-  const DATA = [
-    {
-      Centerid: 1,
-      center: 385,
-      Meeting_Time: '10:00 AM',
-      TARGET: '7,400.0',
-      RECEIVED: '7,400.0',
-      duebalance: '0.0',
-      percentage: 100,
-      LoanID: 102456,
-      EMI_Amount: 1080,
-      SanctionAmount: 30000,
-      CollAmount: 1200,
-    },
-    {
-      Centerid: 2,
-      center: 721,
-      Meeting_Time: '08:00 AM',
-      TARGET: '16,200.0',
-      RECEIVED: '10,800.0',
-      duebalance: '5400.0',
-      percentage: 66,
-      LoanID: 102458,
-      EMI_Amount: 1080,
-      SanctionAmount: 30000,
-      CollAmount: 1200,
-    },
-    {
-      Centerid: 3,
-      center: 385,
-      Meeting_Time: '10:00 AM',
-      TARGET: '7,000.0',
-      RECEIVED: '1,400.0',
-      duebalance: '0.0',
-      percentage: 100,
-      LoanID: 10246,
-      EMI_Amount: 680,
-      SanctionAmount: 30000,
-      CollAmount: 300,
-    },
-    {
-      Centerid: 4,
-      center: 721,
-      Meeting_Time: '08:00 AM',
-      TARGET: '26,200.0',
-      RECEIVED: '10,800.0',
-      duebalance: '5400.0',
-      percentage: 66,
-      LoanID: 10245,
-      EMI_Amount: 1080,
-      SanctionAmount: 50000,
-      CollAmount: 1200,
-    },
-  ];
   const Target = collection?.reduce(
-    (accumulator, current) => accumulator + parseInt(current?.Due),
+    (accumulator, current) =>
+      accumulator + parseInt(current?.Target + current?.ArrearDue),
     0,
   );
+
+  const TargetEMI = collection?.reduce(
+    (accumulator, current) => accumulator + parseInt(current?.Target),
+    0,
+  );
+
   const Received = collection?.reduce(
     (accumulator, current) =>
       accumulator + parseInt(current.Coll_Amount ? current?.Coll_Amount : 0),
     0,
   );
 
-  // const CollectionCard = ({Target, Received}) => {
-  //   const Balance = Target - Received;
+  const ArrearDueTotal = collection?.reduce(
+    (accumulator, current) =>
+      accumulator + parseInt(current?.ArrearDue ? current?.ArrearDue : 0),
+    0,
+  );
 
-  //   return (
-  //     <View style={styles.card}>
-  //       <Text style={styles.heading}>Branch Collection Summary</Text>
-  //       <View style={styles.divider} />
-  //       <Text style={styles.text}>
-  //         <Text style={styles.label}>Target: </Text>₹{Target.toLocaleString()}
-  //       </Text>
-  //       <Text style={styles.text}>
-  //         <Text style={styles.label}>Received: </Text>₹
-  //         {Received.toLocaleString()}
-  //       </Text>
-  //       <Text
-  //         style={[
-  //           styles.text,
-  //           Balance < 0 ? styles.negativeBalance : styles.balance,
-  //         ]}>
-  //         <Text style={styles.label}>Balance: </Text>₹{Balance.toLocaleString()}
-  //       </Text>
-  //     </View>
-  //   );
-  // };
+  const today = new Date();
+  const fiveDaysBefore = new Date();
+  fiveDaysBefore.setDate(today.getDate() - 5);
 
   const CollectionCard = ({Target, Received}) => {
     const Balance = Target - Received;
 
     return (
       <View style={styles.card}>
-        <Text style={styles.heading}>Center Collection Summary</Text>
+        <Text style={styles.heading}>Collection Summary</Text>
         <View style={styles.divider} />
 
         <View style={styles.row}>
-          <Icon name="flag" size={24} color="#00796b" />
-          <Text style={styles.text}>
-            <Text style={styles.label}>Target: </Text>₹{Target.toLocaleString()}
+          <Icon name="flag" size={30} color={R.colors.SECONDRY_DARK} />
+          <Text style={[styles.text, {color: R.colors.SECONDRY_DARK}]}>
+            <Text style={styles.label}>Target (Arrear + EMI's) : </Text> ₹
+            {Target.toLocaleString()}
           </Text>
         </View>
 
         <View style={styles.row}>
-          <Icon name="cash-100" size={24} color="#00796b" />
+          <Icon name="chemical-weapon" size={30} color={R.colors.DARK_BLUE} />
+          <Text style={[styles.text, {color: R.colors.DARK_BLUE}]}>
+            <Text style={styles.label}>Today EMI Total: </Text>₹
+            {TargetEMI.toLocaleString()}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Icon name="page-previous" size={30} color="#00796b" />
           <Text style={styles.text}>
-            <Text style={styles.label}>Received: </Text>₹
-            {Received.toLocaleString()}
+            <Text style={styles.label}>Arrear Due Total: </Text>₹
+            {ArrearDueTotal.toLocaleString()}
+          </Text>
+        </View>
+        <View style={styles.row}>
+          <Icon name="call-received" size={30} color={R.colors.BLUE} />
+          <Text style={[styles.text, {color: R.colors.BLUE}]}>
+            <Text style={[styles.label, {color: R.colors.BLUE}]}>
+              Received:{' '}
+            </Text>
+            ₹{Received.toLocaleString()}
           </Text>
         </View>
 
         <View style={styles.row}>
-          <Icon
-            name={Balance < 0 ? 'alert-circle-outline' : 'check-circle'}
-            size={24}
-            color={Balance < 0 ? '#d32f2f' : '#388e3c'}
-          />
+          <Icon name={'account-cash-outline'} size={30} color={'#d32f2f'} />
           <Text
             style={[
               styles.text,
               Balance < 0 ? styles.negativeBalance : styles.balance,
             ]}>
-            <Text style={styles.label}>Balance: </Text>₹
+            <Text style={styles.label}>Today Balance: </Text>₹
             {Balance.toLocaleString()}
           </Text>
         </View>
       </View>
     );
   };
+
+  const sections = [
+    {
+      title: 'Branch Summary',
+      data: [{Target, Received}], // Branch Summary is a single item section
+      renderItem: ({item}) => (
+        <CollectionCard Target={item.Target} Received={item.Received} />
+      ),
+    },
+    {
+      title: 'Collection Details',
+      data: collection,
+      renderItem: ({item, index}) => (
+        <CollectionItem item={item} index={index} />
+      ),
+    },
+  ];
+
   return (
-    <ScreenWrapper header={false}>
-      <ChildScreensHeader screenName={'FLO Today Collection'} />
+    <ScreenWrapper header={false} data={date}>
+      <ChildScreensHeader
+        screenName={`FLO Collection ${moment(date).format('YYYY-MM-DD')}`}
+        date={date}
+        onPress={() => setOpen(true)}
+      />
       <View style={styles.container}>
         {collection?.length >= 1 ? (
-          <>
-            <CollectionCard Target={Target} Received={Received} />
-            <FlatList
-              data={collection}
-              // data={DATA}
-              keyExtractor={item => item?.CenterID + '/' + item?.BranchID}
-              renderItem={({item, index}) => (
-                <CollectionItem item={item} index={index} />
-              )}
-              refreshing={loading}
-              onRefresh={fetchFloCollection}
-            />
-          </>
+          <SectionList
+            sections={sections}
+            keyExtractor={(item, index) =>
+              item?.CenterID
+                ? `${item?.CenterID}/${item?.BranchID}`
+                : `Branch Summary-${index}`
+            }
+            renderSectionHeader={({section: {title}}) => null}
+            refreshing={loading}
+            onRefresh={fetchFloCollection}
+          />
         ) : (
           <Text
             style={{
@@ -204,6 +191,22 @@ const FLOCollection = () => {
         )}
       </View>
       <Loader loading={loading} />
+      <DatePicker
+        modal
+        open={open}
+        date={date}
+        mode="date"
+        onConfirm={date => {
+          setOpen(false);
+          setDate(date);
+          fetchFloCollection(moment(date).format('YYYY-MM-DD'));
+        }}
+        onCancel={() => {
+          setOpen(false);
+        }}
+        maximumDate={new Date()}
+        minimumDate={fiveDaysBefore}
+      />
     </ScreenWrapper>
   );
 };
@@ -269,12 +272,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#004d40',
     marginLeft: 10,
+    fontWeight: '500',
   },
   label: {
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   balance: {
-    color: '#388e3c', // Green for positive balance
+    color: '#d32f2f', // Green for positive balance
   },
   negativeBalance: {
     color: '#d32f2f', // Red for negative balance
@@ -283,5 +287,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: R.colors.DARK_BLUE,
+    backgroundColor: '#f4f4f4',
+    padding: 10,
+    borderRadius: 5,
+    marginVertical: 10,
+    textAlign: 'center',
   },
 });

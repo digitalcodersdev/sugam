@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, Pressable} from 'react-native';
-import React, {useCallback} from 'react';
+import React, {useCallback, memo} from 'react';
 import R from '../../resources/R';
 import CircularProgress from '../../components/CircularProgress';
 import {useNavigation} from '@react-navigation/native';
@@ -7,67 +7,89 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
 const CollectionItem = ({item}) => {
   const navigation = useNavigation();
-  // console.log('item', item);
-  const percentage = useCallback(
-    () =>
-      (parseInt(item?.Coll_Amount == null ? 0:item?.Coll_Amount) /
-        parseInt(item?.Due != null ? item?.Due : 0)) *
-      100,
-    [item?.Coll_Amount, item?.Due],
-  );
+
+  const percentage = useCallback(() => {
+    const collAmount = parseInt(item?.Coll_Amount || 0);
+    const target = parseInt(item?.Target || 0);
+    return target > 0 ? (collAmount / target) * 100 : 0;
+  }, [item?.Coll_Amount, item?.Target]);
+
   const {Center_Time} = item;
   const res = parseInt(Center_Time.split(':')[0]);
   const time = `${Center_Time?.substring(0, 5)}${res < 12 ? ' AM' : ' PM'}`;
+
   return (
     <Pressable
-      style={styles.item}
+      style={styles.card}
       onPress={() =>
         navigation.navigate(ScreensNameEnum.CENTER_COLECTION_SCREEN, {
           centerData: {...item, percentage: percentage(), Meeting_Time: time},
         })
       }>
-      <View style={{flexDirection: 'row'}}>
-        <Text
-          style={{
-            color: R.colors.PRIMARI_DARK,
-            fontWeight: '500',
-            flex: 1,
-            fontSize: R.fontSize.M,
-          }}>
-          Center : {item.CenterID}
-        </Text>
-        <Text
-          style={{
-            color: R.colors.PRIMARI_DARK,
-            fontWeight: '500',
-            flex: 1,
-            fontSize: R.fontSize.M,
-          }}>
-          Center Time : {time}
-        </Text>
-        {/* <Text style={styles.uplaod}>Upload</Text> */}
-      </View>
-      <View style={{flexDirection: 'row'}}>
+      {/* Top Section */}
+      <View style={styles.header}>
         <CircularProgress
           percentage={percentage().toFixed(2)}
           fillColor={R.colors.GREEN}
           backgroundColor={R.colors.LIGHTGRAY}
+          height="70"
+          width="70"
         />
-        <View style={styles.view}>
-          <Text style={styles.label}>Target</Text>
-          <Text style={styles.value}>₹ {item?.Due ? item?.Due:0}</Text>
+        <View>
+          <Text style={styles.centerTitle}>Center ID</Text>
+          <Text style={styles.centerValue}>{item.CenterID}</Text>
         </View>
-        <View style={styles.view}>
-          <Text style={styles.label}>Received</Text>
-          <Text style={[styles.value, {color: R.colors.GREEN}]}>
-            ₹ {item?.Coll_Amount ? item?.Coll_Amount:0}
-          </Text>
+        <View>
+          <Text style={styles.centerTitle}>Meeting Time</Text>
+          <Text style={styles.centerValue}>{time}</Text>
         </View>
-        <View style={styles.view}>
-          <Text style={styles.label}>Balance</Text>
-          <Text style={[styles.value, {color: R.colors.primary}]}>
-            ₹ {item?.Due  ? item.Due :0 - item?.Coll_Amount ? item?.Coll_Amount:0}
-          </Text>
+      </View>
+
+      {/* Progress Section */}
+      <View style={styles.body}>
+        <View style={styles.statsContainer}>
+          <View
+            style={[
+              styles.statsContainerRow,
+              {borderBottomWidth: 0.5, borderBottomColor: R.colors.DARKGRAY},
+            ]}>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Target</Text>
+              <Text style={styles.statValue}>₹ {item?.Target || 0}</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Received</Text>
+              <Text style={[styles.statValue, styles.received]}>
+                ₹ {item?.Coll_Amount || 0}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Balance</Text>
+              <Text style={[styles.statValue, styles.balance]}>
+                ₹ {item?.Target || 0 - item?.Coll_Amount || 0}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.statsContainerRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Arrear</Text>
+              <Text style={[styles.statValue, styles.arrear]}>
+                ₹ {item?.ArrearDue || 0}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Received</Text>
+              <Text style={[styles.statValue, styles.received]}>
+                ₹ {item?.Coll_Amount || 0}
+              </Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statTitle}>Balance</Text>
+              <Text style={[styles.statValue, styles.balance]}>
+                ₹ {item?.Target || 0 - item?.Coll_Amount || 0}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
     </Pressable>
@@ -75,44 +97,81 @@ const CollectionItem = ({item}) => {
 };
 
 const styles = StyleSheet.create({
-  item: {
-    padding: 10,
-    marginBottom: 10,
-    borderWidth: 0.2,
-    borderBottomColor: R.colors.SLATE_GRAY,
+  card: {
+    padding: 16,
+    margin: 5,
     backgroundColor: '#FFFFFF',
-    shadowColor: R.colors.SLATE_GRAY,
-    shadowOffset: {width: 0, height: 2},
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 5,
-    borderRadius: 6,
+    elevation: 6,
   },
-  uplaod: {
-    color: 'blue',
-    fontWeight: '800',
-    fontSize: R.fontSize.M,
-    textDecorationLine: 'underline',
-    paddingHorizontal: 5,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    borderBottomWidth: 0.5,
+    borderBottomColor: R.colors.DARKGRAY,
+    paddingBottom: 5,
   },
-  label: {
+  centerTitle: {
+    fontSize: 14,
+    color: R.colors.SLATE_GRAY,
+    fontWeight: '500',
+  },
+  centerValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: R.colors.PRIMARI_DARK,
+  },
+  body: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statsContainer: {
+    flex: 1,
+    // marginLeft: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statsContainerRow: {
+    flex: 1,
+    // marginLeft: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    borderBottomWidth: 0.5,
+    borderBottomColor: R.colors.DARKGRAY,
+  },
+  statItem: {
+    marginBottom: 10,
+    flex: 1,
+  },
+  statTitle: {
+    fontSize: 14,
     color: R.colors.PRIMARI_DARK,
     fontWeight: '400',
-    fontSize: 12,
-    textAlign: 'center',
-    flexWrap: 'wrap',
   },
-  value: {
+  statValue: {
+    fontSize: 14,
+    fontWeight: '600',
     color: R.colors.PRIMARI_DARK,
-    fontWeight: '700',
-    fontSize: R.fontSize.M,
-    textAlign: 'center',
-    flexWrap: 'wrap',
-  },
-  view: {
-    flex: 1,
     justifyContent: 'center',
+    flex: 1,
+  },
+  received: {
+    color: R.colors.GREEN,
+  },
+  arrear: {
+    color: R.colors.DARK_ORANGE,
+  },
+  balance: {
+    color: R.colors.RED,
   },
 });
 
-export default CollectionItem;
+export default memo(CollectionItem);

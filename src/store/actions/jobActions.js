@@ -2,7 +2,7 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 import JobApi from '../../datalib/services/job.api';
 /*
  * This function is used to create an action to post a job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const createJob = createAsyncThunk(
   '/job/create',
@@ -16,7 +16,7 @@ export const createJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to update a job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const updateJob = createAsyncThunk(
   '/job/updateByJobid',
@@ -31,7 +31,7 @@ export const updateJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to get All jobs of that user
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const getMyJobs = createAsyncThunk(
   '/job/getByUserId',
@@ -45,7 +45,7 @@ export const getMyJobs = createAsyncThunk(
 );
 /*
  * This function is used to create an action to fetch current job of an user
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const getCurrentJob = createAsyncThunk(
   '/job/get-current-job',
@@ -59,7 +59,7 @@ export const getCurrentJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to cancel a job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const cancelJob = createAsyncThunk(
   '/job/cancel',
@@ -73,7 +73,7 @@ export const cancelJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to complete the job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const completeJob = createAsyncThunk(
   '/job/complete',
@@ -87,7 +87,7 @@ export const completeJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to delete the job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const deleteJob = createAsyncThunk(
   '/job/delete',
@@ -101,7 +101,7 @@ export const deleteJob = createAsyncThunk(
 );
 /*
  * This function is used to create an action to fetch all common skills
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const getSkills = createAsyncThunk(
   '/common/getSkills',

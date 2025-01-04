@@ -3,12 +3,12 @@ import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
   /*
    * Here we handle user bank related Api's
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
 class BankApi extends SecuredBaseApi {
     /*
    * This function is used to add an user bank
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async addBank(data) {
     try {
@@ -28,7 +28,7 @@ class BankApi extends SecuredBaseApi {
   }
     /*
    * This function is used to fetch all bank account of an user
-   * @author Kindajobs <mohitkumar.webdev@gmail.com>
+   * @author Sugam <mohitkumar.webdev@gmail.com>
    */
   async getBankAccount(data) {
     try {

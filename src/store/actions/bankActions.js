@@ -2,7 +2,7 @@ import {createAsyncThunk} from '@reduxjs/toolkit';
 import BankApi from '../../datalib/services/bank.api';
 /*
  * This function is used to create an action to add a bank account
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const addBankAccount = createAsyncThunk(
   '/user/add-bank',
@@ -16,7 +16,7 @@ export const addBankAccount = createAsyncThunk(
 );
 /*
  * This function is used to update the user bank account
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const getBankAccount = createAsyncThunk(
   '/user/update-bank',

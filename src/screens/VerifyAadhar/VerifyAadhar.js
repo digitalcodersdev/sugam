@@ -73,7 +73,7 @@ const VerifyAadhar = ({route}) => {
       const myHeaders = new Headers();
       myHeaders.append(
         'Authorization',
-        'NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
+        'NDYyOTA0MTU6YjB2Z1BDeGFRcFdqbVZvY2N2VEJ5SE15eEZXRzBFWVU=',
       );
       myHeaders.append('Content-Type', 'application/json');
       const raw = JSON.stringify(payload);
@@ -83,11 +83,7 @@ const VerifyAadhar = ({route}) => {
         body: raw,
         redirect: 'follow',
       };
-
-      fetch(
-        'https://svcdemo.digitap.work/ent/v3/kyc/submit-otp',
-        requestOptions,
-      )
+      fetch('https://svc.digitap.ai/ent/v3/kyc/submit-otp', requestOptions)
         .then(response => response.text())
         .then(result => {
           const res = JSON.parse(result);

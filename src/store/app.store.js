@@ -6,7 +6,7 @@ import jobReducers from './slices/job/job.slice';
 
 /*
  * This function is used to create redux store
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const store = configureStore({
   reducer: {user: userReducer, bank: bankReducer, job: jobReducers},

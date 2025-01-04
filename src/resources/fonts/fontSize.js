@@ -1,6 +1,6 @@
 /*
  * fontSize constants that we are using in our application
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const fontSize = {
   XS: 10,

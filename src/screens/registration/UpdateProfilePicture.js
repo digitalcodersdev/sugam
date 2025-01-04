@@ -13,7 +13,7 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from 'resources/R';
 /*
  * This function Component is used to render updateProfilePicture Screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const UpdateProfilePicture = () => {
   const dispatch = useDispatch();

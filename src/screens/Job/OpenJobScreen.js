@@ -11,7 +11,7 @@ import ScreenWrapper from 'library/wrapper/ScreenWrapper';
 import BottomBar from 'library/commons/BottomBar';
 /*
  * This function Component is used to render open job screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const OpenJobScreen = () => {
   const navigation = useNavigation();

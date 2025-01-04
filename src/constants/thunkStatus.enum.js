@@ -1,6 +1,6 @@
 /*
  * Thunk status
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const ThunkStatusEnum = {
   IDLE: 'idle',

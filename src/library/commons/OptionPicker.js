@@ -5,7 +5,7 @@ import R from 'resources/R';
 import Modal from 'react-native-modal';
 /*
  * This function is used to create option picker
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const OptionPicker = ({title = 'select options', options, onValueChange}) => {
   const [isModal, setModalVisible] = useState(false);

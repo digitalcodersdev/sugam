@@ -9,7 +9,7 @@ import Stars from 'react-native-stars';
 import R from 'resources/R';
 /*
  * This function is used to create profile that we are using on multiple screens
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const Profile = ({job, user}) => {
   const star = [1, 2, 3, 4, 5];

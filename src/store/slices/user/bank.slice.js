@@ -9,7 +9,7 @@ import {addBankAccount, getBankAccount} from '../../actions/bankActions';
 // TODO: Should we have api based status and errors for more fine grained contro
 /*
  * This function is used to create bank slice
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 
 const initialThunkState = {status: ThunkStatusEnum.IDLE, error: null};

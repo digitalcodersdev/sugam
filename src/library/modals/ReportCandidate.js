@@ -11,7 +11,7 @@ import R from 'resources/R';
 import Modal from 'react-native-modal';
 /*
  * This function is used to create report candidate modal
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const options = [
   'Scam',

@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import R from 'resources/R';
 /*
  * This function component is used for job rating
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const UserExperience = () => {
   const navigation = useNavigation();

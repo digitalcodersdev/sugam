@@ -35,7 +35,7 @@ export const getPendingEnrollments = createAsyncThunk(
 
 /*
  * This function is used to create an action to fetch an user by his id
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const getUserById = createAsyncThunk(
   'user/getUserById',
@@ -50,7 +50,7 @@ export const getUserById = createAsyncThunk(
 
 /*
  * This function is used to create an action to upload a picture
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const uploadProfilePic = createAsyncThunk(
   'user/uploadProfilePic',
@@ -65,7 +65,7 @@ export const uploadProfilePic = createAsyncThunk(
 
 /*
  * This function is used to create an action to  update  user information
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export const updateUser = createAsyncThunk(
   'user/update-user',
@@ -122,10 +122,11 @@ export const fetchClockinStatus = createAsyncThunk(
 
 export const fetchCurrentDayCollectionByBranchId = createAsyncThunk(
   'fetch/current-day/collection',
-  async ({branchId}, {rejectWithValue}) => {
+  async ({branchId,date}, {rejectWithValue}) => {
     try {
       return await new UserApi().fetchCurrentDayCollectionByBranchId({
         branchId,
+        date
       });
     } catch (error) {
       return rejectWithValue(error.code);

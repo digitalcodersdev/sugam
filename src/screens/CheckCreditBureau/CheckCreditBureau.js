@@ -1,4 +1,11 @@
-import {Alert, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import R from '../../resources/R';
@@ -21,6 +28,7 @@ import axios from 'axios';
 import CCRReportModal from '../../library/modals/CCRReportModal';
 import AuthApi from '../../datalib/services/authentication.api';
 import APP_CONSTANTS from '../../constants/appConstants';
+import {json2xml} from 'xml-js';
 
 I18n.translations = {
   'en-IN': {
@@ -75,7 +83,6 @@ const CheckCreditBureau = ({route}) => {
     dob: DOB,
     adharNumber,
     careOf,
-    clientPhoneNo,
     maskedAdharNumber,
     gender,
     address: {
@@ -91,13 +98,15 @@ const CheckCreditBureau = ({route}) => {
       country,
     },
   } = route?.params?.data;
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const [loading, setLoading] = useState(false);
   const [applicantName, setApplicantName] = useState(name);
   const [dob, setDob] = useState(DOB);
   const [relation, setRelation] = useState(null);
   const [relationName, setRelationName] = useState('');
-  const [phone, setPhone] = useState(clientPhoneNo);
-  const [panNo, setPanno] = useState('EQUPK1336K');
+  const [phone, setPhone] = useState('');
+  const [panNo, setPanno] = useState('');
   const [aadharNo, setAadharNo] = useState(adharNumber);
   const [voterId, setVoterId] = useState('');
   const [coApplicantName, setCoApplName] = useState('');
@@ -106,31 +115,45 @@ const CheckCreditBureau = ({route}) => {
   const [coApplState, setCoApplState] = useState(null);
   const [coAppPincode, setCoApplPincode] = useState('');
   const [coApplMobileNo, setCoAppMobileNo] = useState();
-  const [coApplPAN, setCoApplPAN] = useState('EOEPS1655K');
+  const [coApplPAN, setCoApplPAN] = useState('');
   const [coApplAadhar, setCoApplAadhar] = useState('');
   const [coApplVoterid, setCoAppVoterid] = useState('');
   const [focused, setFocused] = useState(null);
   const [err, setErr] = useState({});
-  const [borrrowerDocumentVerified, setBorrowerDocumentVerified] =
-    useState('PAN');
-  const [coBorrDocVer, setCoBorrDocVer] = useState('PAN');
+  const [borrrowerDocumentVerified, setBorrowerDocumentVerified] = useState('');
+  const [coBorrDocVer, setCoBorrDocVer] = useState('');
   const address = `${house} ${street} ${landmark} ${po} ${dist} ${subdist} ${vtc} ${pc} ${state} ${country}`;
   const [isVisible, onModalClose] = useState(false);
   const [coBorrAAdharVeriStatus, setCoBorrAadharVeriStatus] = useState(false);
   const [coBorrAadharData, setCoBorrAadharData] = useState('');
   const [otpEnabled, setOtpEnabled] = useState(false);
+  const [applOtpEnabled, setApplOtpEnabled] = useState(false);
   const [extraData, setExtraData] = useState({});
+  const [applMobileVerifyStatus, setAppVerifyStatus] = useState(false);
   const [coApplMobileVerifyStatus, setCoAppVerifyStatus] = useState(false);
   const [transactionId, setTrasactionId] = useState('');
+  const [applTransactionId, setApplTrasactionId] = useState('');
   const [otp, setOtp] = useState('');
+  const [applOtp, setApplOtp] = useState('');
   const [ccrRules, setCCRRules] = useState({});
   const [ccrVis, setCCRVis] = useState(false);
   const [coApplMaskedAadhar, setCoApplMashAadhar] = useState('');
   const [coAppCareOf, setCoApplCareOf] = useState('');
+  const [coAppGender, setCoApplGender] = useState('');
+  const [category, setCategory] = useState(null);
+  const [categoryData, setCategoryData] = useState(null);
+  const [productTypeData, setProdTypeData] = useState([]);
+  const [loanPurpose, setLoanPurpose] = useState(null);
+  const [loanPurposeData, setLoanPurposeData] = useState(null);
+  const [product, setProduct] = useState(null);
+  const [amountApplied, setAmountApplied] = useState(null);
+  const [amountData, setAmountData] = useState([]);
+  const [coAppAdd, setCoAppAdd] = useState({});
   const userData = useRef(null);
   const coAppData = useRef(null);
   const CCRReport = useRef(null);
-  console.log('____________________________', ccrRules);
+  const productCurrent = useRef(null);
+
   //Ref
   const applicantNameRef = useRef(null);
   const relationNameRef = useRef(null);
@@ -160,7 +183,26 @@ const CheckCreditBureau = ({route}) => {
     };
     fetchCcrRules();
   }, []);
-  console.log(route?.params?.data);
+
+  useEffect(() => {
+    fetchLoanTypeAndPurpose();
+  }, []);
+
+  const fetchLoanTypeAndPurpose = async () => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchLoanTypeAndPurpose();
+      if (res) {
+        setProdTypeData(res?.loanType);
+        setCategoryData(res?.loanPurpose);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (
       aadharNo?.length == 12 &&
@@ -201,6 +243,73 @@ const CheckCreditBureau = ({route}) => {
     }
   }, [phone, coApplMobileNo]);
 
+  const fetchLoanAmt = async data => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchLoanAmt({
+        id: data,
+      });
+      console.log('_+++++++++++++++++++=========-------', res);
+      if (res?.length >= 1) {
+        // setFrequency(null);
+        setAmountData(res);
+        // setDurationOfLoan(null);
+        // setAmountApplied(null);
+      } else {
+        setAmountData([]);
+        setAmountApplied(null);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const fetchLoanPurpose = async data => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchLoanPurpose({
+        id: data,
+      });
+      // console.log('res_____', res);
+      if (res?.length >= 1) {
+        setLoanPurposeData(res);
+        // setFrequency(null);
+        // setAmountData(res);
+        // setDurationOfLoan(null);
+        // setAmountApplied(null);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+  const fetchProdFreqTen = async data => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchProdFreqTen({
+        amt: data,
+        id: product,
+      });
+      // console.log(res);
+      if (res?.length == 1) {
+        // setFrequency(res[0]?.paymentfrequency?.toString());
+        // setDurationOfLoan(res[0]?.period?.toString());
+        setFreqTenureData(res);
+      } else if (res?.length > 1) {
+        // setFrequency(res[0]?.paymentfrequency?.toString());
+        // setDurationOfLoan(res[0]?.period?.toString());
+        setFreqTenureData(res);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
+  };
+
   const validate = () => {
     let valid = true;
     let error = {};
@@ -210,17 +319,17 @@ const CheckCreditBureau = ({route}) => {
       valid = false;
       return valid;
     }
-    if (!relationName.replace(/\s+/g, '').length) {
-      Toast.show(
-        "Please Enter Applicant's Relation Name",
-        Toast.SHORT,
-        Toast.TOP,
-      );
-      error.relationName = true;
-      valid = false;
-      relationNameRef.current.focus();
-      return valid;
-    }
+    // if (!relationName.replace(/\s+/g, '').length) {
+    //   Toast.show(
+    //     "Please Enter Applicant's Relation Name",
+    //     Toast.SHORT,
+    //     Toast.TOP,
+    //   );
+    //   error.relationName = true;
+    //   valid = false;
+    //   relationNameRef.current.focus();
+    //   return valid;
+    // }
     // if (panNo?.length >= 1 && !ValidationHelper.isPanValid(panNo)) {
     //   Toast.show('Please Enter Valid PAN No.', Toast.SHORT, Toast.TOP);
     //   error.panNo = true;
@@ -395,437 +504,289 @@ const CheckCreditBureau = ({route}) => {
       return valid;
     }
 
+    if (product == null) {
+      Toast.show('Please Select Product', Toast.SHORT, Toast.TOP);
+      valid = false;
+      return valid;
+    }
+    if (category == null) {
+      Toast.show('Please Select Loan Category', Toast.SHORT, Toast.TOP);
+      valid = false;
+      return valid;
+    }
+    if (loanPurpose == null) {
+      Toast.show('Please Select Loan Purpose', Toast.SHORT, Toast.TOP);
+      valid = false;
+      return valid;
+    }
+    if (amountApplied == null) {
+      Toast.show('Please Select Loan Amount', Toast.SHORT, Toast.TOP);
+      valid = false;
+      return valid;
+    }
+
     return valid;
   };
 
+  function calculateAge(dob) {
+    const [day, month, year] = dob.split('-').map(Number);
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const dayDiff = today.getDate() - birthDate.getDate();
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      age--;
+    }
+    return age;
+  }
+
   const handleConfirm = async () => {
     try {
-      // const valid = validate();
-      // if (valid) {
-      // var myHeaders = new Headers();
-      // myHeaders.append('Content-Type', 'application/json');
-      // myHeaders.append(
-      //   'Cookie',
-      //   'TS01f99bad=0191ea91a474ce7a490fd3decf5dda8230856fc42015b0015c6121a921a2e83d55451887e4deb681bf5b3d82c2cc5722afd8e6acef',
-      // );
+      const valid = validate();
+      if (valid) {
+        // var RAW_PROD = JSON.stringify({
+        //   RequestHeader: {
+        //     CustomerId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.CustomerId,
+        //     UserId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.UserId,
+        //     Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
+        //     MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
+        //     SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.SecurityCode,
+        //     CustRefField: '123456',
+        //     ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
+        //   },
+        //   RequestBody: {
+        //     InquiryPurpose: '00',
+        //     FirstName: 'Arjun ',
+        //     MiddleName: '',
+        //     LastName: 'Arya',
+        //     DOB: '1996-06-20',
+        //     InquiryAddresses: [
+        //       {
+        //         seq: '1',
+        //         AddressType: ['H'],
+        //         AddressLine1: 'Bagicha, Dharchula, Pithoragarh,Uttrakhand - 262545',
+        //         State: 'BR',
+        //         Postal: '262545',
+        //       },
+        //     ],
+        //     InquiryPhones: [
+        //       {
+        //         seq: '1',
+        //         Number: '8126949109',
+        //         PhoneType: ['M'],
+        //       },
+        //     ],
+        //     IDDetails: [
+        //       {
+        //         seq: '1',
+        //         IDType: 'M',
+        //         IDValue: '86625621616',
+        //         Source: 'Inquiry',
+        //       },
+        //       {
+        //         seq: '2',
+        //         IDType: 'T',
+        //         IDValue: 'BVDPA8941B',
+        //         Source: 'Inquiry',
+        //       },
+        //       {
+        //         seq: '3',
+        //         IDType: 'V',
+        //         IDValue: '',
+        //         Source: 'Inquiry',
+        //       },
+        //     ],
+        //     MFIDetails: {
+        //       FamilyDetails: [
+        //         {
+        //           seq: '1',
+        //           AdditionalNameType: 'K01',
+        //           AdditionalName: 'Ganesh Arya',
+        //         },
+        //       ],
+        //     },
+        //   },
+        //   Score: [
+        //     {
+        //       Type: 'ERS',
+        //       Version: '4.0',
+        //     },
+        //   ],
+        // });
 
-      var RAW_PROD = JSON.stringify({
-        RequestHeader: {
-          CustomerId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.CustomerId,
-          UserId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.UserId,
-          Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
-          MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
-          SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.SecurityCode,
-          CustRefField: '123456',
-          ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
-        },
-        RequestBody: {
-          InquiryPurpose: '00',
-          FirstName: 'Anita Devi', //'RAM SINGH BHANDARI',
-          MiddleName: '',
-          LastName: '',
-          DOB: '1985-07-12', //'1960-05-30',
-          InquiryAddresses: [
-            {
-              seq: '1',
-              AddressType: ['H'],
-              AddressLine1:
-                "W/O: Kamlesh Kumar, Ithara, mungra badshahpur jaunpur, Ithara, Jaunpur, Uttar Pradesh - 222202', // '169 RAJEEV NAGAR  TARLI KANDOLI DEHRADUN UTTARAKHAND DEHRADUN",
-              State: 'UP', // 'UK',
-              Postal: '222202', //'249145',
-            },
-          ],
-          InquiryPhones: [
-            {
-              seq: '1',
-              Number: '9984643940', //'8191817766',
-              PhoneType: ['M'],
-            },
-          ],
-          IDDetails: [
-            {
-              seq: '1',
-              IDType: 'M',
-              IDValue: '228996474937',
-              Source: 'Inquiry',
-            },
-            {
-              seq: '2',
-              IDType: 'T',
-              IDValue: '', //"ARSPB2789E",
-              Source: 'Inquiry',
-            },
-            {
-              seq: '3',
-              IDType: 'V',
-              IDValue: 'DNP2920262', //"",
-              Source: 'Inquiry',
-            },
-          ],
-          MFIDetails: {
-            FamilyDetails: [
-              {
-                seq: '1',
-                AdditionalNameType: 'K02', //"K01",
-                AdditionalName: 'Kamlesh Kumar',
-              },
-              // {
-              //   seq: '2',
-              //   AdditionalNameType: 'K01',
-              //   AdditionalName: '',
-              // },
-            ],
-          },
-        },
-        Score: [
-          {
-            Type: 'ERS',
-            Version: '4.0',
-          },
-        ],
-      });
-      // var RAW_PROD = JSON.stringify({
-      //   RequestHeader: {
-      //     CustomerId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.CustomerId,
-      //     UserId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.UserId,
-      //     Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
-      //     MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
-      //     SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
-      //     CustRefField: '123456',
-      //     ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
-      //   },
-      //   RequestBody: {
-      //     InquiryPurpose: '00',
-      //     FirstName: applicantName, //'RAM SINGH BHANDARI',
-      //     MiddleName: '',
-      //     LastName: '',
-      //     DOB: dob, //'1960-05-30',
-      //     InquiryAddresses: [
-      //       {
-      //         seq: '1',
-      //         AddressType: ['H'],
-      //         AddressLine1: address, // '169 RAJEEV NAGAR  TARLI KANDOLI DEHRADUN UTTARAKHAND DEHRADUN',
-      //         State: state, // 'UK',
-      //         Postal: pinco, //'249145',
-      //       },
-      //     ],
-      //     InquiryPhones: [
-      //       {
-      //         seq: '1',
-      //         Number: phone, //'8191817766',
-      //         PhoneType: ['M'],
-      //       },
-      //     ],
-      //     IDDetails: [
-      //       {
-      //         seq: '1',
-      //         IDType: 'M',
-      //         IDValue: aadharNo,
-      //         Source: 'Inquiry',
-      //       },
-      //       {
-      //         seq: '2',
-      //         IDType: 'T',
-      //         IDValue: panNo, //'ARSPB2789E',
-      //         Source: 'Inquiry',
-      //       },
-      //       {
-      //         seq: '3',
-      //         IDType: 'V',
-      //         IDValue: voterId, //'',
-      //         Source: 'Inquiry',
-      //       },
-      //     ],
-      //     MFIDetails: {
-      //       FamilyDetails: [
-      //         {
-      //           seq: '1',
-      //           AdditionalNameType: FAMILY[relation], //'K01',
-      //           AdditionalName: 'LAXMAN BHANDARI',
-      //         },
-      //         {
-      //           seq: '2',
-      //           AdditionalNameType: 'K01',
-      //           AdditionalName: '',
-      //         },
-      //       ],
-      //     },
-      //   },
-      //   Score: [
-      //     {
-      //       Type: 'ERS',
-      //       Version: '4.0',
-      //     },
-      //   ],
-      // });
+        // var myHeaders = new Headers();
+        // myHeaders.append('Content-Type', 'application/json');
+        // console.log('RAW_PROD', RAW_PROD);
+        // const PRODUCTION_URL =
+        //   'https://ists.equifax.co.in/cir360service/cir360report';
+        // const res = await axios.post(PRODUCTION_URL, JSON.parse(RAW_PROD), {
+        //   headers: myHeaders,
+        // });
+        // console.log('RESPONSE___________CCR', res);
 
-      // var requestOptions = {
-      //   method: 'POST',
-      //   headers: myHeaders,
-      //   body: raw,
-      //   redirect: 'follow',
-      // };
-
-      // fetch(
-      //   'https://eportuat.equifax.co.in/cir360Report/cir360Report',
-      //   requestOptions,
-      // )
-      //   .then(response => response.text())
-      //   .then(result => console.log(result))
-      //   .catch(error => console.log('error', error));
-
-      var myHeaders = new Headers();
-      myHeaders.append('Content-Type', 'application/json');
-      myHeaders.append(
-        'Cookie',
-        'TS01f99bad=0191ea91a45d3c153cdedcc28e03e7677246493ca55ff14aba4e048a1ddec67b0577927594dca74739ff49757ae18059ee3887c6b9',
-      );
-      console.log('RAW_PROD', RAW_PROD);
-      // var RAW_UAT =
-      //   // JSON.stringify(
-      //   {
-      //     RequestHeader: {
-      //       CustomerId: '21',
-      //       UserId: 'UAT_SBHL',
-      //       Password: 'V2*Pdhbr',
-      //       MemberNumber: '028FZ00016',
-      //       SecurityCode: 'FR7',
-      //       CustRefField: '123456',
-      //       ProductCode: ['CCR'],
-      //     },
-      //     RequestBody: {
-      //       InquiryPurpose: '37',
-      //       FirstName: 'RAM SINGH BHANDARI',
-      //       MiddleName: '',
-      //       LastName: '',
-      //       DOB: '1960-05-30',
-      //       InquiryAddresses: [
-      //         {
-      //           seq: '1',
-      //           AddressType: ['H'],
-      //           AddressLine1:
-      //             '169 RAJEEV NAGAR  TARLI KANDOLI DEHRADUN UTTARAKHAND DEHRADUN',
-      //           State: 'UK',
-      //           Postal: '249145',
-      //         },
-      //       ],
-      //       InquiryPhones: [
-      //         {
-      //           seq: '1',
-      //           Number: '8191817766',
-      //           PhoneType: ['M'],
-      //         },
-      //       ],
-      //       IDDetails: [
-      //         {
-      //           seq: '1',
-      //           IDType: 'T',
-      //           IDValue: 'ARSPB2789E',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '2',
-      //           IDType: 'P',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '3',
-      //           IDType: 'V',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '4',
-      //           IDType: 'D',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '5',
-      //           IDType: 'M',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '6',
-      //           IDType: 'R',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //         {
-      //           seq: '7',
-      //           IDType: 'O',
-      //           IDValue: '',
-      //           Source: 'Inquiry',
-      //         },
-      //       ],
-      //       MFIDetails: {
-      //         FamilyDetails: [
-      //           {
-      //             seq: '1',
-      //             AdditionalNameType: 'K01',
-      //             AdditionalName: 'LAXMAN BHANDARI',
-      //           },
-      //           {
-      //             seq: '2',
-      //             AdditionalNameType: 'K01',
-      //             AdditionalName: '',
-      //           },
-      //         ],
-      //       },
-      //     },
-      //     Score: [
-      //       {
-      //         Type: 'ERS',
-      //         Version: '4.0',
-      //       },
-      //     ],
-      //   };
-      const UAT_URL = 'https://ists.equifax.co.in/cir360service/cir360report';
-      const PRODUCTION_URL =
-        'https://ists.equifax.co.in/cir360service/cir360report';
-      const res = await axios.post(PRODUCTION_URL, RAW_PROD, {
-        headers: myHeaders, // Correct way to include headers
-      });
-      console.log('RESPONSE', res);
-
-      if (
-        res &&
-        res?.data?.CCRResponse?.Status == 1 &&
-        res?.status == 200 &&
-        res?.data?.CCRResponse?.CIRReportDataLst?.length >= 1
-      ) {
-        const dt = res?.data?.CCRResponse?.CIRReportDataLst;
-        const {RetailAccountsSummary, ScoreDetails} = dt[0].CIRReportData;
-        console.log('RetailAccountsSummary', RetailAccountsSummary);
-        console.log(
-          'ccrRules',
-          ccrRules,
-          ScoreDetails,
-          RetailAccountsSummary?.length,
-        );
-        const score = parseInt(ScoreDetails[0]?.Value);
-        if ('NoOfAccounts' in RetailAccountsSummary) {
-          const {
-            AverageOpenBalance,
-            NoOfAccounts,
-            NoOfActiveAccounts,
-            NoOfPastDueAccounts,
-            NoOfWriteOffs,
-            NoOfZeroBalanceAccounts,
-            TotalBalanceAmount,
-            OldestAccount,
-            RecentAccount,
-            SingleHighestBalance,
-            SingleHighestCredit,
-            SingleHighestSanctionAmount,
-            TotalCreditLimit,
-            TotalHighCredit,
-            TotalMonthlyPaymentAmount,
-            TotalPastDue,
-            TotalSanctionAmount,
-          } = RetailAccountsSummary;
-          const payload = {
-            data: {
-              Client_MobileNo: phone,
-              Client_AadharNo: aadharNo,
-              Client_Name: name,
-              Client_Address: address,
-              Client_DOB: dob,
-              Client_State: state,
-              Client_Pincode: pc,
-              Client_Relation: relation,
-              Client_PAN_No: panNo,
-              Client_VoterID: voterId,
-              Client_Gender: gender,
-              CoApplicant_AadharNo: coApplAadhar,
-              CoApplicant_Name: coApplicantName,
-              CoApplicant_Address: coAppAddress,
-              CoApplicant_DOB: coApplDOB,
-              CoApplicant_State: coApplState,
-              CoApplicant_Pincode: coAppPincode,
-              CoApplicant_MobileNo: coApplMobileNo,
-              CoApplicant_PAN_No: coApplPAN,
-              CoApplicant_VoterID: coApplVoterid,
-              CreditScore: score,
-              OpeningBalance: AverageOpenBalance,
-              ActiveAccount: NoOfActiveAccounts,
-              PastDue: NoOfPastDueAccounts,
-              Write_OFF: NoOfWriteOffs,
-              Monthly_EMI: TotalMonthlyPaymentAmount,
-              BranchID: route?.params?.data.branchid,
-              CenterID: route?.params?.data.centreid,
-              Result:
-                score >= ccrRules?.CreditScore &&
-                parseInt(AverageOpenBalance) <= ccrRules?.AverageOpenBalance &&
-                parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
-                parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
-                parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
-                parseInt(TotalMonthlyPaymentAmount) ==
-                  ccrRules?.TotalMonthlyPaymentAmt
-                  ? 'SUCCESS'
-                  : 'FAILED',
-            },
-          };
-          const response = await new UserApi().createEnrollmentHis(payload);
-          console.log('response____', response, payload);
-          if (response[1] == 1) {
-            CCRReport.current = {
-              AverageOpenBalance,
-              CreditScore: score,
-              NoOfAccounts,
-              NoOfActiveAccounts,
-              NoOfPastDueAccounts,
-              NoOfWriteOffs,
-              TotalBalanceAmount,
-              NoOfZeroBalanceAccounts,
-              TotalMonthlyPaymentAmount,
-            };
-            userData.current = {
-              name,
-              dob,
-              address,
-              aadharNo,
-              panNo,
-              voterId,
-              maskedAdharNumber,
-              phone,
-              relation,
-              pincode: pc,
-              state,
-              careOf,
-            };
-            coAppData.current = {
-              coApplicantName,
-              coApplDOB,
-              coAppAddress,
-              coApplAadhar,
-              coApplPAN,
-              coApplVoterid,
-              coApplMaskedAadhar,
-              coApplMobileNo,
-              coApplState,
-              coAppPincode,
-              coAppCareOf,
-            };
-            console.log('CCRReport', CCRReport);
-            setCCRVis(true);
-            // if (
-            //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
-            //   parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
-            //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
+        // if (
+        //   res &&
+        //   res?.data?.CCRResponse?.Status == 1 &&
+        //   res?.status == 200 &&
+        //   res?.data?.CCRResponse?.CIRReportDataLst?.length >= 1
+        // ) {
+        //   const dt = res?.data?.CCRResponse?.CIRReportDataLst;
+        //   const indexof = dt.findIndex(item => 'CIRReportData' in item);
+        //   const {MicrofinanceAccountsSummary, ScoreDetails} =
+        //     dt[indexof].CIRReportData;
+        //   console.log('MicrofinanceAccountsSummary', MicrofinanceAccountsSummary);
+        //   console.log(
+        //     'ccrRules',
+        //     ccrRules,
+        //     ScoreDetails,
+        //     MicrofinanceAccountsSummary?.length,
+        //   );
+        //   const score = parseInt(ScoreDetails[0]?.Value);
+        //   if ('TotalBalanceAmount' in MicrofinanceAccountsSummary) {
+        //     const {
+        //       NoOfActiveAccounts,
+        //       NoOfPastDueAccounts,
+        //       RecentAccount,
+        //       TotalBalanceAmount,
+        //       TotalMonthlyPaymentAmount,
+        //       TotalPastDue,
+        //       TotalWrittenOffAmount,
+        //     } = MicrofinanceAccountsSummary;
+        const payload = {
+          data: {
+            Client_MobileNo: phone,
+            Client_AadharNo: aadharNo,
+            Client_Name: name,
+            Client_Address: address,
+            Client_DOB: dob,
+            Client_State: state,
+            Client_Pincode: pc,
+            Client_Relation: relation,
+            Client_PAN_No: panNo,
+            Client_VoterID: voterId,
+            Client_Gender: gender,
+            CoApplicant_AadharNo: coApplAadhar,
+            CoApplicant_Name: coApplicantName,
+            CoApplicant_Address: coAppAddress,
+            CoApplicant_DOB: coApplDOB,
+            CoApplicant_State: coApplState,
+            CoApplicant_Pincode: coAppPincode,
+            CoApplicant_MobileNo: coApplMobileNo,
+            CoApplicant_PAN_No: coApplPAN,
+            CoApplicant_VoterID: coApplVoterid,
+            // CreditScore: score,
+            OpeningBalance: 0, //AverageOpenBalance,
+            // ActiveAccount: NoOfActiveAccounts,
+            // PastDue: NoOfPastDueAccounts,
+            // Write_OFF: TotalWrittenOffAmount,
+            // Monthly_EMI: TotalMonthlyPaymentAmount,
+            BranchID: route?.params?.data.branchid,
+            CenterID: route?.params?.data.centreid,
+            age: calculateAge(dob),
+            coAppAge: calculateAge(coApplDOB),
+            // Result:
             //   score >= ccrRules?.CreditScore &&
-            //   parseInt(NoOfWriteOffs) == ccrRules?.NoOfWriteOffs &&
-            //   // parseInt(TotalPastDue) == ccrRules?.TotalPastDue
-            // ) {
-            // }
-          }
-        }
-      }
+            //   // parseInt(AverageOpenBalance) <=
+            //   //   ccrRules?.AverageOpenBalance
+            //   //    &&
+            //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
+            //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
+            //   parseInt(TotalWrittenOffAmount) <= ccrRules?.NoOfWriteOffs &&
+            //   parseInt(TotalMonthlyPaymentAmount) ==
+            //     ccrRules?.TotalMonthlyPaymentAmt
+            //     ? 'SUCCESS'
+            //     : 'FAILED',
+          },
+        };
+        console.log(
+          'PAYLOAD____________________________________________',
+          payload,
+        );
+        const response = await new UserApi().createEnrollmentHis(payload);
+        console.log('response____', response, payload);
+        if (response) {
+          // CCRReport.current = {
+          //   // AverageOpenBalance,
+          //   CreditScore: score,
 
-      // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
-      // }
+          //   NoOfActiveAccounts,
+          //   NoOfPastDueAccounts,
+          //   TotalWrittenOffAmount,
+          //   TotalBalanceAmount,
+
+          //   TotalMonthlyPaymentAmount,
+          // };
+          userData.current = {
+            name,
+            dob,
+            address,
+            aadharNo,
+            panNo,
+            voterId,
+            maskedAdharNumber,
+            phone,
+            relation,
+            pincode: pc,
+            state,
+            careOf,
+            gender,
+            house,
+            street,
+            landmark,
+            po,
+            dist,
+            subdist,
+            vtc,
+            state,
+            country,
+          };
+          coAppData.current = {
+            coApplicantName,
+            coApplDOB,
+            coAppAddress,
+            coApplAadhar,
+            coApplPAN,
+            coApplVoterid,
+            coApplMaskedAadhar,
+            coApplMobileNo,
+            coApplState,
+            coAppPincode,
+            coAppCareOf,
+            coAppGender,
+            address: coAppAdd,
+          };
+          productCurrent.current = {
+            product,
+            category,
+            amountApplied,
+            loanPurpose,
+          };
+          // console.log('CCRReport', CCRReport);
+          navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+            data: {
+              userData: userData.current,
+              coAppData: coAppData.current,
+              productCurrent: productCurrent.current,
+              enrollmentId: response,
+            },
+          });
+          // setCCRVis(true);
+          // if (
+          //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
+          //   parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
+          //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
+          //   score >= ccrRules?.CreditScore &&
+          //   parseInt(NoOfWriteOffs) == ccrRules?.NoOfWriteOffs &&
+          //   // parseInt(TotalPastDue) == ccrRules?.TotalPastDue
+          // ) {
+          // }
+          //     }
+          //   }
+        }
+
+        // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
+      }
     } catch (error) {
       console.log('Error Details --->', error);
     }
@@ -848,13 +809,19 @@ const CheckCreditBureau = ({route}) => {
       const myHeaders = new Headers();
       myHeaders.append(
         'Authorization',
-        'Basic NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
+        'Basic NDYyOTA0MTU6YjB2Z1BDeGFRcFdqbVZvY2N2VEJ5SE15eEZXRzBFWVU=',
       );
       myHeaders.append('Content-Type', 'application/json');
       const raw = JSON.stringify({
         client_ref_num: 'subh',
         pan: type == 'client' ? panNo?.toUpperCase() : coApplPAN?.toUpperCase(),
+        name: type == 'client' ? applicantName : coApplicantName,
+        dob:
+          type == 'client'
+            ? moment(dob, 'DD-MM-YYYY').format('DD/MM/YYYY')
+            : moment(coApplDOB, 'DD-MM-YYYY').format('DD/MM/YYYY'),
       });
+
       const requestOptions = {
         method: 'POST',
         headers: myHeaders,
@@ -863,28 +830,25 @@ const CheckCreditBureau = ({route}) => {
       };
 
       const response = await fetch(
-        'https://svcdemo.digitap.work/validation/kyc/v1/pan_details',
+        'https://svc.digitap.ai/validation/kyc/v2/pan_basic',
         requestOptions,
       );
       const result = await response.text();
       const res = JSON.parse(result);
-      console.log('res________', res);
-      // debugger;
+      // console.log('res________', res,raw);
       if (res?.result && res?.result_code != '103') {
-        const {fullname, dob: dobClient} = res?.result;
-        if (
-          type == 'client'
-            ? name
-                ?.toUpperCase()
-                .includes(fullname?.split(' ')[0].toUpperCase())
-            : coBorrAadharData?.name
-                ?.toUpperCase()
-                .includes(fullname?.split(' ')[0].toUpperCase()) &&
-              type == 'client'
-            ? moment(DOB, 'DD/MM/YYYY').toDate().getTime()
-            : moment(coBorrAadharData?.dob, 'DD/MM/YYYY').toDate().getTime() ==
-              moment(dobClient, 'DD/MM/YYYY').toDate().getTime()
-        ) {
+        const {dob: dobClient, name} = res?.result;
+        if (dobClient != 'Y') {
+          Alert.alert('आवेदक के पैन कार्ड का विवरण मेल नहीं खा रहा है');
+          setLoading(false);
+          return;
+        }
+        if (name != 'Y') {
+          Alert.alert('आवेदक के पैन कार्ड का विवरण मेल नहीं खा रहा है');
+          setLoading(false);
+          return;
+        }
+        if (dobClient === 'Y' && name === 'Y') {
           if (type == 'client') {
             setBorrowerDocumentVerified('PAN');
             setVoterId('');
@@ -899,10 +863,10 @@ const CheckCreditBureau = ({route}) => {
       }
 
       if (res?.http_response_code === 200 && res?.result_code == '103') {
-        Alert.alert(null, I18n.t('invalidPan'));
+        Alert.alert('कृपया वैध पैन नंबर दर्ज करें');
       }
       if (res?.http_response_code === 400) {
-        Alert.alert(null, I18n.t('invalidPan'));
+        Alert.alert('कृपया वैध पैन नंबर दर्ज करें');
       }
       if (res?.http_response_code === 500) {
         Alert.alert(null, I18n.t('noPan'));
@@ -915,14 +879,13 @@ const CheckCreditBureau = ({route}) => {
       setLoading(false);
     }
   };
-  // console.log('coBorrAadharData', coBorrAadharData);
   const verifyVoterId = async ({type}) => {
     try {
       setLoading(true);
       const myHeaders = new Headers();
       myHeaders.append(
         'Authorization',
-        'Basic NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
+        'Basic NDYyOTA0MTU6YjB2Z1BDeGFRcFdqbVZvY2N2VEJ5SE15eEZXRzBFWVU=',
       );
       myHeaders.append('Content-Type', 'application/json');
       const raw = JSON.stringify({
@@ -936,12 +899,11 @@ const CheckCreditBureau = ({route}) => {
         redirect: 'follow',
       };
       const response = await fetch(
-        'https://svcdemo.digitap.work/validation/kyc/v1/voter',
+        'https://svc.digitap.ai/validation/kyc/v1/voter',
         requestOptions,
       );
       const result = await response.text();
       const res = JSON.parse(result);
-      // console.log(res);
       if (res?.result_code == 103) {
         Alert.alert(null, I18n.t('wrongVoterId'));
         setLoading(false);
@@ -950,9 +912,11 @@ const CheckCreditBureau = ({route}) => {
       if (
         type == 'client'
           ? careOf
+              ?.replace('S/O', '')
               ?.toUpperCase()
               .includes(res?.result?.rln_name?.trim()?.toUpperCase())
           : coBorrAadharData?.careOf
+              ?.replace('S/O', '')
               ?.toUpperCase()
               .includes(res?.result?.rln_name?.trim()?.toUpperCase()) &&
             type == 'client'
@@ -1060,6 +1024,7 @@ const CheckCreditBureau = ({route}) => {
         },
         maskedAdharNumber,
         careOf,
+        gender,
       } = data;
       const address = `${house} ${street} ${landmark} ${po} ${dist} ${subdist} ${vtc} ${pc} ${state} ${country}`;
       const age = calculateAge(data?.dob); //
@@ -1073,7 +1038,9 @@ const CheckCreditBureau = ({route}) => {
         setCoApplState(state);
         setCoApplPincode(pc);
         setCoApplMashAadhar(maskedAdharNumber);
-        setCoApplCareOf(careOf?.split(':')[1]);
+        setCoApplCareOf(careOf?.split('S/O ')[1]);
+        setCoApplGender(gender);
+        setCoAppAdd(data?.address);
       } else {
         Alert.alert(
           'सह आवेदक ऋण प्रक्रिया के लिए पात्र नहीं है। आयु 59 वर्ष से कम तथा 18 वर्ष से अधिक होनी चाहिए',
@@ -1084,19 +1051,29 @@ const CheckCreditBureau = ({route}) => {
     }
   };
 
-  const verifyClientPhone = async () => {
+  const verifyClientPhone = async ({type}) => {
     try {
       setLoading(true);
-      const res = await new UserApi().sendClientOtp({phone: coApplMobileNo});
+      const res = await new UserApi().sendClientOtp({
+        phone: type == 'appl' ? phone : coApplMobileNo,
+        name: type == 'appl' ? applicantName : coApplicantName,
+      });
+      console.log('send otp', res);
       if (
         res?.success &&
-        !res?.message?.includes('phone number already exists')
+        !res?.message?.includes('phone number already exist')
       ) {
         Toast.show('OTP sent successfully', Toast.LONG, Toast.TOP);
-        setOtpEnabled(true);
-        setTrasactionId(res?.data?.transactionId);
+        if (type != 'appl') {
+          setOtpEnabled(true);
+          setTrasactionId(res?.data?.transactionId);
+        } else {
+          setApplOtpEnabled(true);
+          setApplTrasactionId(res?.data?.transactionId);
+        }
       } else {
-        Toast.show(res.message, Toast.LONG, Toast.TOP);
+        Alert.alert(res?.message);
+        // Toast.show(res.message, Toast.LONG, Toast.TOP);
       }
       setLoading(false);
     } catch (error) {
@@ -1105,24 +1082,27 @@ const CheckCreditBureau = ({route}) => {
     }
   };
 
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = async ({type, otp}) => {
     try {
-      console.log('otp?.length', otp?.length);
       if (otp?.length === 4) {
         setLoading(true);
         const data = {
           otp: otp,
-          transactionId: transactionId,
-          phone: coApplMobileNo,
+          transactionId: type == 'appl' ? applTransactionId : transactionId,
+          phone: type == 'appl' ? phone : coApplMobileNo,
         };
         const res = await new AuthApi().verifyMobileOtpClient(data);
-        console.log('_)_)_)_>', res);
         if (res) {
           // const userData = await dispatch(getUserDetails());
           // if (userData?.type?.includes('fulfilled')) {
           Toast.show('OTP verified...', Toast.LONG, Toast.TOP);
-          setOtpEnabled(false);
-          setCoAppVerifyStatus(true);
+          if (type != 'appl') {
+            setOtpEnabled(false);
+            setCoAppVerifyStatus(true);
+          } else {
+            setApplOtpEnabled(false);
+            setAppVerifyStatus(true);
+          }
           // }
         } else {
           Toast.show('Invalid otp', Toast.LONG, Toast.TOP);
@@ -1169,7 +1149,7 @@ const CheckCreditBureau = ({route}) => {
         screenName={ScreensNameEnum.CHECK_CREDIT_BUREAU_SCREEN}
       /> */}
       <View style={{flex: 1, padding: 10}}>
-        <ScrollView>
+        <ScrollView keyboardShouldPersistTaps>
           <Text style={styles.tagline}>Check Credit Bureau</Text>
           <Card style={styles.card}>
             <Surface style={styles.surface}>
@@ -1226,8 +1206,10 @@ const CheckCreditBureau = ({route}) => {
                       textAlignVertical: 'bottom',
                       color: R.colors.PRIMARI_DARK,
                       marginLeft: 10,
-                      minHeight: 80,
-                      maxHeight: 110,
+                      // minHeight: 80,
+                      // maxHeight: 150,
+                      flexWrap: 'wrap',
+                      overflow: 'scroll',
                     },
                   ]}>
                   {address?.trim()}
@@ -1281,18 +1263,18 @@ const CheckCreditBureau = ({route}) => {
                   {relation === null && (
                     <Picker.Item label="Select Relation" value={null} />
                   )}
+                  <Picker.Item label="Father-in-law" value="Father_in_law" />
+                  <Picker.Item label="Father" value="Father" />
                   <Picker.Item label="Husband" value="Husband" />
                   <Picker.Item label="Wife" value="Wife" />
-                  <Picker.Item label="Father" value="Father" />
-                  <Picker.Item label="Mother" value="Mother" />
-                  <Picker.Item label="Brother" value="Brother" />
-                  <Picker.Item label="Sister" value="Sister" />
                   <Picker.Item label="Son" value="Son" />
-                  <Picker.Item label="Daughter" value="Daughter" />
-                  <Picker.Item label="Father-in-law" value="Father_in_law" />
+                  <Picker.Item label="Mother" value="Mother" />
                   <Picker.Item label="Mother-in-law" value="Mother_in_law" />
+                  {/* <Picker.Item label="Brother" value="Brother" />
+                  <Picker.Item label="Sister" value="Sister" />
+                  <Picker.Item label="Daughter" value="Daughter" />
                   <Picker.Item label="Brother-in-law" value="Brother_in_law" />
-                  <Picker.Item label="Other" value="other" />
+                  <Picker.Item label="Other" value="other" /> */}
                 </Picker>
               </View>
               {/* <View style={styles.viewInput}>
@@ -1318,32 +1300,91 @@ const CheckCreditBureau = ({route}) => {
 
               <View style={styles.viewInput}>
                 <Text style={styles.label}>Mobile No</Text>
-                <TextInput
-                  value={phone}
-                  onChangeText={setPhone}
-                  ref={phoneRef}
-                  keyboardType="decimal-pad"
-                  maxLength={10}
-                  style={[
-                    styles.input,
-                    {
-                      borderColor:
-                        focused === 'phone'
-                          ? R.colors.primary
-                          : R.colors.PRIMARI_DARK,
-                      borderBottomWidth: focused === 'phone' ? 1.5 : 1,
-                    },
-                  ]}
-                  onFocus={() => setFocused('phone')}
-                  onBlur={() => setFocused(null)}
-                  editable={false}
-                />
-                <Icon
-                  name={'check-decagram'}
-                  size={25}
-                  color={R.colors.GREEN}
-                  style={{position: 'absolute', right: 20}}
-                />
+                {applOtpEnabled ? (
+                  <TextInput
+                    value={applOtp}
+                    onChangeText={setApplOtp}
+                    keyboardType="decimal-pad"
+                    placeholder="Plese enter 4 digit OTP..."
+                    placeholderTextColor={R.colors.SLATE_GRAY}
+                    maxLength={4}
+                    style={[
+                      styles.input,
+                      {
+                        borderColor:
+                          focused === 'otp'
+                            ? R.colors.primary
+                            : R.colors.PRIMARI_DARK,
+                        borderBottomWidth: focused === 'otp' ? 1.5 : 1,
+                      },
+                    ]}
+                    onFocus={() => setFocused('otp')}
+                    onBlur={() => setFocused(null)}
+                  />
+                ) : (
+                  <TextInput
+                    value={phone}
+                    onChangeText={setPhone}
+                    ref={phoneRef}
+                    keyboardType="decimal-pad"
+                    maxLength={10}
+                    style={[
+                      styles.input,
+                      {
+                        borderColor:
+                          focused === 'phone'
+                            ? R.colors.primary
+                            : R.colors.PRIMARI_DARK,
+                        borderBottomWidth: focused === 'phone' ? 1.5 : 1,
+                      },
+                    ]}
+                    onFocus={() => setFocused('phone')}
+                    onBlur={() => setFocused(null)}
+                    // editable={false}
+                  />
+                )}
+                {applMobileVerifyStatus && (
+                  <>
+                    <Icon
+                      name={'check-decagram'}
+                      size={25}
+                      color={R.colors.GREEN}
+                      style={{position: 'absolute', right: 10}}
+                    />
+                    <Icon
+                      name={'pencil-outline'}
+                      size={25}
+                      color={R.colors.BLUE}
+                      style={{position: 'absolute', right: 50}}
+                      onPress={() => {
+                        setAppVerifyStatus(false);
+                        setOtp('');
+                      }}
+                    />
+                  </>
+                )}
+                {phone?.length === 10 && !applMobileVerifyStatus && (
+                  <Text
+                    onPress={() =>
+                      applOtpEnabled
+                        ? handleVerifyOtp({type: 'appl', otp: applOtp})
+                        : verifyClientPhone({type: 'appl'})
+                    }
+                    style={{
+                      padding: 3,
+                      paddingHorizontal: 10,
+                      backgroundColor:
+                        coBorrDocVer == 'PAN' ? R.colors.GREEN : R.colors.RED,
+                      color: R.colors.PRIMARY_LIGHT,
+                      fontWeight: '900',
+                      borderRadius: 4,
+                      textAlignVertical: 'center',
+                      height: 30,
+                      alignSelf: 'center',
+                    }}>
+                    {applOtpEnabled ? 'Verify' : 'continue'}
+                  </Text>
+                )}
               </View>
               <View style={styles.viewInput}>
                 <Text style={styles.label}>Aadhar No.</Text>
@@ -1472,25 +1513,26 @@ const CheckCreditBureau = ({route}) => {
                         : true
                     }
                   />
-                  {voterId?.length === 10 && (
-                    <Text
-                      onPress={() => {
-                        verifyVoterId({type: 'client'});
-                      }}
-                      style={{
-                        padding: 3,
-                        paddingHorizontal: 10,
-                        backgroundColor:
-                          borrrowerDocumentVerified == 'VoterId'
-                            ? R.colors.GREEN
-                            : R.colors.RED,
-                        color: R.colors.PRIMARY_LIGHT,
-                        fontWeight: '900',
-                        borderRadius: 4,
-                      }}>
-                      Verify
-                    </Text>
-                  )}
+                  {voterId?.length === 10 &&
+                    borrrowerDocumentVerified !== 'VoterId' && (
+                      <Text
+                        onPress={() => {
+                          verifyVoterId({type: 'client'});
+                        }}
+                        style={{
+                          padding: 3,
+                          paddingHorizontal: 10,
+                          backgroundColor:
+                            borrrowerDocumentVerified == 'VoterId'
+                              ? R.colors.GREEN
+                              : R.colors.RED,
+                          color: R.colors.PRIMARY_LIGHT,
+                          fontWeight: '900',
+                          borderRadius: 4,
+                        }}>
+                        Verify
+                      </Text>
+                    )}
                   {borrrowerDocumentVerified === 'VoterId' && (
                     <Icon
                       name={'check-decagram'}
@@ -1501,21 +1543,6 @@ const CheckCreditBureau = ({route}) => {
                   )}
                 </View>
               </View>
-              {/* <View style={styles.viewInput}>
-              <Text style={styles.label}>Product</Text>
-              <Picker
-                selectedValue={product}
-                onValueChange={(itemValue, itemIndex) => setProduct(itemValue)}
-                mode="dropdown"
-                dropdownIconColor={R.colors.primary}
-                style={styles.input}>
-                {product === null && (
-                  <Picker.Item label="Select Product" value={null} />
-                )}
-                <Picker.Item label="Uttar Pradesh" value="Uttar Pradesh" />
-                <Picker.Item label="Andhra Pradesh" value="Andhra Pradesh" />
-              </Picker>
-            </View> */}
             </Surface>
           </Card>
           <Card style={styles.card}>
@@ -1788,8 +1815,8 @@ const CheckCreditBureau = ({route}) => {
                       <Text
                         onPress={() =>
                           otpEnabled
-                            ? handleVerifyOtp()
-                            : verifyClientPhone({type: 'co-borrower'})
+                            ? handleVerifyOtp({type: 'coAppl', otp})
+                            : verifyClientPhone({type: 'coAppl'})
                         }
                         style={{
                           padding: 3,
@@ -1940,6 +1967,109 @@ const CheckCreditBureau = ({route}) => {
               </View>
             </Surface>
           </Card>
+          <Card style={styles.card}>
+            <Surface style={styles.surface}>
+              <Text
+                style={[
+                  styles.tagline,
+                  {textAlign: 'left', fontSize: R.fontSize.M},
+                ]}>
+                Loan Information
+              </Text>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.labelNew(isDarkMode)}>Product</Text>
+                <Picker
+                  selectedValue={product}
+                  style={styles.inputNew(isDarkMode)}
+                  dropdownIconColor={R.colors.primary}
+                  onValueChange={itemValue => {
+                    console.log('itemValue', itemValue);
+                    setProduct(itemValue);
+                    if (itemValue) {
+                      fetchLoanAmt(itemValue);
+                    }
+                  }}>
+                  <Picker.Item label="-- Select Product --" value={null} />
+                  {productTypeData?.length >= 1 &&
+                    productTypeData.map((item, index) => (
+                      <Picker.Item
+                        label={item?.PRODUCT_NAME}
+                        value={item?.product_id}
+                        key={index}
+                      />
+                    ))}
+                </Picker>
+              </View>
+              {/* Loan Purpose */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.labelNew(isDarkMode)}>Loan Category</Text>
+                <Picker
+                  selectedValue={category}
+                  style={styles.inputNew(isDarkMode)}
+                  dropdownIconColor={R.colors.primary}
+                  onValueChange={itemValue => {
+                    setCategory(itemValue);
+                    if (itemValue) {
+                      fetchLoanPurpose(itemValue);
+                    }
+                  }}>
+                  <Picker.Item label="-- Select Category --" value={null} />
+                  {categoryData?.length >= 1 &&
+                    categoryData.map((item, index) => (
+                      <Picker.Item
+                        label={item?.categorydetail}
+                        value={item?.categoryid}
+                        key={index}
+                      />
+                    ))}
+                </Picker>
+              </View>
+              <View style={styles.fieldContainer}>
+                <Text style={styles.labelNew(isDarkMode)}>Loan Purpose</Text>
+                <Picker
+                  selectedValue={loanPurpose}
+                  style={styles.inputNew(isDarkMode)}
+                  dropdownIconColor={R.colors.primary}
+                  onValueChange={itemValue => setLoanPurpose(itemValue)}>
+                  <Picker.Item label="-- Select Purpose --" value={null} />
+                  {loanPurposeData?.length >= 1 &&
+                    loanPurposeData.map((item, index) => (
+                      <Picker.Item
+                        label={item?.loanpurpose}
+                        value={item?.purposeid}
+                        key={index}
+                      />
+                    ))}
+                </Picker>
+              </View>
+              {/* Amount Applied */}
+              <View style={styles.fieldContainer}>
+                <Text style={styles.labelNew(isDarkMode)}>Amount Applied</Text>
+                <Picker
+                  selectedValue={amountApplied}
+                  style={styles.inputNew(isDarkMode)}
+                  dropdownIconColor={R.colors.primary}
+                  onValueChange={itemValue => {
+                    setAmountApplied(itemValue);
+                    if (itemValue) {
+                      fetchProdFreqTen(itemValue);
+                    }
+                  }}>
+                  <Picker.Item label="-- Select Amount --" value={null} />
+                  {amountData?.length >= 1 &&
+                    amountData.map((item, index) => (
+                      <Picker.Item
+                        label={item?.financeamount?.toString()}
+                        value={item?.financeamount?.toString()}
+                        key={index}
+                      />
+                    ))}
+                  {/* Add other amounts */}
+                </Picker>
+              </View>
+            </Surface>
+          </Card>
+
           <View
             style={{
               width: '40%',
@@ -1953,8 +2083,10 @@ const CheckCreditBureau = ({route}) => {
               textStyle={{
                 fontWeight: '800',
               }}
-              // onPress={handleConfirm}
-              onPress={()=>navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN)}
+              onPress={handleConfirm}
+              // onPress={() =>
+              //   navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN)
+              // }
             />
           </View>
         </ScrollView>
@@ -1979,6 +2111,7 @@ const CheckCreditBureau = ({route}) => {
           data2={CCRReport.current}
           userData={userData.current}
           coAppData={coAppData.current}
+          productCurrent={productCurrent.current}
         />
       )}
       <Loader loading={loading} message={'please wait...'} />
@@ -2015,7 +2148,6 @@ const styles = StyleSheet.create({
   input: {
     borderBottomWidth: 1,
     flex: 2.5,
-    height: 45,
     color: R.colors.PRIMARI_DARK,
     textAlignVertical: 'bottom',
     fontSize: 16,
@@ -2034,4 +2166,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     //   backgroundColor: colorScheme === 'dark' ? '#444' : '#fff',
   },
+  fieldContainer: {
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderColor: R.colors.LIGHTGRAY,
+  },
+  labelNew: isDarkMode => ({
+    color: isDarkMode ? R.colors.PRIMARI_DARK : R.colors.PRIMARI_DARK,
+    marginBottom: 5,
+    // borderWidth:0
+  }),
+  inputNew: (isDarkMode, isDisabled = false) => ({
+    borderColor: R.colors.inputBorder,
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    color: isDarkMode ? R.colors.PRIMARI_DARK : R.colors.PRIMARI_DARK,
+    backgroundColor: isDisabled
+      ? R.colors.disabledBackground
+      : R.colors.inputBackground,
+  }),
 });

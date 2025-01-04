@@ -11,7 +11,7 @@ import {updateUser} from '../../store/actions/userActions';
 import Loader from 'library/commons/Loader';
 /*
  * This function Component is used to render update user name screen
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const UpdateUserName = props => {
   const navigation = useNavigation();

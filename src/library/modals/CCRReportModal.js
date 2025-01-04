@@ -15,6 +15,7 @@ const CCRReportModal = ({
   data2,
   userData,
   coAppData,
+  productCurrent,
 }) => {
   const navigation = useNavigation();
   const {
@@ -50,19 +51,27 @@ const CCRReportModal = ({
     parseInt(data2?.AverageOpenBalance) <= data1?.AverageOpenBalance &&
     parseInt(data2?.NoOfActiveAccounts) <= data1?.NoOfActiveAccounts &&
     parseInt(data2?.TotalPastDue) <= data1?.TotalPastDue &&
-    parseInt(data2?.NoOfWriteOffs) <= data1?.NoOfWriteOffs &&
+    parseInt(data2?.TotalWrittenOffAmount) <= data1?.NoOfWriteOffs &&
     parseInt(data2?.TotalMonthlyPaymentAmount) == data1?.TotalMonthlyPaymentAmt;
 
-  console.log(res, '_____');
+  console.log(
+    res,
+    '_____',
+    'productCurrent',
+    productCurrent,
+    data2.CreditScore >= data1?.CreditScore &&
+      parseInt(data2?.TotalBalanceAmount) <= data1?.AverageOpenBalance &&
+      parseInt(data2?.NoOfActiveAccounts) <= data1?.NoOfActiveAccounts &&
+      parseInt(data2?.NoOfPastDueAccounts) <= data1?.NoOfPastDueAccounts &&
+      parseInt(data2?.TotalWrittenOffAmount) <= data1?.NoOfWriteOffs &&
+      parseInt(data2?.TotalMonthlyPaymentAmount) <= data1?.TotalBalanceAmount,
+  );
   return (
     <Modal isVisible={isVisible} onBackdropPress={onClose} style={styles.modal}>
       <View style={styles.modalContent}>
         <ScrollView>
-          <View style={{flexDirection: 'row', flex: 1}}>
+          {/* <View style={{flexDirection: 'column', flex: 1}}>
             <Text style={[styles.Label]}>Applicant's Information</Text>
-            <Text style={styles.Label}>CCR Report Information</Text>
-          </View>
-          <Surface style={styles.profileContainer} elevation={4}>
             <View style={{flex: 1, margin: 5}}>
               <Text style={styles.lbl}>
                 Name : <Text style={styles.val}>{name}</Text>
@@ -91,6 +100,9 @@ const CCRReportModal = ({
                 Voter ID : <Text style={styles.val}>{voterId}</Text>
               </Text>
             </View>
+          </View>
+          <View style={{flexDirection: 'column', flex: 1}}>
+            <Text style={styles.Label}>Co-Applicant's Information</Text>
             <View style={{flex: 1, margin: 5}}>
               <Text style={styles.lbl}>
                 Name : <Text style={styles.val}>{coApplicantName}</Text>
@@ -119,26 +131,30 @@ const CCRReportModal = ({
                 Voter ID : <Text style={styles.val}>{coApplVoterid}</Text>
               </Text>
             </View>
-          </Surface>
-          <Surface style={styles.profileContainer} elevation={4}>
+          </View> */}
+          {/* <Surface style={styles.profileContainer} elevation={4}>
+           
+        
+          </Surface> */}
+          {/* <Surface style={styles.profileContainer} elevation={4}>
             <Text style={styles.Label}>CCR Report Information</Text>
-          </Surface>
+          </Surface> */}
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.headerCell, {flex: 2}]}>Parameter</Text>
+              <Text style={[styles.headerCell, {flex: 1}]}>Parameter</Text>
               <Text style={styles.headerCell}>Our Criteria</Text>
               <Text style={styles.headerCell}>Client Data</Text>
               <Text style={styles.headerCell}>Result</Text>
             </View>
             <View style={styles.tableRow}>
-              <View style={{flex: 2}}>
+              <View style={{flex: 1}}>
                 <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
                   Credit Score {`(\>=)`}
                 </Text>
                 <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
-                  Avg. Open. Bal.(=)
+                  Avg. Open. Bal.({`\<=`})
                 </Text>
                 <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
@@ -146,11 +162,11 @@ const CCRReportModal = ({
                 </Text>
                 <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
-                  No. Of Past Due Acc. (=)
+                  No. Of Past Due Acc.(=)
                 </Text>
                 <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
-                  No. Of Write-Offs (=)
+                  Write Off Amt. (=)
                 </Text>
                 {/* <Text
                   style={[styles.cell, styles.cellVal, {textAlign: 'left'}]}>
@@ -178,16 +194,15 @@ const CCRReportModal = ({
                   {data1?.NoOfWriteOffs}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
-                  {data1?.TotalMonthlyPaymentAmt}
+                  {data1?.TotalBalanceAmount}
                 </Text>
-                {/* <Text style={[styles.cell, styles.cellVal]}>19800</Text> */}
               </View>
               <View style={{flex: 1}}>
                 <Text style={[styles.cell, styles.cellVal]}>
                   {data2?.CreditScore}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
-                  {parseInt(data2?.AverageOpenBalance)?.toFixed(1)}
+                  {parseInt(data2?.TotalBalanceAmount)?.toFixed(1)}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
                   {data2?.NoOfActiveAccounts}
@@ -196,7 +211,7 @@ const CCRReportModal = ({
                   {data2?.NoOfPastDueAccounts}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
-                  {data2?.NoOfWriteOffs}
+                  {parseInt(data2?.TotalWrittenOffAmount).toFixed(0)}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
                   {data2?.TotalMonthlyPaymentAmount}
@@ -221,12 +236,12 @@ const CCRReportModal = ({
                 <Text style={[styles.cell, styles.cellVal]}>
                   <Icon
                     name={
-                      data2?.AverageOpenBalance <= data1?.AverageOpenBalance
+                      data2?.TotalBalanceAmount <= data1?.TotalBalanceAmount
                         ? 'check'
                         : 'window-close'
                     }
                     color={
-                      data2?.AverageOpenBalance <= data1?.AverageOpenBalance
+                      data2?.TotalBalanceAmount <= data1?.TotalBalanceAmount
                         ? R.colors.GREEN
                         : R.colors.RED
                     }
@@ -266,12 +281,12 @@ const CCRReportModal = ({
                 <Text style={[styles.cell, styles.cellVal]}>
                   <Icon
                     name={
-                      data2?.NoOfWriteOffs <= data1?.NoOfWriteOffs
+                      data2?.TotalWrittenOffAmount <= data1?.NoOfWriteOffs
                         ? 'check'
                         : 'window-close'
                     }
                     color={
-                      data2?.NoOfWriteOffs <= data1?.NoOfWriteOffs
+                      data2?.TotalWrittenOffAmount <= data1?.NoOfWriteOffs
                         ? R.colors.GREEN
                         : R.colors.RED
                     }
@@ -304,21 +319,23 @@ const CCRReportModal = ({
             onPress={() => {
               // if (
               //   data2.CreditScore >= data1?.CreditScore &&
-              //   parseInt(data2?.AverageOpenBalance) <=
+              //   parseInt(data2?.TotalBalanceAmount) <=
               //     data1?.AverageOpenBalance &&
               //   parseInt(data2?.NoOfActiveAccounts) <=
               //     data1?.NoOfActiveAccounts &&
-              //   parseInt(data2?.TotalPastDue) <= data1?.TotalPastDue &&
-              //   parseInt(data2?.NoOfWriteOffs) <= data1?.NoOfWriteOffs &&
-              //   parseInt(data2?.TotalMonthlyPaymentAmount) ==
-              //     data1?.TotalMonthlyPaymentAmt
-              //     ) {
-              navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-                data: {userData, coAppData},
-              });
+              //   parseInt(data2?.NoOfPastDueAccounts) <=
+              //     data1?.NoOfPastDueAccounts &&
+              //   parseInt(data2?.TotalWrittenOffAmount) <=
+              //     data1?.NoOfWriteOffs &&
+              //   parseInt(data2?.TotalMonthlyPaymentAmount) <=
+              //     data1?.TotalBalanceAmount
+              // ) {
+                navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+                  data: {userData, coAppData,productCurrent},
+                });
               // } else {
               //   Alert.alert('आपका ऋण स्वीकृत नहीं हुआ');
-              //   navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN)
+              //   navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN);
               // }
               onClose(false);
             }}
@@ -341,7 +358,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 10,
     borderRadius: 10,
-    minHeight: '60%',
+    // minHeight: '50%',
     justifyContent: 'center',
     alignSelf: 'center',
     width: '98%',
@@ -357,6 +374,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     paddingVertical: 10,
     width: '100%',
+    alignItems: 'center',
   },
   headerCell: {
     flex: 1,
@@ -376,6 +394,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     paddingVertical: 5,
+    alignItems: 'center',
   },
   cell: {
     flex: 1,
@@ -393,6 +412,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: 1,
+    flexWrap: 'wrap',
+    textAlignVertical: 'center',
   },
   profileContainer: {
     flex: 1,

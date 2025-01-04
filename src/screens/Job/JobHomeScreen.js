@@ -17,7 +17,7 @@ import {getCurrentJob} from '../../store/actions/jobActions';
 import {useSelector, useDispatch} from 'react-redux';
 /*
  * This Component is the Home screen where we click on a button to post a job
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const JobHomeScreen = () => {
   const navigation = useNavigation();

@@ -9,7 +9,7 @@ import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from 'resources/R';
 /*
  * This Component is used to add a card
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 export default function AddCardScreen() {
   const navigation = useNavigation();

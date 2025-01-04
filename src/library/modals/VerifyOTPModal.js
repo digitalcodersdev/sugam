@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ const VerifyOTPModal = ({
   const [loading, setLoading] = useState(false);
   const [aadharNumber, setAAdhar] = useState(aadharNo ? aadharNo : '');
   const [focused, setFocused] = useState(null);
+  const otpRef = useRef(null);
 
   const verifyOtp = async () => {
     try {
@@ -47,7 +48,7 @@ const VerifyOTPModal = ({
       const myHeaders = new Headers();
       myHeaders.append(
         'Authorization',
-        'NTI2Mjg0ODY6RlFHSDFRSmhYME1LQ0E1YktYcEQ5WkZZOXRVckw4RGg=',
+        'NDYyOTA0MTU6YjB2Z1BDeGFRcFdqbVZvY2N2VEJ5SE15eEZXRzBFWVU=',
       );
       myHeaders.append('Content-Type', 'application/json');
       const raw = JSON.stringify(payload);
@@ -57,10 +58,7 @@ const VerifyOTPModal = ({
         body: raw,
         redirect: 'follow',
       };
-      fetch(
-        'https://svcdemo.digitap.work/ent/v3/kyc/submit-otp',
-        requestOptions,
-      )
+      fetch('https://svc.digitap.ai/ent/v3/kyc/submit-otp', requestOptions)
         .then(response => response.text())
         .then(result => {
           const res = JSON.parse(result);
@@ -137,6 +135,7 @@ const VerifyOTPModal = ({
             focusStickBlinkingDuration={500}
             onTextChange={code => setOtp(code)}
             onFilled={text => console.log(`OTP is ${text}`)}
+            ref={otpRef.current}
             theme={{
               containerStyle: {
                 width: '90%',
@@ -174,6 +173,7 @@ const VerifyOTPModal = ({
             style={{}}
             onPress={() => {
               setOtp('');
+              // otpRef.current.
               resendCode();
             }}>
             <Text

@@ -9,7 +9,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {getSkills} from '../../store/actions/jobActions';
 /*
  * This function is used to print skills
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const Skills = ({
   isVisible,

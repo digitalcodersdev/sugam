@@ -1,6 +1,6 @@
 /*
  * Here we set the screen related constant
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const ScreensNameEnum = {
   GET_STARTED: 'GET_STARTED',
@@ -97,5 +97,7 @@ const ScreensNameEnum = {
   MY_LEAVES_SCREEN: 'My Leaves',
   APPLIED_LEAVES_SCREENS: 'My Applied Leaves',
   LEAVE_APPROVAL_SCREENS: 'Leave Approval',
+  CASH_COLLCETION_APPROVAL_SCREEN: 'Cash Collection Approval',
+  GRT_SCREEN: 'GRT',
 };
 export default Object.freeze(ScreensNameEnum);

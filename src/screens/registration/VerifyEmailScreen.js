@@ -10,7 +10,7 @@ import AuthenticationApi from 'datalib/services/user.api';
 import Loader from 'library/commons/Loader';
 /*
  * This function Component is used to render Verify email otp screen 
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const VerifyEmailScreen = () => {
   const navigation = useNavigation();

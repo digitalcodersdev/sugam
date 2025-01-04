@@ -16,7 +16,7 @@ import R from 'resources/R';
 import Button from './Button';
 /*
  * This function is used to create our textInput for Location
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const BLocationInput = ({
   defaultAddress,

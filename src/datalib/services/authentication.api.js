@@ -35,9 +35,29 @@ class AuthenticationApi extends BaseApi {
     }
   }
 
+  async login(data) {
+    try {
+      const response = await this.axios.post(getApiUri('/login'), data);
+      console.log('response______________response', response);
+      if (response.data && response.success) {
+        await sInfoUtil.save('JWT', response?.data?.token);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      return false;
+    }
+  }
+
   async verifyMobileOtpClient(data) {
     try {
-      const response = await this.axios.post(getApiUri('/verify-otp-client'), data);
+      const response = await this.axios.post(
+        getApiUri('/verify-otp-client'),
+        data,
+      );
       if (response.data && response.success) {
         return true;
       }

@@ -4,7 +4,7 @@ import R from '../../resources/R';
 
 /*
  * This function is used to create Loader 
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const Loader = ({loading, message}) => {
   return (

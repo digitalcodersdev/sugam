@@ -6,7 +6,7 @@ import R from 'resources/R';
 import BTextInput from 'library/commons/BTextInput';
 /*
  * This function is used to create our app Feedback button
- * @author Kindajobs <mohitkumar.webdev@gmail.com>
+ * @author Sugam <mohitkumar.webdev@gmail.com>
  */
 const FeedbackButton = () => {
   const [isModal, setModalVisible] = useState(false);

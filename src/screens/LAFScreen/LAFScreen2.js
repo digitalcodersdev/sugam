@@ -108,6 +108,12 @@ const LAFScreen2 = props => {
       setVillage(vtc);
     }
   }, []);
+  useEffect(() => {
+    if (parseInt(yearsAtAddress) < 3 && yearsAtAddress != '') {
+      Alert.alert('Years at Current Address Must me 3 or more years');
+      setYearsAtCurrAdd('');
+    }
+  }, [yearsAtAddress]);
 
   const valid = () => {
     const errors = {};
@@ -445,6 +451,7 @@ const LAFScreen2 = props => {
                 ]}
                 onFocus={() => setFocused('noOfDependent')}
                 onBlur={() => setFocused(null)}
+                maxLength={2}
               />
             </View>
             <View style={styles.viewInput}>
@@ -762,6 +769,8 @@ const LAFScreen2 = props => {
                 ]}
                 onFocus={() => setFocused('yearsAtAddress')}
                 onBlur={() => setFocused(null)}
+                maxLength={2}
+                keyboardType="number-pad"
               />
             </View>
             {/* <View style={styles.viewInput}>

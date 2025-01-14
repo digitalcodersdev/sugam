@@ -24,6 +24,7 @@ import Loader from '../../library/commons/Loader';
 import I18n from 'react-native-i18n';
 import {useNavigation} from '@react-navigation/native';
 import axios from 'axios';
+import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 
 const VerifyAadhar = ({route}) => {
   const navigation = useNavigation();
@@ -215,7 +216,7 @@ const VerifyAadhar = ({route}) => {
 
   return (
     <ScreenWrapper header={false} backDisabled>
-      {/* <ChildScreensHeader screenName={ScreensNameEnum.VERIFY_AADHAR_SCREEN} /> */}
+      <ChildScreensHeader screenName={ScreensNameEnum.VERIFY_AADHAR_SCREEN} />
       <View style={styles.modalContainer}>
         <Image
           source={require('../../assets/Images/aadhar.png')}

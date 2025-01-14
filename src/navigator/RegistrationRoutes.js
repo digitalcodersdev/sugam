@@ -70,6 +70,9 @@ import CenterArrearCollection from '../screens/CenterCollection/CenterArrearColl
 import ClientArrearCollection from '../screens/ClientCollection/ClientArrearCollection';
 import CashCollectionApproval from '../screens/CashCollectionApproval/CashCollectionApproval';
 import Grt from '../screens/Grt/Grt';
+import GRTScreen from '../screens/BMScreens/GRTScreen';
+import LoanProposalReview from '../screens/BMScreens/LoanProposalReview';
+import BMOptions from '../screens/BMScreens/BMOptions';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -301,8 +304,18 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             options={{headerShown: false}}
           />
           <RegistrationStack.Screen
-            component={Grt}
+            component={BMOptions}
+            name={ScreensNameEnum.BM_OPERATIONS_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={GRTScreen}
             name={ScreensNameEnum.GRT_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={LoanProposalReview}
+            name={ScreensNameEnum.PROPOSAL_REVIEW_SCREEN}
             options={{headerShown: false}}
           />
         </>
@@ -355,11 +368,11 @@ function MyTabs() {
           // else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
           //   label = 'Mark OD';
           // }
-          else if (route.name === ScreensNameEnum.TASK_SCREEN) {
-            label = 'Notifications';
-          } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
-            label = 'Leave Notification';
-          }
+          // else if (route.name === ScreensNameEnum.TASK_SCREEN) {
+          //   label = 'Notifications';
+          // } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
+          //   label = 'Leave Notification';
+          // }
           return (
             <Text style={focused ? styles.tabLabelFocused : styles.tabLabel}>
               {label}
@@ -389,20 +402,21 @@ function MyTabs() {
           headerShown: false,
         }}
       /> */}
-      <Tab.Screen
+      {/* <Tab.Screen
         name={ScreensNameEnum.TASK_SCREEN}
         component={TaskScreen}
         options={{
           headerShown: false,
         }}
       />
-      {/* <Tab.Screen
+      <Tab.Screen
         name={ScreensNameEnum.EVENTS_SCREENS}
         component={Events}
         options={{
           headerShown: false,
         }}
       /> */}
+
       {/* <Tab.Screen name="Settings" component={SettingsScreen} /> */}
     </Tab.Navigator>
   );

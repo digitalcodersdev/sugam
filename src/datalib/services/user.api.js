@@ -998,6 +998,35 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async mergeAllFiles({loanId,enrollmentId}) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/merge/all/files/${loanId}/${enrollmentId}`),
+
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchLoanProposalReviewData({branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/proposal/review/data/${branchId}`),
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
 }
 
 export default AuthenticationApi;

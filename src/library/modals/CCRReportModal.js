@@ -16,6 +16,7 @@ const CCRReportModal = ({
   userData,
   coAppData,
   productCurrent,
+  enrollmentId,
 }) => {
   const navigation = useNavigation();
   const {
@@ -317,26 +318,35 @@ const CCRReportModal = ({
           <Button
             title="Process"
             onPress={() => {
-              // if (
-              //   data2.CreditScore >= data1?.CreditScore &&
-              //   parseInt(data2?.TotalBalanceAmount) <=
-              //     data1?.AverageOpenBalance &&
-              //   parseInt(data2?.NoOfActiveAccounts) <=
-              //     data1?.NoOfActiveAccounts &&
-              //   parseInt(data2?.NoOfPastDueAccounts) <=
-              //     data1?.NoOfPastDueAccounts &&
-              //   parseInt(data2?.TotalWrittenOffAmount) <=
-              //     data1?.NoOfWriteOffs &&
-              //   parseInt(data2?.TotalMonthlyPaymentAmount) <=
-              //     data1?.TotalBalanceAmount
-              // ) {
+              if (
+                data2.CreditScore >= data1?.CreditScore &&
+                parseInt(data2?.TotalBalanceAmount) <=
+                  data1?.AverageOpenBalance &&
+                parseInt(data2?.NoOfActiveAccounts) <=
+                  data1?.NoOfActiveAccounts &&
+                parseInt(data2?.NoOfPastDueAccounts) <=
+                  data1?.NoOfPastDueAccounts &&
+                parseInt(data2?.TotalWrittenOffAmount) <=
+                  data1?.NoOfWriteOffs &&
+                parseInt(data2?.TotalMonthlyPaymentAmount) <=
+                  data1?.TotalBalanceAmount
+              ) {
                 navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-                  data: {userData, coAppData,productCurrent},
+                  data: {userData, coAppData, productCurrent},
                 });
-              // } else {
-              //   Alert.alert('आपका ऋण स्वीकृत नहीं हुआ');
-              //   navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN);
-              // }
+
+                navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+                  data: {
+                    userData: userData,
+                    coAppData: coAppData,
+                    productCurrent: productCurrent,
+                    enrollmentId: enrollmentId,
+                  },
+                });
+              } else {
+                Alert.alert('आपका ऋण स्वीकृत नहीं हुआ');
+                navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN);
+              }
               onClose(false);
             }}
             buttonStyle={{borderRadius: 6, paddingVertical: 5}}

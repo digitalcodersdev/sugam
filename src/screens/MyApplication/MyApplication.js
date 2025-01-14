@@ -29,6 +29,7 @@ const MyApplication = props => {
     insurance,
     loanPurpose: purpose,
     product,
+    emi: MonthlyEMI,
   } = loanPurpose;
   const [selfIncome, setSelfInc] = useState('');
   const [spouseIncome, setSpouseInc] = useState('');
@@ -36,7 +37,7 @@ const MyApplication = props => {
   const [totalIncome, setTotalInc] = useState('');
   const [focused, setFocused] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  console.log('MonthlyEMI', MonthlyEMI, durationOfLoan);
   //expenses state
   const [businessExpenses, setBusinessExpenses] = useState('');
   const [houseExpenses, setHouseExpenses] = useState('');
@@ -44,10 +45,30 @@ const MyApplication = props => {
   const [otherExp, setOtherExp] = useState('');
   const [totalExp, setTotalExp] = useState('');
   const [disposableIncome, setDisposableIncome] = useState('');
+  const [isDisabled, setDisabled] = useState(false);
+
+  useEffect(() => {
+    if (disposableIncome) {
+      const perc = (parseInt(disposableIncome) * 60) / 100;
+      console.log('perc', perc);
+      if (MonthlyEMI > perc) {
+        Alert.alert(
+          'Income Alert',
+          `EMI Amount ${MonthlyEMI} should be the 60% of Disposable Income ${disposableIncome}.`,
+        );
+        setDisabled(true);
+      } else {
+        setDisabled(false);
+      }
+    }
+  }, [MonthlyEMI, disposableIncome]);
+
   useEffect(() => {
     if (selfIncome || otherIncome || spouseIncome) {
       setTotalInc(
-        parseInt(selfIncome) + parseInt(otherIncome) + parseInt(spouseIncome),
+        (parseInt(selfIncome) || 0) +
+          (parseInt(otherIncome) || 0) +
+          (parseInt(spouseIncome) || 0),
       );
     }
   }, [selfIncome, otherIncome, spouseIncome]);
@@ -70,10 +91,10 @@ const MyApplication = props => {
   useEffect(() => {
     if (businessExpenses || houseExpenses || emi || otherExp) {
       setTotalExp(
-        parseInt(businessExpenses) +
-          parseInt(houseExpenses) +
-          parseInt(emi) +
-          parseInt(otherExp),
+        (parseInt(businessExpenses) || 0) +
+          (parseInt(houseExpenses) || 0) +
+          (parseInt(emi) || 0) +
+          (parseInt(otherExp) || 0),
       );
     }
   }, [businessExpenses, houseExpenses, emi, otherExp]);
@@ -175,8 +196,6 @@ const MyApplication = props => {
             repayment: product,
             period: durationOfLoan,
             riskfund: 0,
-            firstdateofinst: null,
-            lastdateofinst: null,
             approvaldetails: null,
             status: 1,
             preclose: 0,
@@ -184,19 +203,29 @@ const MyApplication = props => {
             renewal: null,
             cycle: 1,
             gross_net: 2,
-            renewalcharge: 0,
             defaulttype: null,
             reason: null,
             willfulenterby: null,
-            ins_id: 0,
             loandonedate: moment(new Date()).format('YYYY-MM-DD'),
-            iskyc: 0,
             grtdoneby: null,
             deathremark: null,
             others: 0,
             refinance_id: 0,
             refinancedate: moment(new Date()).format('YYYY-MM-DD'),
             loan_type: 2,
+            ins_id: null,
+            firstdateofinst: null,
+            lastdateofinst: null,
+            renewalcharge: null,
+            iskyc: null,
+            paymentmode: 2,
+            sanctiondate: null,
+            sanctionsentdate: null,
+            sanctionamount: null,
+            grossinst: durationOfLoan,
+            nextdisbdate: null,
+            nextdisstatus: null,
+            nextdisbamount: null,
           },
         };
         const res = await new UserApi().insertLoanPurpose(payload);
@@ -215,7 +244,7 @@ const MyApplication = props => {
 
   // console.log('props', props?.route?.params?.data);
   return (
-    <ScreenWrapper header={true} backDisabled>
+    <ScreenWrapper header={false} backDisabled>
       <Text
         style={[
           styles.tagline,
@@ -241,7 +270,7 @@ const MyApplication = props => {
                 padding: 5,
               },
             ]}>
-           Monthly Income and Expenditure Details
+            Monthly Income and Expenditure Details
           </Text>
           <View
             style={{flexDirection: 'row', alignItems: 'center', padding: 10}}>
@@ -498,6 +527,7 @@ const MyApplication = props => {
             }}
             textStyle={{fontWeight: 'bold'}}
             onPress={handleNext}
+            disabled={isDisabled}
           />
         </ScrollView>
       </View>

@@ -122,11 +122,11 @@ export const fetchClockinStatus = createAsyncThunk(
 
 export const fetchCurrentDayCollectionByBranchId = createAsyncThunk(
   'fetch/current-day/collection',
-  async ({branchId,date}, {rejectWithValue}) => {
+  async ({branchId, date}, {rejectWithValue}) => {
     try {
       return await new UserApi().fetchCurrentDayCollectionByBranchId({
         branchId,
-        date
+        date,
       });
     } catch (error) {
       return rejectWithValue(error.code);
@@ -169,6 +169,32 @@ export const fetchHolidays = createAsyncThunk(
       if (res) {
         return res;
       }
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+
+export const fetchProposals = createAsyncThunk(
+  'fetch/proposals',
+  async (data, {rejectWithValue}) => {
+    try {
+      return await new UserApi().fetchLoanProposalReviewData({
+        branchId: data,
+      });
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
+
+export const fetchAMProposals = createAsyncThunk(
+  'fetch/proposals/am',
+  async (data, {rejectWithValue}) => {
+    try {
+      return await new UserApi().fetchLoanProposalReviewAMData({
+        branchId: data,
+      });
     } catch (error) {
       return rejectWithValue(error.code);
     }

@@ -18,14 +18,14 @@ const Enrollment = () => {
       color: R.colors.SECONDARY,
       image: require('../../assets/Images/icon1.png'),
     },
-    {
-      id: 2,
-      icon: 'home-account',
-      title: 'Existing Client',
-      screen: ScreensNameEnum.EXISTING_CLIENT,
-      color: R.colors.RED,
-      image: require('../../assets/Images/icon2.png'),
-    },
+    // {
+    //   id: 2,
+    //   icon: 'home-account',
+    //   title: 'Existing Client',
+    //   screen: ScreensNameEnum.EXISTING_CLIENT,
+    //   color: R.colors.RED,
+    //   image: require('../../assets/Images/icon2.png'),
+    // },
     // {
     //   id: 4,
     //   icon: 'gift-open-outline',

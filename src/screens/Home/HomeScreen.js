@@ -37,14 +37,14 @@ const DATA = [
     color: R.colors.lightYellow,
     image: require('../../assets/Images/icon1.png'),
   },
-  {
-    id: '2',
-    icon: 'badge-account',
-    title: 'Admin',
-    screen: ScreensNameEnum.OPERATIONS_SCREEN,
-    color: R.colors.RED,
-    image: require('../../assets/Images/icon2.png'),
-  },
+  // {
+  //   id: '2',
+  //   icon: 'badge-account',
+  //   title: 'Admin',
+  //   screen: ScreensNameEnum.OPERATIONS_SCREEN,
+  //   color: R.colors.RED,
+  //   image: require('../../assets/Images/icon2.png'),
+  // },
   {
     id: '3',
     icon: 'account-supervisor',
@@ -53,30 +53,30 @@ const DATA = [
     color: '#FFA201',
     image: require('../../assets/Images/icon3.png'),
   },
-  {
-    id: '4',
-    icon: 'calendar-month',
-    title: 'Holiday',
-    screen: ScreensNameEnum.OPERATIONS_SCREEN,
-    color: R.colors.GREEN,
-    image: require('../../assets/Images/icon4.png'),
-  },
-  {
-    id: '5',
-    icon: 'card-account-phone-outline',
-    title: 'Help Desk',
-    screen: ScreensNameEnum.HELP_DESK_SCREEN,
-    color: R.colors.SLATE_GRAY,
-    image: require('../../assets/Images/icon4.png'),
-  },
-  {
-    id: '6',
-    icon: 'handshake-outline',
-    title: 'Grievance',
-    screen: ScreensNameEnum.GRIEVANCE_SCREEN,
-    color: R.colors.SECONDARY,
-    image: require('../../assets/Images/icon4.png'),
-  },
+  // {
+  //   id: '4',
+  //   icon: 'calendar-month',
+  //   title: 'Holiday',
+  //   screen: ScreensNameEnum.OPERATIONS_SCREEN,
+  //   color: R.colors.GREEN,
+  //   image: require('../../assets/Images/icon4.png'),
+  // },
+  // {
+  //   id: '5',
+  //   icon: 'card-account-phone-outline',
+  //   title: 'Help Desk',
+  //   screen: ScreensNameEnum.HELP_DESK_SCREEN,
+  //   color: R.colors.SLATE_GRAY,
+  //   image: require('../../assets/Images/icon4.png'),
+  // },
+  // {
+  //   id: '6',
+  //   icon: 'handshake-outline',
+  //   title: 'Grievance',
+  //   screen: ScreensNameEnum.GRIEVANCE_SCREEN,
+  //   color: R.colors.SECONDARY,
+  //   image: require('../../assets/Images/icon4.png'),
+  // },
 ];
 
 const HomeScreen = ({navigation}) => {
@@ -198,7 +198,7 @@ const HomeScreen = ({navigation}) => {
               </Text>
             </View>
           </View>
-          <TouchableOpacity onPress={()=>setModalVisible(true)}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Icon name="power" size={40} color={R.colors.primary} />
           </TouchableOpacity>
         </View>

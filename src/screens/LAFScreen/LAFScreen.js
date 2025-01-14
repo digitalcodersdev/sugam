@@ -5,6 +5,7 @@ import {
   View,
   useColorScheme,
   TextInput,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -29,6 +30,7 @@ const LAFScreen = props => {
   );
   // console.log('productCurrent', productCurrent);
   const [durationOfLoan, setDurationOfLoan] = useState(null);
+  const [emi, setEmi] = useState(0);
   const [frequency, setFrequency] = useState(null);
   const [loanPurpose, setLoanPurpose] = useState(productCurrent?.loanPurpose);
   const [loanPurposeData, setLoanPurposeData] = useState(null);
@@ -52,6 +54,7 @@ const LAFScreen = props => {
   useEffect(() => {
     fetchProdFreqTen(productCurrent?.amountApplied);
   }, [productCurrent?.amountApplied]);
+
   useEffect(() => {
     fetchLoanPurpose(category);
   }, [category]);
@@ -71,15 +74,12 @@ const LAFScreen = props => {
     }
   };
 
-  // console.log('____', amountApplied);
-
   const fetchLoanAmt = async data => {
     try {
       setLoading(true);
       const res = await new UserApi().fetchLoanAmt({
         id: data,
       });
-      // console.log('data_________', res);
       if (res?.length >= 1) {
         setFrequency(null);
         setAmountData(res);
@@ -121,10 +121,11 @@ const LAFScreen = props => {
         amt: data,
         id: product,
       });
-      // console.log('++++++++++++++++___', res);
-      if (res?.length >= 1) {
+      console.log('++++++++++++++++___', res?.length);
+      if (res?.length == 1) {
         setFrequency(res[0]?.paymentfrequency);
         setDurationOfLoan(res[0]?.period?.toString());
+        setEmi(res[0]?.emi);
         setFreqTenureData(res);
       } else if (res?.length > 1) {
         // setFrequency(res[0]?.paymentfrequency?.toString());
@@ -141,25 +142,31 @@ const LAFScreen = props => {
   const handleConfirm = status => {
     if (status == 'confirm') {
       onModalClose(false);
-      navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
-        data: {
-          ...data,
-          loanPurpose: {
-            product,
-            amountApplied,
-            durationOfLoan,
-            frequency,
-            category,
-            loanPurpose,
-            insurance,
+      if (durationOfLoan) {
+        navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
+          data: {
+            ...data,
+            loanPurpose: {
+              product,
+              amountApplied,
+              durationOfLoan,
+              frequency,
+              category,
+              loanPurpose,
+              insurance,
+              emi,
+            },
           },
-        },
-      });
+        });
+      } else {
+        Alert.alert('Tenure is required', 'Please try again...');
+        fetchProdFreqTen(productCurrent?.amountApplied);
+      }
     }
   };
 
   return (
-    <ScreenWrapper header={true} backDisabled>
+    <ScreenWrapper header={false} backDisabled>
       <View style={styles.header}>
         <Text style={styles.headerText}>
           {ScreensNameEnum.LAF_GROUP_SCREEN}
@@ -271,11 +278,19 @@ const LAFScreen = props => {
               <Text style={styles.label(isDarkMode)}>Repay. Frequency</Text>
               <TextInput
                 style={styles.input(isDarkMode, true)}
-                value={frequency}
+                value={frequency?.toString()}
                 editable={false}
               />
             </View>
-
+            {/* Frequency */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label(isDarkMode)}>EMI Amount</Text>
+              <TextInput
+                style={styles.input(isDarkMode, true)}
+                value={emi?.toString()}
+                editable={false}
+              />
+            </View>
             {/* Loan Purpose */}
             <View style={styles.fieldContainer}>
               <Text style={styles.label(isDarkMode)}>Loan Category</Text>
@@ -328,6 +343,7 @@ const LAFScreen = props => {
               <Picker
                 selectedValue={insurance}
                 style={styles.input(isDarkMode)}
+                enabled={false}
                 dropdownIconColor={R.colors.primary}
                 onValueChange={itemValue => setInsurance(itemValue)}>
                 <Picker.Item label="Yes" value="Yes" />

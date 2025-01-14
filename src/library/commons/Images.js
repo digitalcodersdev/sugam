@@ -1,136 +1,63 @@
-import React, {useState, useEffect} from 'react';
-import {View, Image, StyleSheet, Text, Pressable} from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import ImagePicker from 'react-native-image-crop-picker';
-import R from 'resources/R';
-/*
- * This function is used to take picture and set 
- * @author Sugam <mohitkumar.webdev@gmail.com>
- */
-export default function Images() {
-  const [img1, setImg1] = useState('');
-  const [img2, setImg2] = useState('');
-  const [img3, setImg3] = useState('');
-  const handleAddPicture = async img => {
-    const path = await ImagePicker.openCamera({
-      width: 400,
-      height: 400,
-      cropping: true,
-    });
-    if (path) {
-      if (img === 'img1') {
-        setImg1(path.path);
-      } else if (img === 'img2') {
-        setImg2(path.path);
-      } else {
-        setImg3(path.path);
-      }
-      console.log(path.path);
-    }
+import React, {useState} from 'react';
+import {View, Image, ActivityIndicator, StyleSheet, Text} from 'react-native';
+import R from '../../resources/R';
+
+const ImageWithLoading = ({source, style, loaderColor = '#000', onPress}) => {
+  const [loading, setLoading] = useState(true);
+  const handleOnPress = () => {
+    console.log("INSIDE");
+    onPress && onPress();
   };
   return (
-    <View style={styles.main}>
-      <View style={styles.innerContainer}>
-        <Pressable
-          onPress={() => {
-            handleAddPicture('img1');
-          }}>
-          {img1 ? (
-            <View style={styles.imgContainer}>
-              <Image
-                source={{uri: img1}}
-                style={styles.imageStyle}
-                resizeMode={'contain'}
-              />
-            </View>
-          ) : (
-            <View style={styles.imgContainer}>
-              <Image />
-              <Text style={styles.txt}>Add Picture</Text>
-              <Icon name="camera" size={25} color="grey" style={styles.icon} />
-            </View>
-          )}
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            handleAddPicture('img2');
-          }}>
-          {img2 ? (
-            <View style={styles.imgContainer}>
-              <Image
-                source={{uri: img2}}
-                style={styles.imageStyle}
-                resizeMode={'contain'}
-              />
-            </View>
-          ) : (
-            <View style={styles.imgContainer}>
-              <Image />
-              <Text style={styles.txt}>Add Picture</Text>
-              <Icon name="camera" size={25} color="grey" style={styles.icon} />
-            </View>
-          )}
-        </Pressable>
-        <Pressable
-          onPress={() => {
-            handleAddPicture('img3');
-          }}>
-          {img3 ? (
-            <View style={styles.imgContainer}>
-              <Image
-                source={{uri: img3}}
-                style={styles.imageStyle}
-                resizeMode={'contain'}
-              />
-            </View>
-          ) : (
-            <View style={styles.imgContainer}>
-              <Image />
-              <Text style={styles.txt}>Add Picture</Text>
-              <Icon name="camera" size={25} color="grey" style={styles.icon} />
-            </View>
-          )}
-        </Pressable>
-      </View>
+    <View style={styles.container} onPress={handleOnPress}>
+      {loading && (
+        <>
+          <ActivityIndicator
+            style={styles.loader}
+            size="small"
+            color={loaderColor}
+          />
+          <Text style={{color: R.colors.LIGHTGRAY}}>Loading Image...</Text>
+        </>
+      )}
+      <Image
+        source={source}
+        style={[style, {display: loading ? 'none' : 'flex'}]}
+        onLoadStart={() => setLoading(true)}
+        onLoadEnd={() => setLoading(false)}
+        resizeMode="stretch"
+      />
     </View>
   );
-}
+};
+
 const styles = StyleSheet.create({
-  main: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    height: '100%',
-    width: '100%',
-  },
-  innerContainer: {
-    flex: 1,
-    flexDirection: 'row',
+  container: {
+    position: 'relative',
     justifyContent: 'center',
-    height: '100%',
-    width: '100%',
-  },
-  imgContainer: {
-    borderWidth: 1,
-    height: 80,
-    width: 80,
-    borderRadius: 200,
-    marginHorizontal: 20,
+    alignItems: 'center',
+    width: 120,
+    height: 120,
+    borderRadius: 160,
     alignSelf: 'center',
+    // marginBottom: 10,
+    borderRadius: 6,
+    // borderWidth: 1.5,
+    // borderColor: R.colors.SLATE_GRAY,
   },
-  txt: {
-    fontSize: 10,
-    color: R.colors.PRIMARI_DARK,
-    textAlign: 'center',
-    top: 20,
+  loader: {
+    position: 'absolute',
   },
-  icon: {
+  clientImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 160,
     alignSelf: 'center',
-    top: 30,
-  },
-  imageStyle: {
-    height: 80,
-    width: 80,
-    borderRadius: 120,
+    marginBottom: 10,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: R.colors.SLATE_GRAY,
   },
 });
+
+export default ImageWithLoading;

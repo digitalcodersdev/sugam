@@ -16,6 +16,7 @@ import com.agontuk.RNFusedLocation.RNFusedLocationPackage;
 import com.AlexanderZaytsev.RNI18n.RNI18nPackage;
 import me.furtado.smsretriever.RNSmsRetrieverPackage; 
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
+import com.rnfs.RNFSPackage;
 
 class MainApplication : Application(), ReactApplication {
 

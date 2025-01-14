@@ -26,7 +26,7 @@ import {useSelector} from 'react-redux';
 import {currentUserSelector} from '../../store/slices/user/user.slice';
 import moment from 'moment';
 import Loader from '../../library/commons/Loader';
-import {Calendar,} from 'react-native-calendars';
+import {Calendar} from 'react-native-calendars';
 
 const DATA = {
   Monday: '1',
@@ -296,7 +296,9 @@ const CreateNewCenter = ({}) => {
           // console.log('pincode', pincode);
           setCenterName(add ? add?.trim() : shortAddress);
           // setState(extractStateAndPincode(fetchedAddress));
-          setPincode(pincode[0]);
+          if (pincode[0]) {
+            setPincode(pincode[0]);
+          }
         },
         error => {
           Alert.alert('Error', 'Failed to fetch geolocation');
@@ -385,7 +387,7 @@ const CreateNewCenter = ({}) => {
       );
     }
   };
-
+  console.log('meetingDate', meetingDate);
   const validateAndSubmit = async () => {
     try {
       setLoading(true);

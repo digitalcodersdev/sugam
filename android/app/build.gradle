@@ -114,6 +114,7 @@ dependencies {
     implementation project(':react-native-i18n')
     implementation project(':react-native-sms-retriever')
     implementation project(':react-native-html-to-pdf')
+    implementation project(':react-native-fs')
 
 
     if (hermesEnabled.toBoolean()) {

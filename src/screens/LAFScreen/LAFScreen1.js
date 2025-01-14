@@ -52,6 +52,7 @@ const LAFScreen1 = props => {
   const [loading, setLoading] = useState(false);
   const [caste, setCaste] = useState(null);
   const [religion, setReligion] = useState(null);
+  const [eductaion, setEducation] = useState(null);
 
   const firstNameRef = useRef(null);
   const lastNameRef = useRef(null);
@@ -109,7 +110,12 @@ const LAFScreen1 = props => {
       setVillage(vtc);
     }
   }, []);
-  console.log(userData?.careOf);
+  useEffect(() => {
+    if (parseInt(yearsAtAddress) < 3 && yearsAtAddress != '') {
+      Alert.alert('Years at Current Address Must me 3 or more years');
+      setYearsAtCurrAdd('');
+    }
+  }, [yearsAtAddress]);
   const valid = () => {
     const errors = {};
     let valid = true;
@@ -122,7 +128,7 @@ const LAFScreen1 = props => {
       return valid;
     }
     // Validate Education
-    if (!education || education.trim() === '') {
+    if (education === null) {
       errors.occupation = 'Education is required';
       valid = false;
       Alert.alert('Education is required');
@@ -479,25 +485,36 @@ const LAFScreen1 = props => {
                 onBlur={() => setFocused(null)}
               />
             </View>
+
             <View style={styles.viewInput}>
               <Text style={styles.label}>Higher Education*</Text>
-              <TextInput
-                value={education}
-                onChangeText={setEductaion}
-                ref={educationRef}
+              <Picker
+                selectedValue={eductaion}
+                onValueChange={(itemValue, itemIndex) =>
+                  setEducation(itemValue)
+                }
+                mode="dropdown"
+                dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {
-                    borderColor:
-                      focused === 'education'
-                        ? R.colors.primary
-                        : R.colors.PRIMARI_DARK,
-                    borderBottomWidth: focused === 'education' ? 1.5 : 1,
-                  },
-                ]}
-                onFocus={() => setFocused('education')}
-                onBlur={() => setFocused(null)}
-              />
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                ]}>
+                {eductaion === null && (
+                  <Picker.Item
+                    label="Select Education"
+                    value={null}
+                    enabled={false}
+                  />
+                )}
+                <Picker.Item label="Illiterate" value="Illiterate" />
+                <Picker.Item label="5TH" value="5TH" />
+                <Picker.Item label="8TH" value="8TH" />
+                <Picker.Item label="10TH" value="10TH" />
+                <Picker.Item label="12TH" value="12TH" />
+                <Picker.Item label="Diploma" value="Diploma" />
+                <Picker.Item label="Graduate" value="Graduate" />
+                <Picker.Item label="PostGraduate" value="PostGraduate" />
+              </Picker>
             </View>
 
             <View style={styles.viewInput}>
@@ -795,6 +812,8 @@ const LAFScreen1 = props => {
                 ]}
                 onFocus={() => setFocused('yearsAtAddress')}
                 onBlur={() => setFocused(null)}
+                maxLength={2}
+                keyboardType="number-pad"
               />
             </View>
             {/* <View style={styles.viewInput}>

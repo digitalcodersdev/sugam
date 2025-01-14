@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useState, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   useColorScheme,
   ScrollView,
   Alert,
+  Dimensions,
+  Pressable,
 } from 'react-native';
 import {launchCamera} from 'react-native-image-picker';
 ScreensNameEnum;
@@ -17,9 +19,15 @@ import Button from '../../library/commons/Button';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import R from '../../resources/R';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-import {uploadFile} from '../../datalib/services/utility.api';
+import {
+  uploadFile,
+  uploadFileCoBorrower,
+} from '../../datalib/services/utility.api';
 import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
+import ImagePicker from 'react-native-image-crop-picker';
+import {Camera, getCameraDevice} from 'react-native-vision-camera';
+import RNFS from 'react-native-fs';
 
 const KYCCoApplicant = ({route}) => {
   const navigation = useNavigation();
@@ -33,21 +41,84 @@ const KYCCoApplicant = ({route}) => {
   const [housePhoto, setHousePhoto] = useState(null);
   const [err, setErr] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const [isCamera, setCamera] = useState(false);
+  const [isCameraReady, setCameraReady] = useState(false);
+  const devices = Camera.getAvailableCameraDevices();
+  const device = getCameraDevice(devices, 'back');
+  const selected = useRef(null);
+  const cameraRef = useRef(null);
   // console.log('route', route?.params);
 
   const {enrollmentId, coAppData} = route?.params?.data;
 
   const handleImagePick = setter => {
-    launchCamera({mediaType: 'photo', quality: 0.8}, response => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorMessage) {
-        console.log('ImagePicker Error: ', response.errorMessage);
-      } else if (response.assets && response.assets.length > 0) {
-        console.log(response.assets[0]);
-        setter(response.assets[0]);
+    selected.current = setter;
+    setCamera(true);
+    // if (isCameraReady) {
+    //   captureAndCropImage();
+    // }
+    // launchCamera({mediaType: 'photo', quality: 0.8}, response => {
+    //   if (response.didCancel) {
+    //     console.log('User cancelled image picker');
+    //   } else if (response.errorMessage) {
+    //     console.log('ImagePicker Error: ', response.errorMessage);
+    //   } else if (response.assets && response.assets.length > 0) {
+    //     console.log(response.assets[0]);
+    //     setter(response.assets[0]);
+    //   }
+    // });
+  };
+
+  // Function to copy the image to permanent storage
+  const copyImageToPermanentStorage = async sourcePath => {
+    try {
+      const destPath = `${RNFS.DocumentDirectoryPath}/image_${Date.now()}.jpg`;
+      await RNFS.copyFile(sourcePath, destPath);
+
+      const fileExists = await RNFS.exists(destPath);
+      if (fileExists) {
+        return destPath;
+      } else {
+        console.error('File does not exist after copying:', destPath);
+        return null;
       }
-    });
+    } catch (error) {
+      console.error('Error copying image:', error);
+      return null;
+    }
+  };
+
+  const captureAndCropImage = async setter => {
+    if (!cameraRef.current) return;
+    try {
+      // Capture the photo
+      const photo = await cameraRef.current.takePhoto({
+        quality: 1,
+        skipMetadata: false,
+      });
+      console.log('photo', photo);
+      // Copy the captured image to permanent storage
+      const permanentPath = await copyImageToPermanentStorage(photo.path);
+      if (permanentPath) {
+        setter(permanentPath);
+        // selected.current
+        console.log(permanentPath, selected.current(permanentPath));
+        // Crop the image
+        ImagePicker.openCropper({
+          path: `file://${permanentPath}`, // Add file:// prefix for permanent file
+          freeStyleCropEnabled: true,
+        }).then(croppedImage => {
+          console.log('croppedImage', croppedImage);
+          setter(croppedImage);
+          setCamera(false);
+          // extractTextFromImage(croppedImage.path);
+        });
+      }
+    } catch (error) {
+      console.error('Error capturing or cropping photo:', error);
+      Alert.alert('Error', 'Failed to capture or crop the photo');
+    }
   };
 
   const validateForm = useCallback(() => {
@@ -124,73 +195,72 @@ const KYCCoApplicant = ({route}) => {
         const formData = new FormData();
         // Append files to FormData
         formData.append('clientPhoto', {
-          uri: clientPhoto.uri,
-          type: clientPhoto.type,
-          name: `clientPhoto-${enrollmentId}.jpg`,
+          uri: clientPhoto.path,
+          type: clientPhoto.mime,
+          name: `${enrollmentId}.jpg`,
         });
         formData.append('aadharFront', {
-          uri: aadharFront.uri,
-          type: aadharFront.type,
-          name: `aadharFront-${enrollmentId}.jpg`,
+          uri: aadharFront.path,
+          type: aadharFront.mime,
+          name: `${enrollmentId}.jpg`,
         });
         formData.append('aadharBack', {
-          uri: aadharBack.uri,
-          type: aadharBack.type,
-          name: `aadharBack-${enrollmentId}.jpg`,
+          uri: aadharBack.path,
+          type: aadharBack.mime,
+          name: `${enrollmentId}.jpg`,
         });
         if (voterId) {
           formData.append('voterId', {
-            uri: voterId.uri,
-            type: voterId.type,
-            name: `voterId-${enrollmentId}.jpg`,
+            uri: voterId.path,
+            type: voterId.mime,
+            name: `${enrollmentId}.jpg`,
           });
         }
         if (voterIdBack) {
           formData.append('voterIdBack', {
-            uri: voterId.uri,
-            type: voterId.type,
-            name: `voterIdBack-${enrollmentId}.jpg`,
+            uri: voterId.path,
+            type: voterId.mime,
+            name: `${enrollmentId}.jpg`,
           });
         }
         if (panCard) {
           formData.append('panCard', {
-            uri: panCard.uri,
-            type: panCard.type,
-            name: `panCard-${enrollmentId}.jpg`,
+            uri: panCard.path,
+            type: panCard.mime,
+            name: `${enrollmentId}.jpg`,
           });
         }
         formData.append('housePhoto', {
-          uri: housePhoto.uri,
-          type: housePhoto.type,
-          name: `housePhoto-${enrollmentId}.jpg`,
+          uri: housePhoto.path,
+          type: housePhoto.mime,
+          name: `${enrollmentId}.jpg`,
         });
 
         // navigation.navigate(ScreensNameEnum.BANK_DETAILS_SCREEN);
-        const response = await uploadFile(formData);
+        const response = await uploadFileCoBorrower(formData);
         if (response?.success) {
-          const payload = {
-            borrowerDocuments: {
-              ClientImage: response?.files?.clientPhoto,
-              ClientAadharFront: response?.files?.aadharFront,
-              ClientAadharBack: response?.files?.aadharBack,
-              ClientPAN: response?.files?.panCard,
-              ClientVoterFront: response?.files?.voterId,
-              ClientVoterBack: response?.files?.voterIdBack,
-              HouseImage: response?.files?.housePhoto,
-              Enrollment_ID: enrollmentId,
-            },
-          };
-          const res = await new UserApi().updateCoBorrowerDocuments(payload);
-          if (res?.success) {
-            Alert.alert('Co-Applicant Documents Uploaded Successfully...');
-            navigation.navigate(ScreensNameEnum.BANK_DETAILS_SCREEN, {
-              data: route?.params?.data,
-            });
-          }
+          // const payload = {
+          //   borrowerDocuments: {
+          //     ClientImage: response?.files?.clientPhoto,
+          //     ClientAadharFront: response?.files?.aadharFront,
+          //     ClientAadharBack: response?.files?.aadharBack,
+          //     ClientPAN: response?.files?.panCard,
+          //     ClientVoterFront: response?.files?.voterId,
+          //     ClientVoterBack: response?.files?.voterIdBack,
+          //     HouseImage: response?.files?.housePhoto,
+          //     Enrollment_ID: enrollmentId,
+          //   },
+          // };
+          Alert.alert('Co-Applicant Documents Uploaded Successfully...');
+          navigation.navigate(ScreensNameEnum.BANK_DETAILS_SCREEN, {
+            data: route?.params?.data,
+          });
+          // const res = await new UserApi().updateCoBorrowerDocuments(payload);
+          // if (res?.success) {
+          // }
         } else {
           Alert.alert(response.message);
         }
-
       }
       setLoading(false);
     } catch (error) {
@@ -204,297 +274,319 @@ const KYCCoApplicant = ({route}) => {
     <ScreenWrapper header={false} backDisabled title="Client KYC">
       {/* <ChildScreensHeader screenName={ScreensNameEnum.CLIENT_KYC_FORM} /> */}
       <ScrollView contentContainerStyle={styles.scrollView}>
-        <View style={styles.container}>
-          <Text style={styles.header}>Co-Applicant KYC Form</Text>
-          <View style={[styles.section]}>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setClientPhoto)}
-              style={[
-                styles.uploadButton,
-                {
-                  borderColor: err?.clientPhoto
-                    ? R.colors.RED
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.clientPhoto ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Co-Applicant Photo</Text>
-              <View>
-                {clientPhoto && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setClientPhoto(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    clientPhoto
-                      ? {uri: clientPhoto?.uri}
-                      : require('../../assets/Images/activeProfile.jpeg')
-                  }
-                  style={styles.image}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.sectionRow}>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setAadharFront)}
-              style={[
-                styles.smallUploadButton,
-                {
-                  borderColor: err?.aadharFront
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.aadharFront ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Aadhar Front</Text>
-              <View>
-                {aadharFront && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setAadharFront(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    aadharFront
-                      ? {uri: aadharFront?.uri}
-                      : require('../../assets/Images/aadhar.png')
-                  }
-                  resizeMode="center"
-                  style={[styles.image, {width: 150}]}
-                />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setAadharBack)}
-              style={[
-                styles.smallUploadButton,
-                {
-                  borderColor: err?.aadharBack
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.aadharBack ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Aadhar Back</Text>
-              <View>
-                {aadharBack && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setAadharBack(null);
-                    }}
-                  />
-                )}
-                <Image
-                  source={
-                    aadharBack
-                      ? {uri: aadharBack?.uri}
-                      : require('../../assets/Images/aadharBack.png')
-                  }
-                  style={styles.image}
-                  resizeMode="center"
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.textView}>
-            <Text style={styles.label}>Aadhar No.</Text>
-            <Text style={styles.value}>{coAppData?.coApplAadhar}</Text>
-          </View>
-          {coAppData?.coApplVoterid !== '' && (
-            <>
-              <View style={styles.sectionRow}>
-                <TouchableOpacity
-                  onPress={() => handleImagePick(setVoterId)}
-                  style={[
-                    styles.smallUploadButton,
-                    {
-                      borderColor: err?.voterId
-                        ? R.colors.primary
-                        : R.colors.PRIMARI_DARK,
-                      borderWidth: err?.voterId ? 1.5 : 1,
-                    },
-                  ]}>
-                  <Text style={styles.buttonText}>Upload Voter ID Front</Text>
-                  <View>
-                    {voterId && (
-                      <Icon
-                        name="close"
-                        size={32}
-                        color={R.colors.PRIMARY_LIGHT}
-                        style={styles.icon}
-                        onPress={() => {
-                          setVoterId(null);
-                        }}
-                      />
-                    )}
-                    <Image
-                      source={
-                        voterId
-                          ? {uri: voterId?.uri}
-                          : require('../../assets/Images/VoterId.png')
-                      }
-                      style={styles.image}
-                      resizeMode="cover"
+        {isCamera ? (
+          <>
+            <Camera
+              ref={cameraRef}
+              style={styles.camera}
+              device={device}
+              isActive={true}
+              photo={true}
+              onInitialized={() => setCameraReady(true)}
+            />
+            <Pressable
+              style={styles.captureButton}
+              onPress={() =>
+                isCameraReady ? captureAndCropImage(selected.current) : null
+              }>
+              <Text style={styles.buttonText}>Capture and Crop Image</Text>
+            </Pressable>
+          </>
+        ) : (
+          <View style={styles.container}>
+            <Text style={styles.header}>Co-Applicant KYC Form</Text>
+            <View style={[styles.section]}>
+              <TouchableOpacity
+                onPress={() => handleImagePick(setClientPhoto)}
+                style={[
+                  styles.uploadButton,
+                  {
+                    borderColor: err?.clientPhoto
+                      ? R.colors.RED
+                      : R.colors.PRIMARI_DARK,
+                    borderWidth: err?.clientPhoto ? 1.5 : 1,
+                  },
+                ]}>
+                <Text style={styles.buttonText}>Upload Co-Applicant Photo</Text>
+                <View>
+                  {clientPhoto && (
+                    <Icon
+                      name="close"
+                      size={32}
+                      color={R.colors.PRIMARY_LIGHT}
+                      style={styles.icon}
+                      onPress={() => {
+                        setClientPhoto(null);
+                      }}
                     />
-                  </View>
-                </TouchableOpacity>
+                  )}
+                  <Image
+                    source={
+                      clientPhoto
+                        ? {uri: clientPhoto?.path}
+                        : require('../../assets/Images/activeProfile.jpeg')
+                    }
+                    style={styles.image}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
 
-                <TouchableOpacity
-                  onPress={() => handleImagePick(setVoterIdBack)}
-                  style={[
-                    styles.smallUploadButton,
-                    {
-                      borderColor: err?.voterIdBack
-                        ? R.colors.primary
-                        : R.colors.PRIMARI_DARK,
-                      borderWidth: err?.voterIdBack ? 1.5 : 1,
-                    },
-                  ]}>
-                  <Text style={styles.buttonText}>Upload Voter ID Back</Text>
-                  <View>
-                    {voterIdBack && (
-                      <Icon
-                        name="close"
-                        size={32}
-                        color={R.colors.PRIMARY_LIGHT}
-                        style={styles.icon}
-                        onPress={() => {
-                          setVoterIdBack(null);
-                        }}
-                      />
-                    )}
-                    <Image
-                      source={
-                        voterIdBack
-                          ? {uri: voterIdBack?.uri}
-                          : require('../../assets/Images/VoterId.png')
-                      }
-                      style={styles.image}
-                      resizeMode="cover"
+            <View style={styles.sectionRow}>
+              <TouchableOpacity
+                onPress={() => handleImagePick(setAadharFront)}
+                style={[
+                  styles.smallUploadButton,
+                  {
+                    borderColor: err?.aadharFront
+                      ? R.colors.primary
+                      : R.colors.PRIMARI_DARK,
+                    borderWidth: err?.aadharFront ? 1.5 : 1,
+                  },
+                ]}>
+                <Text style={styles.buttonText}>Upload Aadhar Front</Text>
+                <View>
+                  {aadharFront && (
+                    <Icon
+                      name="close"
+                      size={32}
+                      color={R.colors.PRIMARY_LIGHT}
+                      style={styles.icon}
+                      onPress={() => {
+                        setAadharFront(null);
+                      }}
                     />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.textView}>
-                <Text style={styles.label}>Voter ID No.</Text>
-                <Text style={styles.value}>
-                  {coAppData?.coApplVoterid?.toUpperCase()}
+                  )}
+                  <Image
+                    source={
+                      aadharFront
+                        ? {uri: aadharFront?.path}
+                        : require('../../assets/Images/aadhar.png')
+                    }
+                    resizeMode="center"
+                    style={[styles.image, {width: 150}]}
+                  />
+                </View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleImagePick(setAadharBack)}
+                style={[
+                  styles.smallUploadButton,
+                  {
+                    borderColor: err?.aadharBack
+                      ? R.colors.primary
+                      : R.colors.PRIMARI_DARK,
+                    borderWidth: err?.aadharBack ? 1.5 : 1,
+                  },
+                ]}>
+                <Text style={styles.buttonText}>Upload Aadhar Back</Text>
+                <View>
+                  {aadharBack && (
+                    <Icon
+                      name="close"
+                      size={32}
+                      color={R.colors.PRIMARY_LIGHT}
+                      style={styles.icon}
+                      onPress={() => {
+                        setAadharBack(null);
+                      }}
+                    />
+                  )}
+                  <Image
+                    source={
+                      aadharBack
+                        ? {uri: aadharBack?.path}
+                        : require('../../assets/Images/aadharBack.png')
+                    }
+                    style={styles.image}
+                    resizeMode="center"
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.textView}>
+              <Text style={styles.label}>Aadhar No.</Text>
+              <Text style={styles.value}>{coAppData?.coApplAadhar}</Text>
+            </View>
+            {coAppData?.coApplVoterid !== '' && (
+              <>
+                <View style={styles.sectionRow}>
+                  <TouchableOpacity
+                    onPress={() => handleImagePick(setVoterId)}
+                    style={[
+                      styles.smallUploadButton,
+                      {
+                        borderColor: err?.voterId
+                          ? R.colors.primary
+                          : R.colors.PRIMARI_DARK,
+                        borderWidth: err?.voterId ? 1.5 : 1,
+                      },
+                    ]}>
+                    <Text style={styles.buttonText}>Upload Voter ID Front</Text>
+                    <View>
+                      {voterId && (
+                        <Icon
+                          name="close"
+                          size={32}
+                          color={R.colors.PRIMARY_LIGHT}
+                          style={styles.icon}
+                          onPress={() => {
+                            setVoterId(null);
+                          }}
+                        />
+                      )}
+                      <Image
+                        source={
+                          voterId
+                            ? {uri: voterId?.path}
+                            : require('../../assets/Images/VoterId.png')
+                        }
+                        style={styles.image}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => handleImagePick(setVoterIdBack)}
+                    style={[
+                      styles.smallUploadButton,
+                      {
+                        borderColor: err?.voterIdBack
+                          ? R.colors.primary
+                          : R.colors.PRIMARI_DARK,
+                        borderWidth: err?.voterIdBack ? 1.5 : 1,
+                      },
+                    ]}>
+                    <Text style={styles.buttonText}>Upload Voter ID Back</Text>
+                    <View>
+                      {voterIdBack && (
+                        <Icon
+                          name="close"
+                          size={32}
+                          color={R.colors.PRIMARY_LIGHT}
+                          style={styles.icon}
+                          onPress={() => {
+                            setVoterIdBack(null);
+                          }}
+                        />
+                      )}
+                      <Image
+                        source={
+                          voterIdBack
+                            ? {uri: voterIdBack?.path}
+                            : require('../../assets/Images/VoterId.png')
+                        }
+                        style={styles.image}
+                        resizeMode="cover"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.textView}>
+                  <Text style={styles.label}>Voter ID No.</Text>
+                  <Text style={styles.value}>
+                    {coAppData?.coApplVoterid?.toUpperCase()}
+                  </Text>
+                </View>
+              </>
+            )}
+
+            {coAppData?.coApplPAN !== '' && (
+              <>
+                <View style={styles.section}>
+                  <TouchableOpacity
+                    onPress={() => handleImagePick(setPanCard)}
+                    style={[
+                      styles.uploadButton,
+                      {
+                        borderColor: err?.panCard
+                          ? R.colors.primary
+                          : R.colors.PRIMARI_DARK,
+                        borderWidth: err?.panCard ? 1.5 : 1,
+                      },
+                    ]}>
+                    <Text style={styles.buttonText}>Upload PAN Card</Text>
+                    <View>
+                      {panCard && (
+                        <Icon
+                          name="close"
+                          size={32}
+                          color={R.colors.PRIMARY_LIGHT}
+                          style={styles.icon}
+                          onPress={() => {
+                            setPanCard(null);
+                          }}
+                        />
+                      )}
+                      <Image
+                        source={
+                          panCard
+                            ? {uri: panCard?.path}
+                            : require('../../assets/Images/panCard.png')
+                        }
+                        resizeMode="center"
+                        style={[styles.image, {width: 180}]}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.textView}>
+                  <Text style={styles.label}>PAN Card No.</Text>
+                  <Text style={styles.value}>
+                    {coAppData?.coApplPAN?.toUpperCase()}
+                  </Text>
+                </View>
+              </>
+            )}
+            <View style={styles.section}>
+              <TouchableOpacity
+                onPress={() => handleImagePick(setHousePhoto)}
+                style={[
+                  styles.uploadButton,
+                  {
+                    borderColor: err?.housePhoto
+                      ? R.colors.primary
+                      : R.colors.PRIMARI_DARK,
+                    borderWidth: err?.housePhoto ? 1.5 : 1,
+                  },
+                ]}>
+                <Text style={styles.buttonText}>
+                  Upload Client's House Photo
                 </Text>
-              </View>
-            </>
-          )}
-
-          {coAppData?.coApplPAN !== '' && (
-            <>
-              <View style={styles.section}>
-                <TouchableOpacity
-                  onPress={() => handleImagePick(setPanCard)}
-                  style={[
-                    styles.uploadButton,
-                    {
-                      borderColor: err?.panCard
-                        ? R.colors.primary
-                        : R.colors.PRIMARI_DARK,
-                      borderWidth: err?.panCard ? 1.5 : 1,
-                    },
-                  ]}>
-                  <Text style={styles.buttonText}>Upload PAN Card</Text>
-                  <View>
-                    {panCard && (
-                      <Icon
-                        name="close"
-                        size={32}
-                        color={R.colors.PRIMARY_LIGHT}
-                        style={styles.icon}
-                        onPress={() => {
-                          setPanCard(null);
-                        }}
-                      />
-                    )}
-                    <Image
-                      source={
-                        panCard
-                          ? {uri: panCard?.uri}
-                          : require('../../assets/Images/panCard.png')
-                      }
-                      resizeMode="center"
-                      style={[styles.image, {width: 180}]}
+                <View>
+                  {housePhoto && (
+                    <Icon
+                      name="close"
+                      size={32}
+                      color={R.colors.PRIMARY_LIGHT}
+                      style={styles.icon}
+                      onPress={() => {
+                        setHousePhoto(null);
+                      }}
                     />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              <View style={styles.textView}>
-                <Text style={styles.label}>PAN Card No.</Text>
-                <Text style={styles.value}>
-                  {coAppData?.coApplPAN?.toUpperCase()}
-                </Text>
-              </View>
-            </>
-          )}
-          <View style={styles.section}>
-            <TouchableOpacity
-              onPress={() => handleImagePick(setHousePhoto)}
-              style={[
-                styles.uploadButton,
-                {
-                  borderColor: err?.housePhoto
-                    ? R.colors.primary
-                    : R.colors.PRIMARI_DARK,
-                  borderWidth: err?.housePhoto ? 1.5 : 1,
-                },
-              ]}>
-              <Text style={styles.buttonText}>Upload Client's House Photo</Text>
-              <View>
-                {housePhoto && (
-                  <Icon
-                    name="close"
-                    size={32}
-                    color={R.colors.PRIMARY_LIGHT}
-                    style={styles.icon}
-                    onPress={() => {
-                      setHousePhoto(null);
-                    }}
+                  )}
+                  <Image
+                    source={
+                      housePhoto
+                        ? {uri: housePhoto?.path}
+                        : require('../../assets/Images/homeVillage.jpeg')
+                    }
+                    style={styles.image}
+                    resizeMode="center"
                   />
-                )}
-                <Image
-                  source={
-                    housePhoto
-                      ? {uri: housePhoto?.uri}
-                      : require('../../assets/Images/homeVillage.jpeg')
-                  }
-                  style={styles.image}
-                  resizeMode="center"
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
+                </View>
+              </TouchableOpacity>
+            </View>
 
-          <Button
-            title="Submit"
-            onPress={handleSubmit}
-            buttonStyle={styles.submitButton}
-            textStyle={styles.btnTextStyle}
-          />
-        </View>
+            <Button
+              title="Submit"
+              onPress={handleSubmit}
+              buttonStyle={styles.submitButton}
+              textStyle={styles.btnTextStyle}
+            />
+          </View>
+        )}
       </ScrollView>
       <Loader loading={loading} message={'please wait...'} />
     </ScreenWrapper>
@@ -504,8 +596,7 @@ const KYCCoApplicant = ({route}) => {
 const createStyles = colorScheme =>
   StyleSheet.create({
     scrollView: {
-      paddingVertical: 16,
-      paddingHorizontal: 24,
+      padding: 12,
     },
     container: {
       flex: 1,
@@ -534,23 +625,23 @@ const createStyles = colorScheme =>
     uploadButton: {
       padding: 16,
       backgroundColor:
-        colorScheme === 'dark' ? R.colors.GRAY : R.colors.LIGHT_GRAY,
+        colorScheme === 'dark' ? R.colors.GRAY : R.colors.LIGHTGRAY,
       borderRadius: 12,
       alignItems: 'center',
       borderWidth: 1,
       borderColor:
-        colorScheme === 'dark' ? R.colors.LIGHT_GRAY : R.colors.DARK_GRAY,
+        colorScheme === 'dark' ? R.colors.LIGHTGRAY : R.colors.DARKGRAY,
     },
     smallUploadButton: {
       width: '48%',
       padding: 16,
       backgroundColor:
-        colorScheme === 'dark' ? R.colors.GRAY : R.colors.LIGHT_GRAY,
+        colorScheme === 'dark' ? R.colors.GRAY : R.colors.LIGHTGRAY,
       borderRadius: 12,
       alignItems: 'center',
       borderWidth: 1,
       borderColor:
-        colorScheme === 'dark' ? R.colors.LIGHT_GRAY : R.colors.DARK_GRAY,
+        colorScheme === 'dark' ? R.colors.LIGHTGRAY : R.colors.DARKGRAY,
     },
     buttonText: {
       fontSize: 16,
@@ -563,7 +654,7 @@ const createStyles = colorScheme =>
       width: 120,
       height: 120,
       borderRadius: 8,
-      resizeMode: 'cover',
+      resizeMode: 'contain',
     },
     submitButton: {
       marginTop: 32,
@@ -588,15 +679,14 @@ const createStyles = colorScheme =>
       borderRadius: 6,
       marginVertical: 10,
       padding: 5,
-      width: '80%',
+      width: '75%',
       alignSelf: 'center',
       fontSize: R.fontSize.XL,
-      // borderWidth:1
     },
     label: {
       color: R.colors.PRIMARI_DARK,
       textAlign: 'center',
-      width: '65%',
+      width: '60%',
       alignSelf: 'center',
       fontSize: R.fontSize.XL,
       flex: 1,
@@ -609,6 +699,21 @@ const createStyles = colorScheme =>
       alignSelf: 'center',
       flex: 1,
       borderColor: R.colors.LIGHTGRAY,
+    },
+    camera: {
+      // flex: 1,
+      // width: '100%',
+      height: Dimensions.get('screen').height - 100,
+    },
+    captureButton: {
+      backgroundColor: '#007bff',
+      padding: 15,
+      borderRadius: 50,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'absolute',
+      bottom: 30,
+      alignSelf: 'center',
     },
   });
 

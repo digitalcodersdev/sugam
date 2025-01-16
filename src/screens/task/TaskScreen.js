@@ -14,7 +14,7 @@ import {Camera, getCameraDevice} from 'react-native-vision-camera';
 import R from '../../resources/R';
 import RNFS from 'react-native-fs';
 import Loader from '../../library/commons/Loader';
-import RNImageManipulator from 'react-native-image-manipulator';
+
 
 const CaptureWithGPSTags = () => {
   const cameraRef = useRef(null);

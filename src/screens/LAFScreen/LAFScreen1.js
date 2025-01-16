@@ -398,7 +398,7 @@ const LAFScreen1 = props => {
                 onBlur={() => setFocused(null)}
               />
             </View>
-            <View style={styles.viewInput}>
+            <View style={[styles.viewInput]}>
               <Text style={styles.label}>Gender*</Text>
               <Picker
                 selectedValue={gender}
@@ -408,7 +408,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {gender === null && (
                   <Picker.Item
@@ -497,7 +500,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {eductaion === null && (
                   <Picker.Item
@@ -569,7 +575,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {maritalStatus === null && (
                   <Picker.Item
@@ -592,7 +601,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {religion === null && (
                   <Picker.Item
@@ -618,7 +630,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {caste === null && (
                   <Picker.Item
@@ -715,7 +730,7 @@ const LAFScreen1 = props => {
               />
             </View>
             <View style={styles.viewInput}>
-              <Text style={styles.label}>Block/Taluka/Tehsil*</Text>
+              <Text style={styles.label}>Block/Taluka/Tehsil</Text>
               <TextInput
                 value={block}
                 onChangeText={text => setBlock(text)}
@@ -782,7 +797,10 @@ const LAFScreen1 = props => {
                 dropdownIconColor={R.colors.PRIMARI_DARK}
                 style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {
+                    color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',
+                    height: 50,
+                  },
                 ]}>
                 {houseType === null && (
                   <Picker.Item
@@ -951,5 +969,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginVertical: 5,
+    alignItems: 'center',
   },
 });

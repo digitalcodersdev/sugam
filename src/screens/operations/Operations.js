@@ -60,7 +60,7 @@ const Operations = () => {
     //   color: R.colors.DARK_ORANGE,
     //   image: require('../../assets/Images/grt.png'),
     // },
-    
+
     // {
     //   id: 7,
     //   icon: 'check-circle',

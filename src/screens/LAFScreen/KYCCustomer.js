@@ -31,6 +31,7 @@ import Loader from '../../library/commons/Loader';
 import ImagePicker from 'react-native-image-crop-picker';
 import {Camera, getCameraDevice} from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
+import ImageView from 'react-native-images-viewer';
 
 const KYCCustomer = ({route}) => {
   const navigation = useNavigation();
@@ -46,14 +47,17 @@ const KYCCustomer = ({route}) => {
   const [loading, setLoading] = useState(false);
   const [isCamera, setCamera] = useState(false);
   const [isCameraReady, setCameraReady] = useState(false);
+  const [isVis, onClose] = useState(false);
+  const [image, setImage] = useState([]);
   const devices = Camera.getAvailableCameraDevices();
   const device = getCameraDevice(devices, 'back');
   const selected = useRef(null);
   const cameraRef = useRef(null);
 
-  // console.log('route', isCamera, route?.params?.data);
-  console.log('seelected________', aadharFront);
   const {userData, enrollmentId} = route?.params?.data;
+
+  const applicantName = userData?.name?.split(' ')[0];
+
   const requestCameraPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -303,19 +307,95 @@ const KYCCustomer = ({route}) => {
               photo={true}
               onInitialized={() => setCameraReady(true)}
             />
-            <Pressable
-              style={styles.captureButton}
-              onPress={() =>
-                isCameraReady ? captureAndCropImage(selected.current) : null
-              }>
-              <Text style={styles.buttonText}>Capture and Crop Image</Text>
-            </Pressable>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-around',
+                position: 'absolute',
+                bottom: 30,
+                alignSelf: 'center',
+              }}>
+              <Pressable
+                style={[
+                  styles.captureButton,
+                  {backgroundColor: R.colors.DARKGRAY},
+                ]}
+                onPress={() => setCamera(false)}>
+                <Text
+                  style={[styles.buttonText, {color: R.colors.PRIMARY_LIGHT}]}>
+                  Cancel
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.captureButton}
+                onPress={() =>
+                  isCameraReady ? captureAndCropImage(selected.current) : null
+                }>
+                <Text
+                  style={[styles.buttonText, {color: R.colors.PRIMARY_LIGHT}]}>
+                  Capture Image
+                </Text>
+              </Pressable>
+            </View>
           </>
         ) : (
           <View style={styles.container}>
-            <Text style={styles.header}>Applicant KYC Form</Text>
+            <Text style={styles.header}>{applicantName} KYC </Text>
             <View style={[styles.section]}>
               <TouchableOpacity
+                onPress={() => handleImagePick(setClientPhoto)}
+                style={[
+                  styles.uploadButton,
+                  {
+                    borderColor: err?.clientPhoto
+                      ? R.colors.RED
+                      : R.colors.PRIMARI_DARK,
+                    borderWidth: err?.clientPhoto ? 1.5 : 1,
+                  },
+                ]}>
+                <Text style={styles.buttonText}>Upload Client Photo</Text>
+                <View>
+                  {clientPhoto && (
+                    <>
+                      {/* Remove Icon */}
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setClientPhoto(null);
+                        }}
+                      />
+                      {/* Display Image */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (clientPhoto?.path) {
+                            // Example: Show full-screen image
+                            setImage([{uri: clientPhoto?.path}]);
+                            onClose(true); // Optional: Open modal or perform an action
+                          }
+                        }}>
+                        <Image
+                          source={{uri: clientPhoto?.path}}
+                          style={styles.image}
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {/* Fallback Image */}
+                  {!clientPhoto && (
+                    <Image
+                      source={require('../../assets/Images/activeProfile.jpeg')}
+                      style={styles.image}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              {/* <TouchableOpacity
                 onPress={() => handleImagePick(setClientPhoto)}
                 style={[
                   styles.uploadButton,
@@ -346,9 +426,19 @@ const KYCCustomer = ({route}) => {
                         : require('../../assets/Images/activeProfile.jpeg')
                     }
                     style={styles.image}
+                    onPress={() => {
+                      if (clientPhoto?.path) {
+                        setImage([
+                          {
+                            uri: clientPhoto?.path,
+                          },
+                        ]);
+                        onClose(true);
+                      }
+                    }}
                   />
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             <View style={styles.sectionRow}>
@@ -366,27 +456,45 @@ const KYCCustomer = ({route}) => {
                 <Text style={styles.buttonText}>Upload Aadhar Front</Text>
                 <View>
                   {aadharFront && (
-                    <Icon
-                      name="close"
-                      size={32}
-                      color={R.colors.PRIMARY_LIGHT}
-                      style={styles.icon}
-                      onPress={() => {
-                        setAadharFront(null);
-                      }}
+                    <>
+                      {/* Remove Icon */}
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setAadharFront(null);
+                        }}
+                      />
+                      {/* Display Image */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (aadharFront?.path) {
+                            setImage([{uri: aadharFront?.path}]);
+                            onClose(true);
+                          }
+                        }}>
+                        <Image
+                          source={{uri: aadharFront?.path}}
+                          resizeMode="center"
+                          style={[styles.image, {width: 150}]}
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {/* Fallback Image */}
+                  {!aadharFront && (
+                    <Image
+                      source={require('../../assets/Images/aadhar.png')}
+                      resizeMode="center"
+                      style={[styles.image, {width: 150}]}
                     />
                   )}
-                  <Image
-                    source={
-                      aadharFront
-                        ? {uri: aadharFront?.path}
-                        : require('../../assets/Images/aadhar.png')
-                    }
-                    resizeMode="center"
-                    style={[styles.image, {width: 150}]}
-                  />
                 </View>
               </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => handleImagePick(setAadharBack)}
                 style={[
@@ -401,25 +509,42 @@ const KYCCustomer = ({route}) => {
                 <Text style={styles.buttonText}>Upload Aadhar Back</Text>
                 <View>
                   {aadharBack && (
-                    <Icon
-                      name="close"
-                      size={32}
-                      color={R.colors.PRIMARY_LIGHT}
-                      style={styles.icon}
-                      onPress={() => {
-                        setAadharBack(null);
-                      }}
+                    <>
+                      {/* Remove Icon */}
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setAadharBack(null);
+                        }}
+                      />
+                      {/* Display Image */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (aadharBack?.path) {
+                            setImage([{uri: aadharBack?.path}]);
+                            onClose(true);
+                          }
+                        }}>
+                        <Image
+                          source={{uri: aadharBack?.path}}
+                          style={styles.image}
+                          resizeMode="center"
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {/* Fallback Image */}
+                  {!aadharBack && (
+                    <Image
+                      source={require('../../assets/Images/aadharBack.png')}
+                      style={styles.image}
+                      resizeMode="center"
                     />
                   )}
-                  <Image
-                    source={
-                      aadharBack
-                        ? {uri: aadharBack?.path}
-                        : require('../../assets/Images/aadharBack.png')
-                    }
-                    style={styles.image}
-                    resizeMode="center"
-                  />
                 </View>
               </TouchableOpacity>
             </View>
@@ -445,25 +570,43 @@ const KYCCustomer = ({route}) => {
                     <Text style={styles.buttonText}>Upload Voter ID Front</Text>
                     <View>
                       {voterId && (
-                        <Icon
-                          name="close"
-                          size={32}
-                          color={R.colors.PRIMARY_LIGHT}
-                          style={styles.icon}
-                          onPress={() => {
-                            setVoterId(null);
-                          }}
+                        <>
+                          {/* Remove Icon */}
+                          <Icon
+                            name="close"
+                            size={32}
+                            color={R.colors.PRIMARY_LIGHT}
+                            style={styles.icon}
+                            onPress={() => {
+                              setVoterId(null);
+                            }}
+                          />
+                          {/* Display Image */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (voterId?.path) {
+                                // Example: Show full-screen image or perform an action
+                                setImage([{uri: voterId?.path}]);
+                                onClose(true);
+                              }
+                            }}>
+                            <Image
+                              source={{uri: voterId?.path}}
+                              style={styles.image}
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+                        </>
+                      )}
+
+                      {/* Fallback Image */}
+                      {!voterId && (
+                        <Image
+                          source={require('../../assets/Images/VoterId.png')}
+                          style={styles.image}
+                          resizeMode="cover"
                         />
                       )}
-                      <Image
-                        source={
-                          voterId
-                            ? {uri: voterId?.path}
-                            : require('../../assets/Images/VoterId.png')
-                        }
-                        style={styles.image}
-                        resizeMode="cover"
-                      />
                     </View>
                   </TouchableOpacity>
 
@@ -481,25 +624,43 @@ const KYCCustomer = ({route}) => {
                     <Text style={styles.buttonText}>Upload Voter ID Back</Text>
                     <View>
                       {voterIdBack && (
-                        <Icon
-                          name="close"
-                          size={32}
-                          color={R.colors.PRIMARY_LIGHT}
-                          style={styles.icon}
-                          onPress={() => {
-                            setVoterIdBack(null);
-                          }}
+                        <>
+                          {/* Remove Icon */}
+                          <Icon
+                            name="close"
+                            size={32}
+                            color={R.colors.PRIMARY_LIGHT}
+                            style={styles.icon}
+                            onPress={() => {
+                              setVoterIdBack(null);
+                            }}
+                          />
+                          {/* Display Image */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (voterIdBack?.path) {
+                                // Example: Show full-screen image or perform an action
+                                setImage([{uri: voterIdBack?.path}]);
+                                onClose(true);
+                              }
+                            }}>
+                            <Image
+                              source={{uri: voterIdBack?.path}}
+                              style={styles.image}
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+                        </>
+                      )}
+
+                      {/* Fallback Image */}
+                      {!voterIdBack && (
+                        <Image
+                          source={require('../../assets/Images/VoterId.png')}
+                          style={styles.image}
+                          resizeMode="cover"
                         />
                       )}
-                      <Image
-                        source={
-                          voterIdBack
-                            ? {uri: voterIdBack?.path}
-                            : require('../../assets/Images/VoterId.png')
-                        }
-                        style={styles.image}
-                        resizeMode="cover"
-                      />
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -529,25 +690,42 @@ const KYCCustomer = ({route}) => {
                     <Text style={styles.buttonText}>Upload PAN Card</Text>
                     <View>
                       {panCard && (
-                        <Icon
-                          name="close"
-                          size={32}
-                          color={R.colors.PRIMARY_LIGHT}
-                          style={styles.icon}
-                          onPress={() => {
-                            setPanCard(null);
-                          }}
+                        <>
+                          {/* Remove Icon */}
+                          <Icon
+                            name="close"
+                            size={32}
+                            color={R.colors.PRIMARY_LIGHT}
+                            style={styles.icon}
+                            onPress={() => {
+                              setPanCard(null);
+                            }}
+                          />
+                          {/* Display Image */}
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (panCard?.path) {
+                                setImage([{uri: panCard?.path}]);
+                                onClose(true);
+                              }
+                            }}>
+                            <Image
+                              source={{uri: panCard?.path}}
+                              resizeMode="center"
+                              style={[styles.image, {width: 180}]}
+                            />
+                          </TouchableOpacity>
+                        </>
+                      )}
+
+                      {/* Fallback Image */}
+                      {!panCard && (
+                        <Image
+                          source={require('../../assets/Images/panCard.png')}
+                          resizeMode="center"
+                          style={[styles.image, {width: 180}]}
                         />
                       )}
-                      <Image
-                        source={
-                          panCard
-                            ? {uri: panCard?.path}
-                            : require('../../assets/Images/panCard.png')
-                        }
-                        resizeMode="center"
-                        style={[styles.image, {width: 180}]}
-                      />
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -576,25 +754,42 @@ const KYCCustomer = ({route}) => {
                 </Text>
                 <View>
                   {housePhoto && (
-                    <Icon
-                      name="close"
-                      size={32}
-                      color={R.colors.PRIMARY_LIGHT}
-                      style={styles.icon}
-                      onPress={() => {
-                        setHousePhoto(null);
-                      }}
+                    <>
+                      {/* Remove Icon */}
+                      <Icon
+                        name="close"
+                        size={32}
+                        color={R.colors.PRIMARY_LIGHT}
+                        style={styles.icon}
+                        onPress={() => {
+                          setHousePhoto(null);
+                        }}
+                      />
+                      {/* Display Image */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (housePhoto?.path) {
+                            setImage([{uri: housePhoto?.path}]);
+                            onClose(true);
+                          }
+                        }}>
+                        <Image
+                          source={{uri: housePhoto?.path}}
+                          style={styles.image}
+                          resizeMode="center"
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {/* Fallback Image */}
+                  {!housePhoto && (
+                    <Image
+                      source={require('../../assets/Images/homeVillage.jpeg')}
+                      style={styles.image}
+                      resizeMode="center"
                     />
                   )}
-                  <Image
-                    source={
-                      housePhoto
-                        ? {uri: housePhoto?.path}
-                        : require('../../assets/Images/homeVillage.jpeg')
-                    }
-                    style={styles.image}
-                    resizeMode="center"
-                  />
                 </View>
               </TouchableOpacity>
             </View>
@@ -609,6 +804,12 @@ const KYCCustomer = ({route}) => {
         )}
       </ScrollView>
       <Loader loading={loading} message={'please wait...'} />
+      <ImageView
+        images={image}
+        imageIndex={0}
+        visible={isVis}
+        onRequestClose={() => onClose(false)}
+      />
     </ScreenWrapper>
   );
 };
@@ -675,6 +876,7 @@ const createStyles = colorScheme =>
       height: 120,
       borderRadius: 8,
       resizeMode: 'contain',
+      zIndex: 999,
     },
     submitButton: {
       marginTop: 32,
@@ -728,12 +930,9 @@ const createStyles = colorScheme =>
     captureButton: {
       backgroundColor: '#007bff',
       padding: 15,
-      borderRadius: 50,
+      borderRadius: 24,
       alignItems: 'center',
-      justifyContent: 'center',
-      position: 'absolute',
-      bottom: 30,
-      alignSelf: 'center',
+      width: '40%',
     },
   });
 

@@ -395,9 +395,9 @@ const LAFScreen2 = props => {
                 mode="dropdown"
                 enabled={false}
                 dropdownIconColor={R.colors.PRIMARI_DARK}
-                style={[
+                  style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',height:50},
                 ]}>
                 {gender === null && (
                   <Picker.Item
@@ -524,9 +524,9 @@ const LAFScreen2 = props => {
                 }
                 mode="dropdown"
                 dropdownIconColor={R.colors.PRIMARI_DARK}
-                style={[
+                  style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',height:50},
                 ]}>
                 {maritalStatus === null && (
                   <Picker.Item
@@ -546,9 +546,9 @@ const LAFScreen2 = props => {
                 onValueChange={(itemValue, itemIndex) => setReligion(itemValue)}
                 mode="dropdown"
                 dropdownIconColor={R.colors.PRIMARI_DARK}
-                style={[
+                  style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',height:50},
                 ]}>
                 {religion === null && (
                   <Picker.Item
@@ -572,9 +572,9 @@ const LAFScreen2 = props => {
                 onValueChange={(itemValue, itemIndex) => setCaste(itemValue)}
                 mode="dropdown"
                 dropdownIconColor={R.colors.PRIMARI_DARK}
-                style={[
+                  style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',height:50},
                 ]}>
                 {caste === null && (
                   <Picker.Item
@@ -671,7 +671,7 @@ const LAFScreen2 = props => {
               />
             </View>
             <View style={styles.viewInput}>
-              <Text style={styles.label}>Block/Taluka/Tehsil*</Text>
+              <Text style={styles.label}>Block/Taluka/Tehsil</Text>
               <TextInput
                 value={block}
                 onChangeText={text => setBlock(text)}
@@ -737,9 +737,9 @@ const LAFScreen2 = props => {
                 }
                 mode="dropdown"
                 dropdownIconColor={R.colors.PRIMARI_DARK}
-                style={[
+                  style={[
                   styles.input,
-                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000'},
+                  {color: isDarkMode ? R.colors.PRIMARI_DARK : '#000000',height:50},
                 ]}>
                 {houseType === null && (
                   <Picker.Item

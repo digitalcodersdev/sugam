@@ -1302,9 +1302,31 @@ const CheckCreditBureau = ({route}) => {
                 onBlur={() => setFocused(null)}
               />
             </View> */}
-
+              {applOtpEnabled && (
+                <View style={styles.viewInput}>
+                  <Text style={[styles.label, {flex: 1}]}>
+                    Mobile Number : {phone}
+                  </Text>
+                  <Text
+                    style={{
+                      padding: 6,
+                      textAlign: 'center',
+                      textAlignVertical: 'center',
+                      color: R.colors.PRIMARY_LIGHT,
+                      backgroundColor: R.colors.GREEN,
+                      fontWeight: '800',
+                      fontSize: 12,
+                      borderRadius: 8,
+                    }}
+                    onPress={() => setApplOtpEnabled(false)}>
+                    Change Number
+                  </Text>
+                </View>
+              )}
               <View style={styles.viewInput}>
-                <Text style={styles.label}>Mobile No</Text>
+                <Text style={styles.label}>
+                  {applOtpEnabled ? 'Enter OTP' : 'Mobile Number'}
+                </Text>
                 {applOtpEnabled ? (
                   <TextInput
                     value={applOtp}
@@ -1761,7 +1783,27 @@ const CheckCreditBureau = ({route}) => {
                   // editable={false}
                 />
               </View> */}
-
+              {otpEnabled && (
+                <View style={styles.viewInput}>
+                  <Text style={[styles.label, {flex: 1}]}>
+                    Mobile Number : {coApplMobileNo}
+                  </Text>
+                  <Text
+                    style={{
+                      padding: 6,
+                      textAlign: 'center',
+                      textAlignVertical: 'center',
+                      color: R.colors.PRIMARY_LIGHT,
+                      backgroundColor: R.colors.GREEN,
+                      fontWeight: '800',
+                      fontSize: 12,
+                      borderRadius: 8,
+                    }}
+                    onPress={() => setOtpEnabled(false)}>
+                    Change Number
+                  </Text>
+                </View>
+              )}
               <View style={styles.viewInput}>
                 <Text style={styles.label}>Mobile No</Text>
                 <View

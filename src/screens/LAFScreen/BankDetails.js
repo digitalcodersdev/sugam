@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,24 +15,25 @@ import {useNavigation} from '@react-navigation/native';
 import Button from '../../library/commons/Button';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-import {TextInput, Card, Divider, Surface} from 'react-native-paper';
+import {TextInput, Card, Surface} from 'react-native-paper';
 import R from '../../resources/R';
-import {Picker} from '@react-native-picker/picker';
 import Modal from 'react-native-modal';
 import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
 import moment from 'moment';
 import {uploadBankFile} from '../../datalib/services/utility.api';
 import DropDownPicker from 'react-native-dropdown-picker';
+import ImageView from 'react-native-images-viewer';
 
 const BankDetails = ({route}) => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [isvis, onModalClose] = useState(false);
-  const {enrollmentId, customerid, userData} = route?.params?.data;
+  const {enrollmentId, customerid, userData, coAppData} = route?.params?.data;
   const [open, setOpen] = useState(false);
-
-  console.log("customerid",customerid);
+  const [isVis, onClose] = useState(false);
+  const [image, setImage] = useState([]);
+  console.log('customerid', route?.params);
 
   const [formData, setFormData] = useState({
     bankName: null,
@@ -43,14 +44,7 @@ const BankDetails = ({route}) => {
     passbook: null,
   });
   const [file, setFile] = useState(null);
-  const [coAppData, setcoAppData] = useState({
-    bankName: null,
-    accountNo: '',
-    ifscCode: '',
-    branch: '',
-    accountHolderName: '',
-    passbook: null,
-  });
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [accountVerified, setAccVerified] = useState(false);
@@ -89,7 +83,6 @@ const BankDetails = ({route}) => {
   }, [formData.ifscCode, formData.bankName]);
   const checkIFSC = () => {
     const bank = bankData.filter(item => item.bank_name == formData.bankName);
-    console.log('code', bank);
     if (bank?.length == 1) {
       const bankCode = bank[0].ifsc_code;
       if (!formData?.ifscCode?.toUpperCase()?.includes(bankCode)) {
@@ -104,10 +97,6 @@ const BankDetails = ({route}) => {
 
   const handleInputChange = (name, value, usertype) => {
     if (usertype == 'coApplicant') {
-      setcoAppData(prevState => ({
-        ...prevState,
-        [name]: value,
-      }));
     } else {
       setFormData(prevState => ({
         ...prevState,
@@ -124,10 +113,6 @@ const BankDetails = ({route}) => {
       } else {
         const imageUri = response.assets[0].uri;
         if (usertype === 'coApplicant') {
-          setcoAppData(prevState => ({
-            ...prevState,
-            passbook: imageUri,
-          }));
         } else {
           setFormData(prevState => ({
             ...prevState,
@@ -148,6 +133,7 @@ const BankDetails = ({route}) => {
       return false;
     }
   }
+
   const isValidAccountNumber = accountNumber => {
     const length = accountNumber.length;
     return length >= 9 && length <= 18 && /^\d+$/.test(accountNumber);
@@ -288,29 +274,31 @@ const BankDetails = ({route}) => {
         );
         const result = await response.text();
         const finalData = await JSON.parse(result);
-
         if (
           finalData.code == 200 &&
           finalData?.model?.status?.toUpperCase()?.includes('SUCCESS')
         ) {
           const applicantName = userData?.name?.split(' ')[0];
-          console.log('applicantName', applicantName);
-          // if (
-          //   finalData?.model?.beneficiaryName
-          //     ?.toUpperCase()
-          //     ?.includes(applicantName?.toUpperCase())
-          // ) {
-          setFormData({
-            ...formData,
-            accountHolderName: finalData?.model?.beneficiaryName,
-          });
-          setAccVerified(true);
-          // } else {
-          //   Alert.alert(
-          //     'Invalid Account Details',
-          //     `Please Provide Account details of the applicant ${userData?.name}.`,
-          //   );
-          // }
+          const coAppName = coAppData?.coApplicantName?.split(' ')[0];
+          if (
+            finalData?.model?.beneficiaryName
+              ?.toUpperCase()
+              ?.includes(applicantName?.toUpperCase()) ||
+            finalData?.model?.beneficiaryName
+              ?.toUpperCase()
+              ?.includes(coAppName?.toUpperCase())
+          ) {
+            setFormData({
+              ...formData,
+              accountHolderName: finalData?.model?.beneficiaryName,
+            });
+            setAccVerified(true);
+          } else {
+            Alert.alert(
+              'Invalid Account Details',
+              `Please Give Account Details Of ${userData?.name} Or ${coAppData?.coApplicantName} `,
+            );
+          }
         } else {
           Alert.alert(
             'Inavlid Account Details',
@@ -451,10 +439,18 @@ const BankDetails = ({route}) => {
                 <Text style={styles.uploadButtonText}>Upload Passbook</Text>
               </TouchableOpacity>
               {formData.passbook && (
-                <Image
-                  source={{uri: formData.passbook}}
-                  style={styles.uploadedImage}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (formData?.passbook) {
+                      setImage([{uri: formData?.passbook}]);
+                      onClose(true);
+                    }
+                  }}>
+                  <Image
+                    source={{uri: formData.passbook}}
+                    style={styles.uploadedImage}
+                  />
+                </TouchableOpacity>
               )}
               {errors.passbook && (
                 <Text style={styles.errorText}>
@@ -535,6 +531,12 @@ const BankDetails = ({route}) => {
       {loading && (
         <Loader loading={loading} message={'saving bank details...'} />
       )}
+      <ImageView
+        images={image}
+        imageIndex={0}
+        visible={isVis}
+        onRequestClose={() => onClose(false)}
+      />
     </ScreenWrapper>
   );
 };

@@ -364,15 +364,13 @@ function MyTabs() {
             label = 'Home';
           } else if (route.name === ScreensNameEnum.HR_SCREENS) {
             label = 'HR';
+          } else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
+            label = 'Mark OD';
+          } else if (route.name === ScreensNameEnum.TASK_SCREEN) {
+            label = 'Notifications';
+          } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
+            label = 'Leave Notification';
           }
-          // else if (route.name === ScreensNameEnum.ACCOUNT_SCREEN) {
-          //   label = 'Mark OD';
-          // }
-          // else if (route.name === ScreensNameEnum.TASK_SCREEN) {
-          //   label = 'Notifications';
-          // } else if (route.name === ScreensNameEnum.EVENTS_SCREENS) {
-          //   label = 'Leave Notification';
-          // }
           return (
             <Text style={focused ? styles.tabLabelFocused : styles.tabLabel}>
               {label}
@@ -402,14 +400,14 @@ function MyTabs() {
           headerShown: false,
         }}
       /> */}
-      {/* <Tab.Screen
+      <Tab.Screen
         name={ScreensNameEnum.TASK_SCREEN}
         component={TaskScreen}
         options={{
           headerShown: false,
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name={ScreensNameEnum.EVENTS_SCREENS}
         component={Events}
         options={{

@@ -20,6 +20,7 @@ const Button = ({
   icon,
   buttonStyle = {},
   textStyle = {},
+  size= 20,
   textColor = '#FFF',
 }) => {
   return layout === 'simple' ? (
@@ -45,7 +46,7 @@ const Button = ({
         {backgroundColor: backgroundColor},
         buttonStyle,
       ]}>
-      <Icon name={icon} size={20} color={iconColor} />
+      <Icon name={icon} size={size} color={iconColor} />
     </Pressable>
   );
 };

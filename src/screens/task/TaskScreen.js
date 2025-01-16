@@ -1,57 +1,53 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Pressable,
   Alert,
-  Image,
   PermissionsAndroid,
+  Image,
 } from 'react-native';
+import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import Geolocation from 'react-native-geolocation-service';
-import ImagePicker from 'react-native-image-crop-picker';
-import {Camera, getCameraDevice} from 'react-native-vision-camera';
+import Button from '../../library/commons/Button';
 import R from '../../resources/R';
-import RNFS from 'react-native-fs';
-import Loader from '../../library/commons/Loader';
 
-
-const CaptureWithGPSTags = () => {
-  const cameraRef = useRef(null);
+const GeotaggedImageApp = () => {
   const [location, setLocation] = useState(null);
-  const [imagePath, setImagePath] = useState(null);
-  const [isCameraReady, setCameraReady] = useState(false);
-  const devices = Camera.getAvailableCameraDevices();
-  const device = getCameraDevice(devices, 'back');
+  const [imageUri, setImageUri] = useState(null);
+  const [hasPermission, setHasPermission] = useState(false);
+  const [cameraRef, setCameraRef] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [extractedText, setExtractedText] = useState(null);
 
-  // Request permissions for camera and location on mount
-  useEffect(() => {
-    requestLocationPermission();
-    requestPermissions();
-  }, []);
+  const devices = useCameraDevices();
+  const device = devices.back; // Use the back camera
 
-  const requestLocationPermission = async () => {
+  // Request permissions for camera and location
+  const requestPermissions = async () => {
     try {
-      const granted = await PermissionsAndroid.request(
+      const cameraPermission = await Camera.requestCameraPermission();
+      const locationPermission = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Location Permission',
           message:
-            'This app needs access to your location ' +
-            'so we can know where you are.',
+            'This app needs access to your location to geotag the image.',
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
         },
       );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        getLocation();
+
+      if (
+        cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
+        locationPermission === PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        setHasPermission(true);
+        fetchGeolocation();
       } else {
         Alert.alert(
           'Permission Denied',
-          'Location permission is required to fetch geolocation.',
+          'Camera or location permission denied.',
         );
       }
     } catch (err) {
@@ -59,181 +55,391 @@ const CaptureWithGPSTags = () => {
     }
   };
 
-  const requestPermissions = async () => {
-    const cameraPermission = await Camera.requestCameraPermission();
-    if (cameraPermission !== 'granted') {
-      Alert.alert('Camera Permission Denied');
-    }
-  };
-
-  const getLocation = () => {
-    setLoading(true);
+  // Fetch geolocation data
+  const fetchGeolocation = () => {
     Geolocation.getCurrentPosition(
       position => {
-        const {latitude, longitude} = position.coords;
-        setLocation({latitude, longitude});
+        console.log('position', position);
+        setLocation(position.coords);
       },
       error => {
-        console.error('Location Error:', error);
-        Alert.alert('Error getting location. Please enable location services.');
+        Alert.alert('Error', 'Failed to fetch geolocation.');
+        console.error(error);
       },
       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
     );
-    setLoading(false);
   };
 
-  // Function to copy the image to permanent storage
-  const copyImageToPermanentStorage = async sourcePath => {
-    try {
-      const destPath = `${RNFS.DocumentDirectoryPath}/image_${Date.now()}.jpg`;
-      await RNFS.copyFile(sourcePath, destPath);
-
-      const fileExists = await RNFS.exists(destPath);
-      if (fileExists) {
-        return destPath;
-      } else {
-        console.error('File does not exist after copying:', destPath);
-        return null;
-      }
-    } catch (error) {
-      console.error('Error copying image:', error);
-      return null;
+  // Start location updates every 30 seconds
+  useEffect(() => {
+    if (hasPermission) {
+      const intervalId = setInterval(fetchGeolocation, 30000);
+      return () => clearInterval(intervalId); // Cleanup on unmount
     }
-  };
+  }, [hasPermission]);
 
+  // Capture photo using the camera
+  const captureImage = async () => {
+    if (!cameraRef || !location) {
+      Alert.alert('Error', 'Camera or location data is not ready.');
+      return;
+    }
 
-    // Function to extract text from image
-    const extractTextFromImage = async (uri) => {
-      try {
-        const tessOptions = {
-          whitelist: null, // Optional: Define whitelist to limit characters
-          blacklist: null,  // Optional: Define blacklist for characters to exclude
-        };
-  
-        const result = await TesseractOcr.recognize(uri, 'ENG', tessOptions);
-        console.log('Extracted Text:', result);
-        setExtractedText(result);
-      } catch (error) {
-        console.error('OCR Error:', error);
-        Alert.alert('Error', 'Failed to extract text from the image');
-      }
-    };
-
-  const captureAndCropImage = async () => {
-    if (!cameraRef.current) return;
-
+    setLoading(true);
     try {
-      // Capture the photo
-      const photo = await cameraRef.current.takePhoto({
-        quality: 1,
-        skipMetadata: false,
+      const photo = await cameraRef.takePhoto({
+        flash: 'off',
       });
 
-      // Copy the captured image to permanent storage
-      const permanentPath = await copyImageToPermanentStorage(photo.path);
-      if (permanentPath) {
-        setImagePath(permanentPath);
+      const imageWithMetadata = {
+        uri: `file://${photo.path}`,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      };
 
-        // // Crop the image
-        // ImagePicker.openCropper({
-        //   path: `file://${permanentPath}`, // Add file:// prefix for permanent file
-        //   freeStyleCropEnabled: true,
-        // }).then(croppedImage => {
-        //   setImagePath(croppedImage.path);
-        //   extractTextFromImage(croppedImage.path);
-
-        //   // Add Latitude and Longitude to the cropped image
-        //   if (location) {
-        //     const {latitude, longitude} = location;
-
-        //     RNImageManipulator.manipulate(
-        //       croppedImage.path,
-        //       [{rotate: 90}, {flip: {vertical: true}}],
-        //       {
-        //         format: 'png',
-        //         metadata: {GPS: {Latitude: latitude, Longitude: longitude}},
-        //       },
-        //     ).then(taggedImage => {
-        //       Alert.alert(
-        //         'Image Captured and Tagged',
-        //         `Image saved at: ${taggedImage.uri}`,
-        //       );
-        //     });
-        //   } else {
-        //     Alert.alert('Location not available');
-        //   }
-        // });
-      }
+      setImageUri(imageWithMetadata.uri);
+      Alert.alert(
+        'Image Captured',
+        `Latitude: ${location.latitude}, Longitude: ${location.longitude}`,
+      );
     } catch (error) {
-      console.error('Error capturing or cropping photo:', error);
-      Alert.alert('Error', 'Failed to capture or crop the photo');
+      console.error('Error capturing image:', error);
+      Alert.alert('Error', 'Failed to capture image.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (device == null) {
-    return <Text>Loading Camera...</Text>;
+  useEffect(() => {
+    requestPermissions();
+  }, []);
+  console.log(
+    'hasPermission || !device || !location',
+    hasPermission,
+    device,
+    location,
+  );
+  if (!hasPermission || !device || !location) {
+    return (
+      <View style={styles.centered}>
+        <Text>Fetching permissions, device, or location...</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={styles.container}>
-      <Camera
-        ref={cameraRef}
-        style={styles.camera}
-        device={device}
-        isActive={true}
-        photo={true}
-        onInitialized={() => setCameraReady(true)}
-      />
-      <Pressable
-        style={styles.captureButton}
-        onPress={isCameraReady ? captureAndCropImage : null}>
-        <Text style={styles.buttonText}>Capture and Crop Image</Text>
-      </Pressable>
-      {imagePath && (
-        <View style={styles.imagePreviewContainer}>
-          <Text>Captured Image</Text>
-          <Image source={{uri: imagePath}} style={styles.imagePreview} />
+    <View style={{flex: 1}}>
+      {imageUri ? (
+        <View style={styles.resultContainer}>
+          <Text style={styles.text}>Geotagged Image:</Text>
+          <Image source={{uri: imageUri}} style={styles.image} />
+          <Button
+            title="Retry"
+            onPress={() => setImageUri(null)}
+            buttonStyle={{width: '40%', alignSelf: 'center'}}
+            backgroundColor={R.colors.DARK_BLUE}
+            textStyle={{
+              fontWeight: 'bold',
+            }}
+          />
         </View>
+      ) : (
+        <>
+          <View style={{flex: 1}}>
+            <Camera
+              ref={ref => setCameraRef(ref)}
+              style={StyleSheet.absoluteFill}
+              device={device}
+              isActive={true}
+              photo={true} // Enable photo capture
+            />
+            {location && (
+              <View style={styles.overlay}>
+                <Text style={styles.coordinates}>
+                  Latitude: {location.latitude.toFixed(6)}
+                </Text>
+                <Text style={styles.coordinates}>
+                  Longitude: {location.longitude.toFixed(6)}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Button
+            title="Capture Image"
+            onPress={captureImage}
+            layout="circle"
+            icon={'camera'}
+            color={R.colors.PRIMARY_LIGHT}
+            size={60}
+            buttonStyle={{
+              height: 100,
+              width: 100,
+              borderRadius: 50,
+              position: 'absolute',
+              bottom: 20,
+              alignSelf: 'center',
+            }}
+            backgroundColor={R.colors.DARK_ORANGE}
+          />
+        </>
       )}
-      <Loader loading={loading} message={'please wait...'} />
+      {loading && <Text style={styles.text}>Processing...</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 10,
-    borderColor: 'black',
   },
-  camera: {
-    flex: 1,
-    width: '100%',
-  },
-  captureButton: {
-    backgroundColor: '#007bff',
-    padding: 15,
-    borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+  overlay: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 0,
+    padding: 10,
+    backgroundColor: '#FF6666',
+    borderRadius: 8,
+    height: '30%',
+    width: '100%',
+    opacity: 0.6,
   },
-  buttonText: {
-    color: R.colors.PRIMARI_DARK,
-    fontSize: 18,
+  coordinates: {
+    color: R.colors.PRIMARY_LIGHT,
+    fontSize: 16,
+    marginVertical: 2,
+    fontWeight: '800',
   },
-  imagePreviewContainer: {
-    marginTop: 20,
+  resultContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  imagePreview: {
-    width: 200,
-    height: 200,
-    resizeMode: 'contain',
+  text: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  image: {
+    width: 300,
+    height: 300,
+    marginVertical: 10,
   },
 });
 
-export default CaptureWithGPSTags;
+export default GeotaggedImageApp;
+
+// import React, {useState, useEffect} from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   Alert,
+//   PermissionsAndroid,
+//   Image,
+// } from 'react-native';
+// import {Camera, getCameraDevice} from 'react-native-vision-camera';
+// import Geolocation from 'react-native-geolocation-service';
+// import {captureScreen} from 'react-native-view-shot';
+// import Button from '../../library/commons/Button';
+// import R from '../../resources/R';
+
+// const GeotaggedImageApp = () => {
+//   const [location, setLocation] = useState(null);
+//   const [imageUri, setImageUri] = useState(null);
+//   const [hasPermission, setHasPermission] = useState(false);
+//   const [loading, setLoading] = useState(false);
+//   const [device, setDevice] = useState(null);
+
+//   // Request permissions for camera and location
+//   const requestPermissions = async () => {
+//     try {
+//       const cameraPermission = await Camera.requestCameraPermission();
+//       const locationPermission = await PermissionsAndroid.request(
+//         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+//         {
+//           title: 'Location Permission',
+//           message:
+//             'This app needs access to your location to geotag the image.',
+//           buttonNeutral: 'Ask Me Later',
+//           buttonNegative: 'Cancel',
+//           buttonPositive: 'OK',
+//         },
+//       );
+
+//       if (
+//         cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
+//         locationPermission === PermissionsAndroid.RESULTS.GRANTED
+//       ) {
+//         setHasPermission(true);
+//         fetchGeolocation();
+//       } else {
+//         Alert.alert(
+//           'Permission Denied',
+//           'Camera or location permission denied.',
+//         );
+//       }
+//     } catch (err) {
+//       console.warn(err);
+//     }
+//   };
+
+//   // Fetch geolocation data
+//   const fetchGeolocation = () => {
+//     Geolocation.getCurrentPosition(
+//       position => {
+//         console.log('position', position);
+//         setLocation(position.coords);
+//       },
+//       error => {
+//         Alert.alert('Error', 'Failed to fetch geolocation.');
+//         console.error(error);
+//       },
+//       {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+//     );
+//   };
+
+//   // Start location updates every 30 seconds
+//   useEffect(() => {
+//     if (hasPermission) {
+//       const intervalId = setInterval(fetchGeolocation, 30000);
+//       return () => clearInterval(intervalId); // Cleanup on unmount
+//     }
+//   }, [hasPermission]);
+
+//   // Fetch available camera device
+//   useEffect(() => {
+//     const getDevice = async () => {
+//       const devices = await Camera.getAvailableCameraDevices();
+//       setDevice(getCameraDevice(devices, 'front'));
+//     };
+//     getDevice();
+//   }, []);
+
+//   // Capture the screen with geolocation data overlay
+//   const captureImage = async () => {
+//     setLoading(true);
+//     try {
+//       const uri = await captureScreen({
+//         format: 'jpg',
+//         quality: 1,
+//       });
+//       setImageUri(uri);
+//       Alert.alert('Image Captured', 'Geotagged image saved successfully.');
+//     } catch (error) {
+//       console.error('Error capturing image:', error);
+//       Alert.alert('Error', 'Failed to capture image.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     requestPermissions();
+//   }, []);
+
+//   if (!hasPermission || !device || !location) {
+//     return (
+//       <View style={styles.centered}>
+//         <Text>Fetching permissions, device, or location...</Text>
+//       </View>
+//     );
+//   }
+
+//   return (
+//     <View style={{flex: 1}}>
+//       {imageUri ? (
+//         <View style={styles.resultContainer}>
+//           <Text style={styles.text}>Geotagged Image:</Text>
+//           <Image source={{uri: imageUri}} style={styles.image} />
+//           <Button
+//             title="Retry"
+//             onPress={() => setImageUri(null)}
+//             buttonStyle={{width: '40%', alignSelf: 'center'}}
+//             backgroundColor={R.colors.DARK_BLUE}
+//             textStyle={{
+//               fontWeight: 'bold',
+//             }}
+//           />
+//         </View>
+//       ) : (
+//         <>
+//           <View style={{flex: 1}}>
+//             <Camera
+//               style={StyleSheet.absoluteFill}
+//               device={device}
+//               isActive={true}
+//             />
+//             {location && (
+//               <View style={styles.overlay}>
+//                 <Text style={styles.coordinates}>
+//                   Latitude: {location.latitude.toFixed(6)}
+//                 </Text>
+//                 <Text style={styles.coordinates}>
+//                   Longitude: {location.longitude.toFixed(6)}
+//                 </Text>
+//               </View>
+//             )}
+//           </View>
+//           <Button
+//             title="Capture Image"
+//             onPress={captureImage}
+//             layout="circle"
+//             icon={'camera'}
+//             color={R.colors.PRIMARY_LIGHT}
+//             size={60}
+//             buttonStyle={{
+//               height: 100,
+//               width: 100,
+//               borderRadius: 50,
+//               position: 'absolute',
+//               bottom: 20,
+//               alignSelf: 'center',
+//             }}
+//             backgroundColor={R.colors.DARK_ORANGE}
+//           />
+//         </>
+//       )}
+//       {loading && <Text style={styles.text}>Processing...</Text>}
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   centered: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   overlay: {
+//     position: 'absolute',
+//     bottom: 0,
+//     padding: 10,
+//     backgroundColor: '#FF6666',
+//     borderRadius: 8,
+//     height: '30%',
+//     width: '100%',
+//     opacity: 0.6,
+//   },
+//   coordinates: {
+//     color: R.colors.PRIMARY_LIGHT,
+//     fontSize: 16,
+//     marginVertical: 2,
+//     fontWeight: '800',
+//   },
+//   resultContainer: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+//   text: {
+//     fontSize: 16,
+//     marginVertical: 10,
+//   },
+//   image: {
+//     width: 300,
+//     height: 300,
+//     marginVertical: 10,
+//   },
+// });
+
+// export default GeotaggedImageApp;

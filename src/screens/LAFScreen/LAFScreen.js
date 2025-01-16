@@ -5,6 +5,7 @@ import {
   View,
   useColorScheme,
   TextInput,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -22,18 +23,21 @@ const LAFScreen = props => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
   const data = props.route?.params?.data;
-  const {productCurrent, enrollmentId} = props.route?.params?.data;
-  const [product, setProduct] = useState(productCurrent?.product);
+  const {productCurrent, enrollmentId} = data;
+
+  const [product, setProduct] = useState(productCurrent?.product || null);
   const [amountApplied, setAmountApplied] = useState(
-    productCurrent?.amountApplied,
+    productCurrent?.amountApplied || 0,
   );
-  // console.log('productCurrent', productCurrent);
   const [durationOfLoan, setDurationOfLoan] = useState(null);
+  const [emi, setEmi] = useState(0);
   const [frequency, setFrequency] = useState(null);
-  const [loanPurpose, setLoanPurpose] = useState(productCurrent?.loanPurpose);
-  const [loanPurposeData, setLoanPurposeData] = useState(null);
-  const [category, setCategory] = useState(productCurrent?.category);
-  const [categoryData, setCategoryData] = useState(null);
+  const [loanPurpose, setLoanPurpose] = useState(
+    productCurrent?.loanPurpose || null,
+  );
+  const [loanPurposeData, setLoanPurposeData] = useState([]);
+  const [category, setCategory] = useState(productCurrent?.category || null);
+  const [categoryData, setCategoryData] = useState([]);
   const [insurance, setInsurance] = useState('Yes');
   const [productTypeData, setProdTypeData] = useState([]);
   const [amountData, setAmountData] = useState([]);
@@ -41,19 +45,22 @@ const LAFScreen = props => {
   const [loading, setLoading] = useState(false);
   const [isVis, onModalClose] = useState(false);
 
+  console.log('productCurrent', amountData);
+
   useEffect(() => {
     fetchLoanTypeAndPurpose();
   }, []);
 
   useEffect(() => {
-    fetchLoanAmt(product);
+    if (product) fetchLoanAmt(product);
   }, [product]);
 
   useEffect(() => {
-    fetchProdFreqTen(productCurrent?.amountApplied);
-  }, [productCurrent?.amountApplied]);
+    if (amountApplied) fetchProdFreqTen(amountApplied);
+  }, [amountApplied]);
+
   useEffect(() => {
-    fetchLoanPurpose(category);
+    if (category) fetchLoanPurpose(category);
   }, [category]);
 
   const fetchLoanTypeAndPurpose = async () => {
@@ -61,105 +68,98 @@ const LAFScreen = props => {
       setLoading(true);
       const res = await new UserApi().fetchLoanTypeAndPurpose();
       if (res) {
-        setProdTypeData(res?.loanType);
-        setCategoryData(res?.loanPurpose);
+        setProdTypeData(res?.loanType || []);
+        setCategoryData(res?.loanPurpose || []);
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching loan type and purpose:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // console.log('____', amountApplied);
-
-  const fetchLoanAmt = async data => {
+  const fetchLoanAmt = async productId => {
     try {
       setLoading(true);
-      const res = await new UserApi().fetchLoanAmt({
-        id: data,
-      });
-      // console.log('data_________', res);
-      if (res?.length >= 1) {
-        setFrequency(null);
-        setAmountData(res);
-        setDurationOfLoan(null);
-        setAmountApplied(productCurrent?.amountApplied);
+      const res = await new UserApi().fetchLoanAmt({id: productId});
+      if (res?.length) {
+        setAmountData(
+          res?.map(item => {
+            return {financeamount: item.financeamount?.toString()};
+          }),
+        );
+        // setAmountApplied(productCurrent?.amountApplied?.toString());
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching loan amount:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  const fetchLoanPurpose = async data => {
-    try {
-      setLoading(true);
-      const res = await new UserApi().fetchLoanPurpose({
-        id: data,
-      });
-      // console.log('res_____', res);
-      if (res?.length >= 1) {
-        setLoanPurposeData(res);
-        // setFrequency(null);
-        // setAmountData(res);
-        // setDurationOfLoan(null);
-        // setAmountApplied(null);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
-  };
-
-  const fetchProdFreqTen = async data => {
+  const fetchProdFreqTen = async appliedAmount => {
     try {
       setLoading(true);
       const res = await new UserApi().fetchProdFreqTen({
-        amt: data,
+        amt: appliedAmount,
         id: product,
       });
-      // console.log('++++++++++++++++___', res);
-      if (res?.length >= 1) {
-        setFrequency(res[0]?.paymentfrequency);
-        setDurationOfLoan(res[0]?.period?.toString());
+      if (res?.length) {
+        const firstOption = res[0];
+        setFrequency(firstOption?.paymentfrequency);
+        setDurationOfLoan(firstOption?.period?.toString());
+        setEmi(firstOption?.emi);
         setFreqTenureData(res);
-      } else if (res?.length > 1) {
-        // setFrequency(res[0]?.paymentfrequency?.toString());
-        // setDurationOfLoan(res[0]?.period?.toString());
-        // setFreqTenureData(res);
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching product frequency and tenure:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchLoanPurpose = async categoryId => {
+    try {
+      setLoading(true);
+      const res = await new UserApi().fetchLoanPurpose({id: categoryId});
+      if (res?.length) {
+        setLoanPurposeData(res);
+      }
+    } catch (error) {
+      console.error('Error fetching loan purpose:', error);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleConfirm = status => {
-    if (status == 'confirm') {
+    if (status === 'confirm') {
       onModalClose(false);
-      navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
-        data: {
-          ...data,
-          loanPurpose: {
-            product,
-            amountApplied,
-            durationOfLoan,
-            frequency,
-            category,
-            loanPurpose,
-            insurance,
+      if (durationOfLoan) {
+        navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
+          data: {
+            ...data,
+            loanPurpose: {
+              product,
+              amountApplied,
+              durationOfLoan,
+              frequency,
+              category,
+              loanPurpose,
+              insurance,
+              emi,
+            },
           },
-        },
-      });
+        });
+      } else {
+        Alert.alert('Error', 'Tenure is required. Please try again.');
+        fetchProdFreqTen(amountApplied);
+      }
     }
   };
 
   return (
-    <ScreenWrapper header={true} backDisabled>
+    <ScreenWrapper header={false} backDisabled>
       <View style={styles.header}>
         <Text style={styles.headerText}>
           {ScreensNameEnum.LAF_GROUP_SCREEN}
@@ -198,15 +198,26 @@ const LAFScreen = props => {
               </Picker>
             </View>
 
+            {/* Frequency */}
+            {/* <View style={styles.fieldContainer}>
+            <Text style={styles.label(isDarkMode)}>Amount Applied</Text>
+              <TextInput
+                style={styles.input(isDarkMode, true)}
+                value={amountApplied?.toString()}
+                editable={false}
+              />
+            </View> */}
+
             {/* Amount Applied */}
             <View style={styles.fieldContainer}>
               <Text style={styles.label(isDarkMode)}>Amount Applied</Text>
               <Picker
-                selectedValue={amountApplied?.toString()}
+                selectedValue={amountApplied}
                 style={styles.input(isDarkMode)}
                 dropdownIconColor={R.colors.primary}
                 enabled={false}
                 onValueChange={itemValue => {
+                  console.log('itemValue', itemValue);
                   setAmountApplied(itemValue);
                   if (itemValue) {
                     // fetchProdFreqTen(itemValue);
@@ -223,7 +234,6 @@ const LAFScreen = props => {
                       key={index}
                     />
                   ))}
-                {/* Add other amounts */}
               </Picker>
             </View>
 
@@ -271,11 +281,19 @@ const LAFScreen = props => {
               <Text style={styles.label(isDarkMode)}>Repay. Frequency</Text>
               <TextInput
                 style={styles.input(isDarkMode, true)}
-                value={frequency}
+                value={frequency?.toString()}
                 editable={false}
               />
             </View>
-
+            {/* Frequency */}
+            <View style={styles.fieldContainer}>
+              <Text style={styles.label(isDarkMode)}>EMI Amount</Text>
+              <TextInput
+                style={styles.input(isDarkMode, true)}
+                value={emi?.toString()}
+                editable={false}
+              />
+            </View>
             {/* Loan Purpose */}
             <View style={styles.fieldContainer}>
               <Text style={styles.label(isDarkMode)}>Loan Category</Text>
@@ -328,6 +346,7 @@ const LAFScreen = props => {
               <Picker
                 selectedValue={insurance}
                 style={styles.input(isDarkMode)}
+                enabled={false}
                 dropdownIconColor={R.colors.primary}
                 onValueChange={itemValue => setInsurance(itemValue)}>
                 <Picker.Item label="Yes" value="Yes" />

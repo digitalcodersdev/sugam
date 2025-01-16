@@ -19,6 +19,8 @@ import {
   fetchCurrentDayCollectionByBranchId,
   fetchCurrentDayCollectionByCenterId,
   getPendingEnrollments,
+  fetchProposals,
+  fetchAMProposals,
 } from '../../actions/userActions';
 // TODO: Should we have api based status and errors for more fine grained control
 
@@ -40,6 +42,7 @@ const initialState = {
   holidays: [],
   currentDayCollection: [],
   currentDayCollectionCenter: [],
+  proposal:[],
   getUserByIdStatus: initialThunkState,
   updateUserStatus: initialThunkState,
   uploadProfilePicStatus: initialThunkState,
@@ -129,6 +132,20 @@ const userSlice = createSlice({
         error: action.payload,
       };
     });
+
+    builder.addCase(fetchProposals.pending, state => {
+      state.getUserByIdStatus = defaultThunkLoadingState;
+    });
+    builder.addCase(fetchProposals.fulfilled, (state, action) => {
+      state.getUserByIdStatus = defaultThunkSuccessState;
+      state.proposal = action.payload?.data;
+    });
+    builder.addCase(fetchProposals.rejected, (state, action) => {
+      state.getUserByIdStatus = {
+        ...defaultThunkFailureState,
+        error: action.payload,
+      };
+    });
   },
 });
 
@@ -149,7 +166,7 @@ export const currentDayCollectionSelector = state =>
 export const currentDayCollectionCenterSelector = state =>
   state?.user?.currentDayCollectionCenter || [];
 
-
+  export const proposalSelector = state => state?.user?.proposal || [];
 
   export const pendingEnrollmentsSelector  = state =>
   state?.user?.pendingEnrollments || [];

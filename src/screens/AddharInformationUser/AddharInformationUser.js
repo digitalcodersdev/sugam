@@ -14,6 +14,7 @@ import axios from 'axios';
 import Button from '../../library/commons/Button';
 import {useNavigation} from '@react-navigation/native';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
+import R from '../../resources/R';
 
 const themeColor = '#C72C08';
 
@@ -156,9 +157,24 @@ const AddharInformationUser = ({route}) => {
           <View
             style={{
               height: 100,
-              justifyContent: 'flex-end',
-              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexDirection: 'row',
             }}>
+            <Button
+              title="Cancel"
+              onPress={() => {
+                navigation.navigate(ScreensNameEnum.NEW_CLIENT);
+              }}
+              buttonStyle={{
+                width: '40%',
+                alignSelf: 'center',
+                borderRadius: 6,
+                // justifyContent: 'flex-end',
+              }}
+              textStyle={{padding: 0, fontWeight: 'bold'}}
+              backgroundColor={R.colors.DARKGRAY}
+            />
             <Button
               title="Continue"
               onPress={() => {
@@ -175,7 +191,7 @@ const AddharInformationUser = ({route}) => {
                 borderRadius: 6,
                 // justifyContent: 'flex-end',
               }}
-              textStyle={{padding: 0,fontWeight:"bold"}}
+              textStyle={{padding: 0, fontWeight: 'bold'}}
             />
           </View>
         </Card>
@@ -183,7 +199,6 @@ const AddharInformationUser = ({route}) => {
     </ScreenWrapper>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

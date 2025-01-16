@@ -29,6 +29,7 @@ import CCRReportModal from '../../library/modals/CCRReportModal';
 import AuthApi from '../../datalib/services/authentication.api';
 import APP_CONSTANTS from '../../constants/appConstants';
 import {json2xml} from 'xml-js';
+import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 
 I18n.translations = {
   'en-IN': {
@@ -149,10 +150,12 @@ const CheckCreditBureau = ({route}) => {
   const [amountApplied, setAmountApplied] = useState(null);
   const [amountData, setAmountData] = useState([]);
   const [coAppAdd, setCoAppAdd] = useState({});
+  const [freqTenureData, setFreqTenureData] = useState([]);
   const userData = useRef(null);
   const coAppData = useRef(null);
   const CCRReport = useRef(null);
   const productCurrent = useRef(null);
+  const enrollmentId = useRef(null);
 
   //Ref
   const applicantNameRef = useRef(null);
@@ -663,8 +666,8 @@ const CheckCreditBureau = ({route}) => {
             Client_State: state,
             Client_Pincode: pc,
             Client_Relation: relation,
-            Client_PAN_No: panNo,
-            Client_VoterID: voterId,
+            Client_PAN_No: panNo?.toUpperCase(),
+            Client_VoterID: voterId?.toUpperCase(),
             Client_Gender: gender,
             CoApplicant_AadharNo: coApplAadhar,
             CoApplicant_Name: coApplicantName,
@@ -673,8 +676,8 @@ const CheckCreditBureau = ({route}) => {
             CoApplicant_State: coApplState,
             CoApplicant_Pincode: coAppPincode,
             CoApplicant_MobileNo: coApplMobileNo,
-            CoApplicant_PAN_No: coApplPAN,
-            CoApplicant_VoterID: coApplVoterid,
+            CoApplicant_PAN_No: coApplPAN?.toUpperCase(),
+            CoApplicant_VoterID: coApplVoterid?.toUpperCase(),
             // CreditScore: score,
             OpeningBalance: 0, //AverageOpenBalance,
             // ActiveAccount: NoOfActiveAccounts,
@@ -762,6 +765,7 @@ const CheckCreditBureau = ({route}) => {
             amountApplied,
             loanPurpose,
           };
+          enrollmentId.current = response;
           // console.log('CCRReport', CCRReport);
           navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
             data: {
@@ -777,13 +781,13 @@ const CheckCreditBureau = ({route}) => {
           //   parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
           //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
           //   score >= ccrRules?.CreditScore &&
-          //   parseInt(NoOfWriteOffs) == ccrRules?.NoOfWriteOffs &&
+          //   parseInt(NoOfWriteOfxs) == ccrRules?.NoOfWriteOffs &&
           //   // parseInt(TotalPastDue) == ccrRules?.TotalPastDue
           // ) {
-          // }
-          //     }
-          //   }
         }
+        //       }
+        //     }
+        // }
 
         // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
       }
@@ -904,6 +908,7 @@ const CheckCreditBureau = ({route}) => {
       );
       const result = await response.text();
       const res = JSON.parse(result);
+      console.log('res', res);
       if (res?.result_code == 103) {
         Alert.alert(null, I18n.t('wrongVoterId'));
         setLoading(false);
@@ -1145,12 +1150,12 @@ const CheckCreditBureau = ({route}) => {
   // console.log('coAppAddress?.length', coAppAddress?.length, coAppAddress);
   return (
     <ScreenWrapper header={false} backDisabled>
-      {/* <ChildScreensHeader
+      <ChildScreensHeader
         screenName={ScreensNameEnum.CHECK_CREDIT_BUREAU_SCREEN}
-      /> */}
+      />
       <View style={{flex: 1, padding: 10}}>
         <ScrollView keyboardShouldPersistTaps>
-          <Text style={styles.tagline}>Check Credit Bureau</Text>
+          {/* <Text style={styles.tagline}>Check Credit Bureau</Text> */}
           <Card style={styles.card}>
             <Surface style={styles.surface}>
               <Text
@@ -1251,7 +1256,7 @@ const CheckCreditBureau = ({route}) => {
                 </Text>
               </View>
               <View style={styles.viewInput}>
-                <Text style={styles.label}>Relation</Text>
+                <Text style={styles.label}>Relation With Co-Borrower</Text>
                 <Picker
                   selectedValue={relation}
                   onValueChange={(itemValue, itemIndex) =>
@@ -1263,10 +1268,10 @@ const CheckCreditBureau = ({route}) => {
                   {relation === null && (
                     <Picker.Item label="Select Relation" value={null} />
                   )}
-                  <Picker.Item label="Father-in-law" value="Father_in_law" />
-                  <Picker.Item label="Father" value="Father" />
                   <Picker.Item label="Husband" value="Husband" />
                   <Picker.Item label="Wife" value="Wife" />
+                  <Picker.Item label="Father-in-law" value="Father_in_law" />
+                  <Picker.Item label="Father" value="Father" />
                   <Picker.Item label="Son" value="Son" />
                   <Picker.Item label="Mother" value="Mother" />
                   <Picker.Item label="Mother-in-law" value="Mother_in_law" />
@@ -1297,9 +1302,31 @@ const CheckCreditBureau = ({route}) => {
                 onBlur={() => setFocused(null)}
               />
             </View> */}
-
+              {applOtpEnabled && (
+                <View style={styles.viewInput}>
+                  <Text style={[styles.label, {flex: 1}]}>
+                    Mobile Number : {phone}
+                  </Text>
+                  <Text
+                    style={{
+                      padding: 6,
+                      textAlign: 'center',
+                      textAlignVertical: 'center',
+                      color: R.colors.PRIMARY_LIGHT,
+                      backgroundColor: R.colors.GREEN,
+                      fontWeight: '800',
+                      fontSize: 12,
+                      borderRadius: 8,
+                    }}
+                    onPress={() => setApplOtpEnabled(false)}>
+                    Change Number
+                  </Text>
+                </View>
+              )}
               <View style={styles.viewInput}>
-                <Text style={styles.label}>Mobile No</Text>
+                <Text style={styles.label}>
+                  {applOtpEnabled ? 'Enter OTP' : 'Mobile Number'}
+                </Text>
                 {applOtpEnabled ? (
                   <TextInput
                     value={applOtp}
@@ -1756,7 +1783,27 @@ const CheckCreditBureau = ({route}) => {
                   // editable={false}
                 />
               </View> */}
-
+              {otpEnabled && (
+                <View style={styles.viewInput}>
+                  <Text style={[styles.label, {flex: 1}]}>
+                    Mobile Number : {coApplMobileNo}
+                  </Text>
+                  <Text
+                    style={{
+                      padding: 6,
+                      textAlign: 'center',
+                      textAlignVertical: 'center',
+                      color: R.colors.PRIMARY_LIGHT,
+                      backgroundColor: R.colors.GREEN,
+                      fontWeight: '800',
+                      fontSize: 12,
+                      borderRadius: 8,
+                    }}
+                    onPress={() => setOtpEnabled(false)}>
+                    Change Number
+                  </Text>
+                </View>
+              )}
               <View style={styles.viewInput}>
                 <Text style={styles.label}>Mobile No</Text>
                 <View
@@ -2112,6 +2159,7 @@ const CheckCreditBureau = ({route}) => {
           userData={userData.current}
           coAppData={coAppData.current}
           productCurrent={productCurrent.current}
+          enrollmentId={enrollmentId.current}
         />
       )}
       <Loader loading={loading} message={'please wait...'} />

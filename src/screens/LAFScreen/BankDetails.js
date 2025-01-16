@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -15,20 +15,26 @@ import {useNavigation} from '@react-navigation/native';
 import Button from '../../library/commons/Button';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
-import {TextInput, Card, Divider, Surface} from 'react-native-paper';
+import {TextInput, Card, Surface} from 'react-native-paper';
 import R from '../../resources/R';
-import {Picker} from '@react-native-picker/picker';
 import Modal from 'react-native-modal';
 import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
 import moment from 'moment';
 import {uploadBankFile} from '../../datalib/services/utility.api';
+import DropDownPicker from 'react-native-dropdown-picker';
+import ImageView from 'react-native-images-viewer';
 
 const BankDetails = ({route}) => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [isvis, onModalClose] = useState(false);
-  const {enrollmentId, customerid} = route?.params?.data;
+  const {enrollmentId, customerid, userData, coAppData} = route?.params?.data;
+  const [open, setOpen] = useState(false);
+  const [isVis, onClose] = useState(false);
+  const [image, setImage] = useState([]);
+  console.log('customerid', route?.params);
+
   const [formData, setFormData] = useState({
     bankName: null,
     accountNo: '',
@@ -38,18 +44,13 @@ const BankDetails = ({route}) => {
     passbook: null,
   });
   const [file, setFile] = useState(null);
-  const [coAppData, setcoAppData] = useState({
-    bankName: null,
-    accountNo: '',
-    ifscCode: '',
-    branch: '',
-    accountHolderName: '',
-    passbook: null,
-  });
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [accountVerified, setAccVerified] = useState(false);
   const [bankData, setBankData] = useState([]);
+  const [items, setItems] = useState([]);
+  console.log('route?.params?.data', customerid);
 
   useEffect(() => {
     getBankDorpDown();
@@ -59,7 +60,13 @@ const BankDetails = ({route}) => {
     try {
       setLoading(true);
       const response = await new UserApi().getBankDropdown();
+      console.log('response', response);
       if (response) {
+        setItems(
+          response[0]?.map(item => {
+            return {label: item.bank_name, value: item?.bank_name};
+          }),
+        );
         setBankData(response[0]);
       }
       setLoading(false);
@@ -76,7 +83,6 @@ const BankDetails = ({route}) => {
   }, [formData.ifscCode, formData.bankName]);
   const checkIFSC = () => {
     const bank = bankData.filter(item => item.bank_name == formData.bankName);
-    console.log('code', bank);
     if (bank?.length == 1) {
       const bankCode = bank[0].ifsc_code;
       if (!formData?.ifscCode?.toUpperCase()?.includes(bankCode)) {
@@ -91,10 +97,6 @@ const BankDetails = ({route}) => {
 
   const handleInputChange = (name, value, usertype) => {
     if (usertype == 'coApplicant') {
-      setcoAppData(prevState => ({
-        ...prevState,
-        [name]: value,
-      }));
     } else {
       setFormData(prevState => ({
         ...prevState,
@@ -111,10 +113,6 @@ const BankDetails = ({route}) => {
       } else {
         const imageUri = response.assets[0].uri;
         if (usertype === 'coApplicant') {
-          setcoAppData(prevState => ({
-            ...prevState,
-            passbook: imageUri,
-          }));
         } else {
           setFormData(prevState => ({
             ...prevState,
@@ -135,6 +133,7 @@ const BankDetails = ({route}) => {
       return false;
     }
   }
+
   const isValidAccountNumber = accountNumber => {
     const length = accountNumber.length;
     return length >= 9 && length <= 18 && /^\d+$/.test(accountNumber);
@@ -202,10 +201,13 @@ const BankDetails = ({route}) => {
         dt.append('bankDetails', {
           uri: file.uri,
           type: file.type,
-          name: `bankDetails-${enrollmentId}.jpg`,
+          name: `${customerid}.pdf`,
         });
         const res = await uploadBankFile(dt);
-        // console.log('res', res);
+        await new UserApi().mergeAllFiles({
+          loanId: customerid,
+          enrollmentId: enrollmentId,
+        });
         if (res?.success) {
           const payload = {
             bankDetails: {
@@ -223,9 +225,10 @@ const BankDetails = ({route}) => {
               enrollmentid: enrollmentId,
               livestatus: 1,
               EntryMode: 'Sugam',
-              bankDetailsImage: res?.files?.bankDetails,
+              bankDetailsImage: null,
             },
           };
+
           const response = await new UserApi().saveBankDetails(payload);
           if (response && response?.success) {
             onModalClose(true);
@@ -242,6 +245,7 @@ const BankDetails = ({route}) => {
       setLoading(false);
     }
   };
+
   const handleVerify = async () => {
     try {
       setLoading(true);
@@ -270,16 +274,31 @@ const BankDetails = ({route}) => {
         );
         const result = await response.text();
         const finalData = await JSON.parse(result);
-
         if (
           finalData.code == 200 &&
           finalData?.model?.status?.toUpperCase()?.includes('SUCCESS')
         ) {
-          setFormData({
-            ...formData,
-            accountHolderName: finalData?.model?.beneficiaryName,
-          });
-          setAccVerified(true);
+          const applicantName = userData?.name?.split(' ')[0];
+          const coAppName = coAppData?.coApplicantName?.split(' ')[0];
+          if (
+            finalData?.model?.beneficiaryName
+              ?.toUpperCase()
+              ?.includes(applicantName?.toUpperCase()) ||
+            finalData?.model?.beneficiaryName
+              ?.toUpperCase()
+              ?.includes(coAppName?.toUpperCase())
+          ) {
+            setFormData({
+              ...formData,
+              accountHolderName: finalData?.model?.beneficiaryName,
+            });
+            setAccVerified(true);
+          } else {
+            Alert.alert(
+              'Invalid Account Details',
+              `Please Give Account Details Of ${userData?.name} Or ${coAppData?.coApplicantName} `,
+            );
+          }
         } else {
           Alert.alert(
             'Inavlid Account Details',
@@ -313,45 +332,34 @@ const BankDetails = ({route}) => {
               <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: '500'}}>
                 Applicant's Details
               </Text>
-              <View
+              <DropDownPicker
                 style={[
                   styles.viewInput,
                   {
-                    flexDirection: 'column',
                     borderWidth: 1,
                     borderRadius: 6,
                     borderColor: R.colors.DARKGRAY,
+                    flexDirection: 'row',
                   },
-                ]}>
-                <Text style={[styles.label, {marginTop: 10}]}>Bank Name.</Text>
-                <Picker
-                  selectedValue={formData.bankName}
-                  onValueChange={(itemValue, itemIndex) =>
-                    setFormData({...formData, bankName: itemValue})
-                  }
-                  enabled={accountVerified ? false : true}
-                  mode="dropdown"
-                  dropdownIconColor={R.colors.primary}
-                  style={[styles.input]}
-                  dropDownContainerStyle={{height: 200}}>
-                  {formData?.bankName === null && (
-                    <Picker.Item
-                      label="-- Select Bank Name --"
-                      value={null}
-                      enabled={false}
-                    />
-                  )}
-                  {bankData?.length >= 1 &&
-                    bankData?.map(item => {
-                      return (
-                        <Picker.Item
-                          label={item.bank_name}
-                          value={item.bank_name}
-                        />
-                      );
-                    })}
-                </Picker>
-              </View>
+                ]}
+                dropDownContainerStyle={{
+                  height: 600, // Adjust this based on open state
+                }}
+                open={open}
+                value={formData?.bankName}
+                placeholder="Select Bank"
+                items={items}
+                setOpen={setOpen}
+                setValue={val => {
+                  console.log('Selected Value:', val());
+                  setFormData({...formData, bankName: val()});
+                }}
+                setItems={setItems}
+                searchable
+                // dropDownContainerStyle={{
+                //   height: open ? 600 : 300, // Adjust this based on open state
+                // }}
+              />
               {errors.bankName && (
                 <Text style={styles.errorText}>Bank Name is required.</Text>
               )}
@@ -431,10 +439,18 @@ const BankDetails = ({route}) => {
                 <Text style={styles.uploadButtonText}>Upload Passbook</Text>
               </TouchableOpacity>
               {formData.passbook && (
-                <Image
-                  source={{uri: formData.passbook}}
-                  style={styles.uploadedImage}
-                />
+                <TouchableOpacity
+                  onPress={() => {
+                    if (formData?.passbook) {
+                      setImage([{uri: formData?.passbook}]);
+                      onClose(true);
+                    }
+                  }}>
+                  <Image
+                    source={{uri: formData.passbook}}
+                    style={styles.uploadedImage}
+                  />
+                </TouchableOpacity>
               )}
               {errors.passbook && (
                 <Text style={styles.errorText}>
@@ -443,176 +459,6 @@ const BankDetails = ({route}) => {
               )}
             </Surface>
           </Card>
-          {/* <Card style={styles.card}>
-            <Surface style={styles.surface}>
-              <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: '500'}}>
-                Co-Applicant's Details
-              </Text>
-              <View style={styles.viewInput}>
-                <Text style={styles.label}>Bank Name.</Text>
-                <Picker
-                  selectedValue={coAppData.bankName}
-                  onValueChange={(itemValue, itemIndex) =>
-                    setcoAppData({...coAppData, bankName: itemValue})
-                  }
-                  mode="dropdown"
-                  dropdownIconColor={R.colors.primary}
-                  style={styles.input}>
-                  {coAppData?.bankName === null && (
-                    <Picker.Item
-                      label="-- Select Bank Name --"
-                      value={null}
-                      enabled={false}
-                    />
-                  )}
-                  <Picker.Item
-                    label="State Bank of India"
-                    value="State Bank of India"
-                  />
-                  <Picker.Item label="HDFC Bank" value="HDFC Bank" />
-                  <Picker.Item label="ICICI Bank" value="ICICI Bank" />
-                  <Picker.Item
-                    label="Punjab National Bank"
-                    value="Punjab National Bank"
-                  />
-                  <Picker.Item label="Axis Bank" value="Axis Bank" />
-                  <Picker.Item
-                    label="Kotak Mahindra Bank"
-                    value="Kotak Mahindra Bank"
-                  />
-                  <Picker.Item label="Bank of Baroda" value="Bank of Baroda" />
-                  <Picker.Item label="Canara Bank" value="Canara Bank" />
-                  <Picker.Item
-                    label="Union Bank of India"
-                    value="Union Bank of India"
-                  />
-                  <Picker.Item label="IndusInd Bank" value="IndusInd Bank" />
-                  <Picker.Item
-                    label="IDFC First Bank"
-                    value="IDFC First Bank"
-                  />
-                  <Picker.Item label="Yes Bank" value="Yes Bank" />
-                  <Picker.Item label="Bank of India" value="Bank of India" />
-                  <Picker.Item
-                    label="Central Bank of India"
-                    value="Central Bank of India"
-                  />
-                  <Picker.Item label="Indian Bank" value="Indian Bank" />
-                  <Picker.Item label="UCO Bank" value="UCO Bank" />
-                  <Picker.Item
-                    label="Indian Overseas Bank"
-                    value="Indian Overseas Bank"
-                  />
-                  <Picker.Item
-                    label="Bank of Maharashtra"
-                    value="Bank of Maharashtra"
-                  />
-                  <Picker.Item
-                    label="Punjab & Sind Bank"
-                    value="Punjab & Sind Bank"
-                  />
-                  <Picker.Item label="Federal Bank" value="Federal Bank" />
-                  <Picker.Item
-                    label="South Indian Bank"
-                    value="South Indian Bank"
-                  />
-                  <Picker.Item label="Karnataka Bank" value="Karnataka Bank" />
-                  <Picker.Item label="RBL Bank" value="RBL Bank" />
-                  <Picker.Item label="Dhanlaxmi Bank" value="Dhanlaxmi Bank" />
-                  <Picker.Item label="IDBI Bank" value="IDBI Bank" />
-                  <Picker.Item
-                    label="Jammu & Kashmir Bank"
-                    value="Jammu & Kashmir Bank"
-                  />
-                  <Picker.Item
-                    label="Suryoday Small Finance Bank"
-                    value="Suryoday Small Finance Bank"
-                  />
-                  <Picker.Item
-                    label="Equitas Small Finance Bank"
-                    value="Equitas Small Finance Bank"
-                  />
-                  <Picker.Item
-                    label="AU Small Finance Bank"
-                    value="AU Small Finance Bank"
-                  />
-                  <Picker.Item
-                    label="Ujjivan Small Finance Bank"
-                    value="Ujjivan Small Finance Bank"
-                  />
-                  <Picker.Item
-                    label="ESAF Small Finance Bank"
-                    value="ESAF Small Finance Bank"
-                  />
-                </Picker>
-              </View>
-              {errors.co_bankName && (
-                <Text style={styles.errorText}>Bank Name is required.</Text>
-              )}
-
-              <TextInput
-                mode="outlined"
-                label="Account Number"
-                placeholder="Enter account number"
-                value={coAppData.accountNo}
-                onChangeText={text =>
-                  handleInputChange('accountNo', text, 'coApplicant')
-                }
-                error={errors.co_accountNo}
-                style={[styles.input, {marginBottom: 10}]}
-                keyboardType="numeric"
-              />
-              {errors.co_accountNo && (
-                <Text style={styles.errorText}>
-                  Please enter a valid account number.
-                </Text>
-              )}
-
-              <TextInput
-                mode="outlined"
-                label="IFSC Code"
-                placeholder="Enter IFSC code"
-                value={coAppData.ifscCode}
-                onChangeText={text =>
-                  handleInputChange('ifscCode', text, 'coApplicant')
-                }
-                error={errors.co_ifscCode}
-                style={[styles.input, {marginBottom: 10}]}
-              />
-              {errors.co_ifscCode && (
-                <Text style={styles.errorText}>IFSC Code is required.</Text>
-              )}
-
-              <TextInput
-                mode="outlined"
-                label="Account Holder Name"
-                placeholder="Enter account holder name"
-                value={coAppData.accountHolderName}
-                onChangeText={text =>
-                  handleInputChange('accountHolderName', text, 'coApplicant')
-                }
-                error={errors.accountHolderName}
-                style={[styles.input, {marginBottom: 10}]}
-              />
-              {errors.co_accountHolderName && (
-                <Text style={styles.errorText}>
-                  Account holder name is required.
-                </Text>
-              )}
-
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={() => handleImageUpload('coApplicant')}>
-                <Text style={styles.uploadButtonText}>Upload Passbook</Text>
-              </TouchableOpacity>
-              {coAppData.passbook && (
-                <Image
-                  source={{uri: coAppData.passbook}}
-                  style={styles.uploadedImage}
-                />
-              )}
-            </Surface>
-          </Card> */}
 
           {accountVerified ? (
             <View
@@ -685,6 +531,12 @@ const BankDetails = ({route}) => {
       {loading && (
         <Loader loading={loading} message={'saving bank details...'} />
       )}
+      <ImageView
+        images={image}
+        imageIndex={0}
+        visible={isVis}
+        onRequestClose={() => onClose(false)}
+      />
     </ScreenWrapper>
   );
 };

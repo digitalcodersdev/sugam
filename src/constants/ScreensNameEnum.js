@@ -98,6 +98,10 @@ const ScreensNameEnum = {
   APPLIED_LEAVES_SCREENS: 'My Applied Leaves',
   LEAVE_APPROVAL_SCREENS: 'Leave Approval',
   CASH_COLLCETION_APPROVAL_SCREEN: 'Cash Collection Approval',
+  BM_OPERATIONS_SCREEN: 'BM Approval',
+  PROPOSAL_REVIEW_SCREEN: 'Proposal Review',
+  AM_OPERATIONS_SCREEN: 'AM Approval',
+  PROPOSAL_REVIEW_AM_SCREEN: 'AM Proposal Review',
   GRT_SCREEN: 'GRT',
 };
 export default Object.freeze(ScreensNameEnum);

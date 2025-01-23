@@ -73,7 +73,7 @@ const ClientGRTScreen = ({route}) => {
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
   const handleSubmit = value => {
-    // setModalVisible(false);
+    setModalVisible(false);
     closeModal();
   };
 

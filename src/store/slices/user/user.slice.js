@@ -102,7 +102,6 @@ const userSlice = createSlice({
         };
       },
     );
-
     builder.addCase(fetchCurrentDayCollectionByCenterId.pending, state => {
       state.getUserByIdStatus = defaultThunkLoadingState;
     });

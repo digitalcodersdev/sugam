@@ -170,7 +170,6 @@ const KYCCustomer = ({route}) => {
         return valid;
       }
     }
-
     if (userData?.voterId !== '') {
       if (!voterId || !voterIdBack) {
         if (!voterId && voterIdBack) {

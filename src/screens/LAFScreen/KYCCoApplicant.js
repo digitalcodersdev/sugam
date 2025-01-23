@@ -110,7 +110,6 @@ console.log("coAppData",coAppData);
       if (permanentPath) {
         setter(permanentPath);
         // selected.current
-
         // Crop the image
         ImagePicker.openCropper({
           path: `file://${permanentPath}`, // Add file:// prefix for permanent file
@@ -505,7 +504,6 @@ console.log("coAppData",coAppData);
                 </View>
               </TouchableOpacity>
             </View>
-
             <View style={styles.textView}>
               <Text style={styles.label}>Aadhar No.</Text>
               <Text style={styles.value}>{coAppData?.coApplAadhar}</Text>

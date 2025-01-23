@@ -146,6 +146,19 @@ export const fetchCurrentDayCollectionByCenterId = createAsyncThunk(
     }
   },
 );
+export const fetchGRTCentres = createAsyncThunk(
+  'fetch/grt/centres',
+  async ({centerId, branchId}, {rejectWithValue}) => {
+    try {
+      return await new UserApi().fetchGRTCentres({
+        centerId,
+        branchId,
+      });
+    } catch (error) {
+      return rejectWithValue(error.code);
+    }
+  },
+);
 
 export const fetchAttendanceReport = createAsyncThunk(
   'fetch/attendance/report',

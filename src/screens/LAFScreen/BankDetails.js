@@ -24,15 +24,21 @@ import moment from 'moment';
 import {uploadBankFile} from '../../datalib/services/utility.api';
 import DropDownPicker from 'react-native-dropdown-picker';
 import ImageView from 'react-native-images-viewer';
+import DocumentScannerModal from '../../library/modals/ScanDocument';
 
 const BankDetails = ({route}) => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [isvis, onModalClose] = useState(false);
-  const {enrollmentId, customerid, userData, coAppData} = route?.params?.data;
+  // const {enrollmentId, customerid, userData, coAppData} = route?.params?.data;
+  let enrollmentId = 123;
+  let customerid = 123;
+  let userData = {name: 'Vikas Kumar'};
+  let coAppData = {};
   const [open, setOpen] = useState(false);
   const [isVis, onClose] = useState(false);
   const [image, setImage] = useState([]);
+  const [isDocModalVisible, setDocModalVisible] = useState(false);
   console.log('customerid', route?.params);
 
   const [formData, setFormData] = useState({
@@ -104,25 +110,6 @@ const BankDetails = ({route}) => {
       }));
     }
   };
-  const handleImageUpload = usertype => {
-    launchCamera({mediaType: 'photo'}, response => {
-      if (response.didCancel) {
-        console.log('User cancelled image picker');
-      } else if (response.errorMessage) {
-        console.error('ImagePicker Error: ', response.errorMessage);
-      } else {
-        const imageUri = response.assets[0].uri;
-        if (usertype === 'coApplicant') {
-        } else {
-          setFormData(prevState => ({
-            ...prevState,
-            passbook: imageUri,
-          }));
-          setFile(response.assets[0]);
-        }
-      }
-    });
-  };
 
   function validateIFSC(ifsc) {
     // Regular expression to validate the IFSC code format
@@ -169,7 +156,7 @@ const BankDetails = ({route}) => {
     //   valid = false;
     // }
 
-    if (file === null) {
+    if (formData.passbook == null) {
       errors.passbook = 'passbook is Required';
       valid = false;
     }
@@ -199,8 +186,8 @@ const BankDetails = ({route}) => {
         }
         const dt = new FormData();
         dt.append('bankDetails', {
-          uri: file.uri,
-          type: file.type,
+          uri: formData.passbook,
+          type: 'image/jpg',
           name: `${customerid}.pdf`,
         });
         const res = await uploadBankFile(dt);
@@ -322,6 +309,16 @@ const BankDetails = ({route}) => {
 
   const styles = createStyles(colorScheme);
 
+  const handleScannedDocument = (uri, setter) => {
+    // setter(uri);
+    setFormData(prevState => ({
+      ...prevState,
+      passbook: uri,
+    }));
+    // setFile(response.assets[0]);
+    setDocModalVisible(false);
+  };
+
   return (
     <ScreenWrapper header={false} backDisabled title="Client KYC">
       <Text style={styles.header}>Bank Details</Text>
@@ -433,11 +430,19 @@ const BankDetails = ({route}) => {
               {/* Upload Passbook Button */}
               <TouchableOpacity
                 style={styles.uploadButton}
-                onPress={() =>
-                  !accountVerified ? handleImageUpload('app') : null
-                }>
+                onPress={() => {
+                  if (!accountVerified) {
+                    setDocModalVisible(true);
+                    setFile(null);
+                  }
+                }}
+                // onPress={() =>
+                //   ? handleImageUpload('app') : null
+                // }
+              >
                 <Text style={styles.uploadButtonText}>Upload Passbook</Text>
               </TouchableOpacity>
+
               {formData.passbook && (
                 <TouchableOpacity
                   onPress={() => {
@@ -536,6 +541,12 @@ const BankDetails = ({route}) => {
         imageIndex={0}
         visible={isVis}
         onRequestClose={() => onClose(false)}
+      />
+      <DocumentScannerModal
+        isVisible={isDocModalVisible}
+        onClose={() => setDocModalVisible(false)}
+        onDocumentScanned={handleScannedDocument}
+        setter={setFormData}
       />
     </ScreenWrapper>
   );

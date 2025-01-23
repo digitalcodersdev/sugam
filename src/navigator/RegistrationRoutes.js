@@ -71,8 +71,10 @@ import ClientArrearCollection from '../screens/ClientCollection/ClientArrearColl
 import CashCollectionApproval from '../screens/CashCollectionApproval/CashCollectionApproval';
 import Grt from '../screens/Grt/Grt';
 import GRTScreen from '../screens/BMScreens/GRTScreen';
-import LoanProposalReview from '../screens/BMScreens/LoanProposalReview';
+import CentreCGT from '../screens/BMScreens/CentreCGT';
 import BMOptions from '../screens/BMScreens/BMOptions';
+import CentreGRT from '../screens/BMScreens/CentreGRT';
+import ClientGRTScreen from '../screens/BMScreens/ClientGRTScreen';
 
 const RegistrationStack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -314,8 +316,18 @@ const RegistrationRoutes = ({isAuthenticated, initialRoutName}) => {
             options={{headerShown: false}}
           />
           <RegistrationStack.Screen
-            component={LoanProposalReview}
-            name={ScreensNameEnum.PROPOSAL_REVIEW_SCREEN}
+            component={CentreCGT}
+            name={ScreensNameEnum.CENTRE_CGT_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={CentreGRT}
+            name={ScreensNameEnum.CENTRE_GRT_SCREEN}
+            options={{headerShown: false}}
+          />
+          <RegistrationStack.Screen
+            component={ClientGRTScreen}
+            name={ScreensNameEnum.CLIENT_GRT_SCREEN}
             options={{headerShown: false}}
           />
         </>

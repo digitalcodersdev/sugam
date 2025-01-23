@@ -78,3 +78,35 @@ export const uploadClientPhoto = data =>
       .then(result => resolve(result))
       .catch(error => reject(error));
   });
+export const uploadCGTPhoto = data =>
+  new Promise(async function (resolve, reject) {
+    const jwt = await sInfoUtil.fetch('JWT');
+    var myHeaders = new Headers();
+    myHeaders.append('Authorization', `Bearer ${jwt}`);
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: data,
+      redirect: 'follow',
+    };
+    fetch(getApiUri('/upload/cgt/photo'), requestOptions)
+      .then(response => response.json())
+      .then(result => resolve(result))
+      .catch(error => reject(error));
+  });
+export const uploadGRTPhoto = data =>
+  new Promise(async function (resolve, reject) {
+    const jwt = await sInfoUtil.fetch('JWT');
+    var myHeaders = new Headers();
+    myHeaders.append('Authorization', `Bearer ${jwt}`);
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: data,
+      redirect: 'follow',
+    };
+    fetch(getApiUri('/upload/grt/photo'), requestOptions)
+      .then(response => response.json())
+      .then(result => resolve(result))
+      .catch(error => reject(error));
+  });

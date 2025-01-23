@@ -11,7 +11,6 @@ import {
   Dimensions,
   Pressable,
 } from 'react-native';
-import {launchCamera} from 'react-native-image-picker';
 ScreensNameEnum;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
@@ -29,6 +28,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {Camera, getCameraDevice} from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 import ImageView from 'react-native-images-viewer';
+import GeotaggedImageModal from '../../library/modals/GeotaggedImageModal';
+import DocumentScannerModal from '../../library/modals/ScanDocument';
 
 const KYCCoApplicant = ({route}) => {
   const navigation = useNavigation();
@@ -49,6 +50,8 @@ const KYCCoApplicant = ({route}) => {
   const [isCameraReady, setCameraReady] = useState(false);
   const devices = Camera.getAvailableCameraDevices();
   const device = getCameraDevice(devices, 'back');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDocModalVisible, setDocModalVisible] = useState(false);
   const selected = useRef(null);
   const cameraRef = useRef(null);
   // console.log('route', route?.params);
@@ -56,7 +59,7 @@ const KYCCoApplicant = ({route}) => {
   const {enrollmentId, coAppData} = route?.params?.data;
 
   const coAppName = coAppData?.coApplicantName?.split(' ')[0];
-
+console.log("coAppData",coAppData);
   const handleImagePick = setter => {
     selected.current = setter;
     setCamera(true);
@@ -102,13 +105,12 @@ const KYCCoApplicant = ({route}) => {
         quality: 1,
         skipMetadata: false,
       });
-      console.log('photo', photo);
       // Copy the captured image to permanent storage
       const permanentPath = await copyImageToPermanentStorage(photo.path);
       if (permanentPath) {
         setter(permanentPath);
         // selected.current
-        console.log(permanentPath, selected.current(permanentPath));
+
         // Crop the image
         ImagePicker.openCropper({
           path: `file://${permanentPath}`, // Add file:// prefix for permanent file
@@ -205,39 +207,39 @@ const KYCCoApplicant = ({route}) => {
           name: `${enrollmentId}.jpg`,
         });
         formData.append('aadharFront', {
-          uri: aadharFront.path,
-          type: aadharFront.mime,
+          uri: aadharFront,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
         formData.append('aadharBack', {
-          uri: aadharBack.path,
-          type: aadharBack.mime,
+          uri: aadharBack,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
         if (voterId) {
           formData.append('voterId', {
-            uri: voterId.path,
-            type: voterId.mime,
+            uri: voterId,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         if (voterIdBack) {
           formData.append('voterIdBack', {
-            uri: voterId.path,
-            type: voterId.mime,
+            uri: voterId,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         if (panCard) {
           formData.append('panCard', {
-            uri: panCard.path,
-            type: panCard.mime,
+            uri: panCard,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         formData.append('housePhoto', {
-          uri: housePhoto.path,
-          type: housePhoto.mime,
+          uri: housePhoto,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
 
@@ -272,6 +274,16 @@ const KYCCoApplicant = ({route}) => {
       console.error('Fetch error:', error);
       setLoading(false);
     }
+  };
+
+  const handleImageCaptured = (uri, reset) => {
+    setHousePhoto(uri);
+    reset && reset();
+    setIsModalVisible(false);
+  };
+  const handleScannedDocument = (uri, setter) => {
+    setter(uri);
+    setDocModalVisible(false);
   };
 
   const styles = createStyles(colorScheme);
@@ -323,7 +335,7 @@ const KYCCoApplicant = ({route}) => {
           </>
         ) : (
           <View style={styles.container}>
-            <Text style={styles.header}>{coAppName} KYC</Text>
+            <Text style={styles.header}>{coAppName} KYC </Text>
             <View style={[styles.section]}>
               <TouchableOpacity
                 onPress={() => handleImagePick(setClientPhoto)}
@@ -336,9 +348,9 @@ const KYCCoApplicant = ({route}) => {
                     borderWidth: err?.clientPhoto ? 1.5 : 1,
                   },
                 ]}>
-                <Text style={styles.buttonText}>Upload Co-Applicant Photo</Text>
+                <Text style={styles.buttonText}>Upload Client Photo</Text>
                 <View>
-                  {clientPhoto && (
+                  {clientPhoto !== null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -350,11 +362,13 @@ const KYCCoApplicant = ({route}) => {
                           setClientPhoto(null);
                         }}
                       />
+                      {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
                           if (clientPhoto?.path) {
+                            // Example: Show full-screen image
                             setImage([{uri: clientPhoto?.path}]);
-                            onClose(true);
+                            onClose(true); // Optional: Open modal or perform an action
                           }
                         }}>
                         <Image
@@ -366,7 +380,7 @@ const KYCCoApplicant = ({route}) => {
                   )}
 
                   {/* Fallback Image */}
-                  {!clientPhoto && (
+                  {clientPhoto == null && (
                     <Image
                       source={require('../../assets/Images/activeProfile.jpeg')}
                       style={styles.image}
@@ -377,9 +391,12 @@ const KYCCoApplicant = ({route}) => {
             </View>
 
             <View style={styles.sectionRow}>
-              {/* Aadhar Front */}
               <TouchableOpacity
-                onPress={() => handleImagePick(setAadharFront)}
+                // onPress={() => handleImagePick(setAadharFront)}
+                onPress={() => {
+                  setDocModalVisible(true);
+                  selected.current = setAadharFront;
+                }}
                 style={[
                   styles.smallUploadButton,
                   {
@@ -391,7 +408,7 @@ const KYCCoApplicant = ({route}) => {
                 ]}>
                 <Text style={styles.buttonText}>Upload Aadhar Front</Text>
                 <View>
-                  {aadharFront && (
+                  {aadharFront != null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -406,16 +423,15 @@ const KYCCoApplicant = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (aadharFront?.path) {
-                            // Example: Open image in full screen or perform an action
-                            setImage([{uri: aadharFront?.path}]);
+                          if (aadharFront) {
+                            setImage([{uri: aadharFront}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: aadharFront?.path}}
-                          style={[styles.image, {width: 150}]}
+                          source={{uri: aadharFront}}
                           resizeMode="center"
+                          style={[styles.image, {width: 150}]}
                         />
                       </TouchableOpacity>
                     </>
@@ -425,16 +441,19 @@ const KYCCoApplicant = ({route}) => {
                   {!aadharFront && (
                     <Image
                       source={require('../../assets/Images/aadhar.png')}
-                      style={[styles.image, {width: 150}]}
                       resizeMode="center"
+                      style={[styles.image, {width: 150}]}
                     />
                   )}
                 </View>
               </TouchableOpacity>
 
-              {/* Aadhar Back */}
               <TouchableOpacity
-                onPress={() => handleImagePick(setAadharBack)}
+                // onPress={() => handleImagePick(setAadharBack)}
+                onPress={() => {
+                  setDocModalVisible(true);
+                  selected.current = setAadharBack;
+                }}
                 style={[
                   styles.smallUploadButton,
                   {
@@ -461,14 +480,13 @@ const KYCCoApplicant = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (aadharBack?.path) {
-                            // Example: Open image in full screen or perform an action
-                            setImage([{uri: aadharBack?.path}]);
+                          if (aadharBack) {
+                            setImage([{uri: aadharBack}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: aadharBack?.path}}
+                          source={{uri: aadharBack}}
                           style={styles.image}
                           resizeMode="center"
                         />
@@ -487,15 +505,20 @@ const KYCCoApplicant = ({route}) => {
                 </View>
               </TouchableOpacity>
             </View>
+
             <View style={styles.textView}>
               <Text style={styles.label}>Aadhar No.</Text>
               <Text style={styles.value}>{coAppData?.coApplAadhar}</Text>
             </View>
-            {coAppData?.coApplVoterid !== '' && (
+            {coAppData?.voterId && (
               <>
                 <View style={styles.sectionRow}>
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setVoterId)}
+                    // onPress={() => handleImagePick(setVoterId)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setVoterId;
+                    }}
                     style={[
                       styles.smallUploadButton,
                       {
@@ -522,14 +545,14 @@ const KYCCoApplicant = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (voterId?.path) {
+                              if (voterId) {
                                 // Example: Show full-screen image or perform an action
-                                setImage([{uri: voterId?.path}]);
+                                setImage([{uri: voterId}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: voterId?.path}}
+                              source={{uri: voterId}}
                               style={styles.image}
                               resizeMode="cover"
                             />
@@ -549,7 +572,11 @@ const KYCCoApplicant = ({route}) => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setVoterIdBack)}
+                    // onPress={() => handleImagePick(setVoterIdBack)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setVoterIdBack;
+                    }}
                     style={[
                       styles.smallUploadButton,
                       {
@@ -576,14 +603,14 @@ const KYCCoApplicant = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (voterIdBack?.path) {
+                              if (voterIdBack) {
                                 // Example: Show full-screen image or perform an action
-                                setImage([{uri: voterIdBack?.path}]);
+                                setImage([{uri: voterIdBack}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: voterIdBack?.path}}
+                              source={{uri: voterIdBack}}
                               style={styles.image}
                               resizeMode="cover"
                             />
@@ -611,11 +638,15 @@ const KYCCoApplicant = ({route}) => {
               </>
             )}
 
-            {coAppData?.coApplPAN !== '' && (
+            {coAppData?.panNo !== '' && (
               <>
                 <View style={styles.section}>
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setPanCard)}
+                    // onPress={() => handleImagePick(setPanCard)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setPanCard;
+                    }}
                     style={[
                       styles.uploadButton,
                       {
@@ -642,13 +673,13 @@ const KYCCoApplicant = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (panCard?.path) {
-                                setImage([{uri: panCard?.path}]);
+                              if (panCard) {
+                                setImage([{uri: panCard}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: panCard?.path}}
+                              source={{uri: panCard}}
                               resizeMode="center"
                               style={[styles.image, {width: 180}]}
                             />
@@ -677,7 +708,8 @@ const KYCCoApplicant = ({route}) => {
             )}
             <View style={styles.section}>
               <TouchableOpacity
-                onPress={() => handleImagePick(setHousePhoto)}
+                // onPress={() => handleImagePick(setHousePhoto)}
+                onPress={() => setIsModalVisible(true)}
                 style={[
                   styles.uploadButton,
                   {
@@ -691,7 +723,7 @@ const KYCCoApplicant = ({route}) => {
                   Upload Client's House Photo
                 </Text>
                 <View>
-                  {housePhoto && (
+                  {housePhoto !== null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -706,13 +738,13 @@ const KYCCoApplicant = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (housePhoto?.path) {
-                            setImage([{uri: housePhoto?.path}]);
+                          if (housePhoto !== null) {
+                            setImage([{uri: housePhoto}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: housePhoto?.path}}
+                          source={{uri: housePhoto}}
                           style={styles.image}
                           resizeMode="center"
                         />
@@ -721,7 +753,7 @@ const KYCCoApplicant = ({route}) => {
                   )}
 
                   {/* Fallback Image */}
-                  {!housePhoto && (
+                  {housePhoto == null && (
                     <Image
                       source={require('../../assets/Images/homeVillage.jpeg')}
                       style={styles.image}
@@ -739,6 +771,423 @@ const KYCCoApplicant = ({route}) => {
               textStyle={styles.btnTextStyle}
             />
           </View>
+          // <View style={styles.container}>
+          //   <Text style={styles.header}>{coAppName} KYC</Text>
+          //   <View style={[styles.section]}>
+          //     <TouchableOpacity
+          //       onPress={() => handleImagePick(setClientPhoto)}
+          //       style={[
+          //         styles.uploadButton,
+          //         {
+          //           borderColor: err?.clientPhoto
+          //             ? R.colors.RED
+          //             : R.colors.PRIMARI_DARK,
+          //           borderWidth: err?.clientPhoto ? 1.5 : 1,
+          //         },
+          //       ]}>
+          //       <Text style={styles.buttonText}>Upload Co-Applicant Photo</Text>
+          //       <View>
+          //         {clientPhoto && (
+          //           <>
+          //             {/* Remove Icon */}
+          //             <Icon
+          //               name="close"
+          //               size={32}
+          //               color={R.colors.PRIMARY_LIGHT}
+          //               style={styles.icon}
+          //               onPress={() => {
+          //                 setClientPhoto(null);
+          //               }}
+          //             />
+          //             <TouchableOpacity
+          //               onPress={() => {
+          //                 if (clientPhoto?.path) {
+          //                   setImage([{uri: clientPhoto?.path}]);
+          //                   onClose(true);
+          //                 }
+          //               }}>
+          //               <Image
+          //                 source={{uri: clientPhoto?.path}}
+          //                 style={styles.image}
+          //               />
+          //             </TouchableOpacity>
+          //           </>
+          //         )}
+
+          //         {/* Fallback Image */}
+          //         {!clientPhoto && (
+          //           <Image
+          //             source={require('../../assets/Images/activeProfile.jpeg')}
+          //             style={styles.image}
+          //           />
+          //         )}
+          //       </View>
+          //     </TouchableOpacity>
+          //   </View>
+
+          //   <View style={styles.sectionRow}>
+          //     {/* Aadhar Front */}
+          //     <TouchableOpacity
+          //       onPress={() => handleImagePick(setAadharFront)}
+          //       style={[
+          //         styles.smallUploadButton,
+          //         {
+          //           borderColor: err?.aadharFront
+          //             ? R.colors.primary
+          //             : R.colors.PRIMARI_DARK,
+          //           borderWidth: err?.aadharFront ? 1.5 : 1,
+          //         },
+          //       ]}>
+          //       <Text style={styles.buttonText}>Upload Aadhar Front</Text>
+          //       <View>
+          //         {aadharFront && (
+          //           <>
+          //             {/* Remove Icon */}
+          //             <Icon
+          //               name="close"
+          //               size={32}
+          //               color={R.colors.PRIMARY_LIGHT}
+          //               style={styles.icon}
+          //               onPress={() => {
+          //                 setAadharFront(null);
+          //               }}
+          //             />
+          //             {/* Display Image */}
+          //             <TouchableOpacity
+          //               onPress={() => {
+          //                 if (aadharFront?.path) {
+          //                   // Example: Open image in full screen or perform an action
+          //                   setImage([{uri: aadharFront?.path}]);
+          //                   onClose(true);
+          //                 }
+          //               }}>
+          //               <Image
+          //                 source={{uri: aadharFront?.path}}
+          //                 style={[styles.image, {width: 150}]}
+          //                 resizeMode="center"
+          //               />
+          //             </TouchableOpacity>
+          //           </>
+          //         )}
+
+          //         {/* Fallback Image */}
+          //         {!aadharFront && (
+          //           <Image
+          //             source={require('../../assets/Images/aadhar.png')}
+          //             style={[styles.image, {width: 150}]}
+          //             resizeMode="center"
+          //           />
+          //         )}
+          //       </View>
+          //     </TouchableOpacity>
+
+          //     {/* Aadhar Back */}
+          //     <TouchableOpacity
+          //       onPress={() => handleImagePick(setAadharBack)}
+          //       style={[
+          //         styles.smallUploadButton,
+          //         {
+          //           borderColor: err?.aadharBack
+          //             ? R.colors.primary
+          //             : R.colors.PRIMARI_DARK,
+          //           borderWidth: err?.aadharBack ? 1.5 : 1,
+          //         },
+          //       ]}>
+          //       <Text style={styles.buttonText}>Upload Aadhar Back</Text>
+          //       <View>
+          //         {aadharBack && (
+          //           <>
+          //             {/* Remove Icon */}
+          //             <Icon
+          //               name="close"
+          //               size={32}
+          //               color={R.colors.PRIMARY_LIGHT}
+          //               style={styles.icon}
+          //               onPress={() => {
+          //                 setAadharBack(null);
+          //               }}
+          //             />
+          //             {/* Display Image */}
+          //             <TouchableOpacity
+          //               onPress={() => {
+          //                 if (aadharBack?.path) {
+          //                   // Example: Open image in full screen or perform an action
+          //                   setImage([{uri: aadharBack?.path}]);
+          //                   onClose(true);
+          //                 }
+          //               }}>
+          //               <Image
+          //                 source={{uri: aadharBack?.path}}
+          //                 style={styles.image}
+          //                 resizeMode="center"
+          //               />
+          //             </TouchableOpacity>
+          //           </>
+          //         )}
+
+          //         {/* Fallback Image */}
+          //         {!aadharBack && (
+          //           <Image
+          //             source={require('../../assets/Images/aadharBack.png')}
+          //             style={styles.image}
+          //             resizeMode="center"
+          //           />
+          //         )}
+          //       </View>
+          //     </TouchableOpacity>
+          //   </View>
+          //   <View style={styles.textView}>
+          //     <Text style={styles.label}>Aadhar No.</Text>
+          //     <Text style={styles.value}>{coAppData?.coApplAadhar}</Text>
+          //   </View>
+          //   {coAppData?.coApplVoterid !== '' && (
+          //     <>
+          //       <View style={styles.sectionRow}>
+          //         <TouchableOpacity
+          //           onPress={() => handleImagePick(setVoterId)}
+          //           style={[
+          //             styles.smallUploadButton,
+          //             {
+          //               borderColor: err?.voterId
+          //                 ? R.colors.primary
+          //                 : R.colors.PRIMARI_DARK,
+          //               borderWidth: err?.voterId ? 1.5 : 1,
+          //             },
+          //           ]}>
+          //           <Text style={styles.buttonText}>Upload Voter ID Front</Text>
+          //           <View>
+          //             {voterId && (
+          //               <>
+          //                 {/* Remove Icon */}
+          //                 <Icon
+          //                   name="close"
+          //                   size={32}
+          //                   color={R.colors.PRIMARY_LIGHT}
+          //                   style={styles.icon}
+          //                   onPress={() => {
+          //                     setVoterId(null);
+          //                   }}
+          //                 />
+          //                 {/* Display Image */}
+          //                 <TouchableOpacity
+          //                   onPress={() => {
+          //                     if (voterId?.path) {
+          //                       // Example: Show full-screen image or perform an action
+          //                       setImage([{uri: voterId?.path}]);
+          //                       onClose(true);
+          //                     }
+          //                   }}>
+          //                   <Image
+          //                     source={{uri: voterId?.path}}
+          //                     style={styles.image}
+          //                     resizeMode="cover"
+          //                   />
+          //                 </TouchableOpacity>
+          //               </>
+          //             )}
+
+          //             {/* Fallback Image */}
+          //             {!voterId && (
+          //               <Image
+          //                 source={require('../../assets/Images/VoterId.png')}
+          //                 style={styles.image}
+          //                 resizeMode="cover"
+          //               />
+          //             )}
+          //           </View>
+          //         </TouchableOpacity>
+
+          //         <TouchableOpacity
+          //           onPress={() => handleImagePick(setVoterIdBack)}
+          //           style={[
+          //             styles.smallUploadButton,
+          //             {
+          //               borderColor: err?.voterIdBack
+          //                 ? R.colors.primary
+          //                 : R.colors.PRIMARI_DARK,
+          //               borderWidth: err?.voterIdBack ? 1.5 : 1,
+          //             },
+          //           ]}>
+          //           <Text style={styles.buttonText}>Upload Voter ID Back</Text>
+          //           <View>
+          //             {voterIdBack && (
+          //               <>
+          //                 {/* Remove Icon */}
+          //                 <Icon
+          //                   name="close"
+          //                   size={32}
+          //                   color={R.colors.PRIMARY_LIGHT}
+          //                   style={styles.icon}
+          //                   onPress={() => {
+          //                     setVoterIdBack(null);
+          //                   }}
+          //                 />
+          //                 {/* Display Image */}
+          //                 <TouchableOpacity
+          //                   onPress={() => {
+          //                     if (voterIdBack?.path) {
+          //                       // Example: Show full-screen image or perform an action
+          //                       setImage([{uri: voterIdBack?.path}]);
+          //                       onClose(true);
+          //                     }
+          //                   }}>
+          //                   <Image
+          //                     source={{uri: voterIdBack?.path}}
+          //                     style={styles.image}
+          //                     resizeMode="cover"
+          //                   />
+          //                 </TouchableOpacity>
+          //               </>
+          //             )}
+
+          //             {/* Fallback Image */}
+          //             {!voterIdBack && (
+          //               <Image
+          //                 source={require('../../assets/Images/VoterId.png')}
+          //                 style={styles.image}
+          //                 resizeMode="cover"
+          //               />
+          //             )}
+          //           </View>
+          //         </TouchableOpacity>
+          //       </View>
+          //       <View style={styles.textView}>
+          //         <Text style={styles.label}>Voter ID No.</Text>
+          //         <Text style={styles.value}>
+          //           {coAppData?.coApplVoterid?.toUpperCase()}
+          //         </Text>
+          //       </View>
+          //     </>
+          //   )}
+
+          //   {coAppData?.coApplPAN !== '' && (
+          //     <>
+          //       <View style={styles.section}>
+          //         <TouchableOpacity
+          //           onPress={() => handleImagePick(setPanCard)}
+          //           style={[
+          //             styles.uploadButton,
+          //             {
+          //               borderColor: err?.panCard
+          //                 ? R.colors.primary
+          //                 : R.colors.PRIMARI_DARK,
+          //               borderWidth: err?.panCard ? 1.5 : 1,
+          //             },
+          //           ]}>
+          //           <Text style={styles.buttonText}>Upload PAN Card</Text>
+          //           <View>
+          //             {panCard && (
+          //               <>
+          //                 {/* Remove Icon */}
+          //                 <Icon
+          //                   name="close"
+          //                   size={32}
+          //                   color={R.colors.PRIMARY_LIGHT}
+          //                   style={styles.icon}
+          //                   onPress={() => {
+          //                     setPanCard(null);
+          //                   }}
+          //                 />
+          //                 {/* Display Image */}
+          //                 <TouchableOpacity
+          //                   onPress={() => {
+          //                     if (panCard?.path) {
+          //                       setImage([{uri: panCard?.path}]);
+          //                       onClose(true);
+          //                     }
+          //                   }}>
+          //                   <Image
+          //                     source={{uri: panCard?.path}}
+          //                     resizeMode="center"
+          //                     style={[styles.image, {width: 180}]}
+          //                   />
+          //                 </TouchableOpacity>
+          //               </>
+          //             )}
+
+          //             {/* Fallback Image */}
+          //             {!panCard && (
+          //               <Image
+          //                 source={require('../../assets/Images/panCard.png')}
+          //                 resizeMode="center"
+          //                 style={[styles.image, {width: 180}]}
+          //               />
+          //             )}
+          //           </View>
+          //         </TouchableOpacity>
+          //       </View>
+          //       <View style={styles.textView}>
+          //         <Text style={styles.label}>PAN Card No.</Text>
+          //         <Text style={styles.value}>
+          //           {coAppData?.coApplPAN?.toUpperCase()}
+          //         </Text>
+          //       </View>
+          //     </>
+          //   )}
+          //   <View style={styles.section}>
+          //     <TouchableOpacity
+          //       onPress={() => handleImagePick(setHousePhoto)}
+          //       style={[
+          //         styles.uploadButton,
+          //         {
+          //           borderColor: err?.housePhoto
+          //             ? R.colors.primary
+          //             : R.colors.PRIMARI_DARK,
+          //           borderWidth: err?.housePhoto ? 1.5 : 1,
+          //         },
+          //       ]}>
+          //       <Text style={styles.buttonText}>
+          //         Upload Client's House Photo
+          //       </Text>
+          //       <View>
+          //         {housePhoto && (
+          //           <>
+          //             {/* Remove Icon */}
+          //             <Icon
+          //               name="close"
+          //               size={32}
+          //               color={R.colors.PRIMARY_LIGHT}
+          //               style={styles.icon}
+          //               onPress={() => {
+          //                 setHousePhoto(null);
+          //               }}
+          //             />
+          //             {/* Display Image */}
+          //             <TouchableOpacity
+          //               onPress={() => {
+          //                 if (housePhoto?.path) {
+          //                   setImage([{uri: housePhoto?.path}]);
+          //                   onClose(true);
+          //                 }
+          //               }}>
+          //               <Image
+          //                 source={{uri: housePhoto?.path}}
+          //                 style={styles.image}
+          //                 resizeMode="center"
+          //               />
+          //             </TouchableOpacity>
+          //           </>
+          //         )}
+
+          //         {/* Fallback Image */}
+          //         {!housePhoto && (
+          //           <Image
+          //             source={require('../../assets/Images/homeVillage.jpeg')}
+          //             style={styles.image}
+          //             resizeMode="center"
+          //           />
+          //         )}
+          //       </View>
+          //     </TouchableOpacity>
+          //   </View>
+
+          //   <Button
+          //     title="Submit"
+          //     onPress={handleSubmit}
+          //     buttonStyle={styles.submitButton}
+          //     textStyle={styles.btnTextStyle}
+          //   />
+          // </View>
         )}
       </ScrollView>
       <Loader loading={loading} message={'please wait...'} />
@@ -747,6 +1196,17 @@ const KYCCoApplicant = ({route}) => {
         imageIndex={0}
         visible={isVis}
         onRequestClose={() => onClose(false)}
+      />
+      <GeotaggedImageModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onImageCaptured={handleImageCaptured}
+      />
+      <DocumentScannerModal
+        isVisible={isDocModalVisible}
+        onClose={() => setDocModalVisible(false)}
+        onDocumentScanned={handleScannedDocument}
+        setter={selected.current}
       />
     </ScreenWrapper>
   );

@@ -32,6 +32,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {Camera, getCameraDevice} from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
 import ImageView from 'react-native-images-viewer';
+import GeotaggedImageModal from '../../library/modals/GeotaggedImageModal';
+import DocumentScannerModal from '../../library/modals/ScanDocument';
 
 const KYCCustomer = ({route}) => {
   const navigation = useNavigation();
@@ -51,6 +53,8 @@ const KYCCustomer = ({route}) => {
   const [image, setImage] = useState([]);
   const devices = Camera.getAvailableCameraDevices();
   const device = getCameraDevice(devices, 'back');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDocModalVisible, setDocModalVisible] = useState(false);
   const selected = useRef(null);
   const cameraRef = useRef(null);
 
@@ -166,6 +170,7 @@ const KYCCustomer = ({route}) => {
         return valid;
       }
     }
+
     if (userData?.voterId !== '') {
       if (!voterId || !voterIdBack) {
         if (!voterId && voterIdBack) {
@@ -176,7 +181,6 @@ const KYCCustomer = ({route}) => {
           return valid;
         }
         if (voterId && !voterIdBack) {
-          console.log('_______', {voterId, voterIdBack});
           newErrors.voterIdBack = !voterIdBack;
           valid = false;
           setErr(newErrors);
@@ -211,39 +215,39 @@ const KYCCustomer = ({route}) => {
         const formData = new FormData();
         // Append files to FormData
         formData.append('aadharFront', {
-          uri: aadharFront.path,
-          type: aadharFront.mime,
+          uri: aadharFront,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
         formData.append('aadharBack', {
-          uri: aadharBack.path,
-          type: aadharBack.mime,
+          uri: aadharBack,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
         if (voterId) {
           formData.append('voterId', {
-            uri: voterId.path,
-            type: voterId.mime,
+            uri: voterId,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         if (voterIdBack) {
           formData.append('voterIdBack', {
-            uri: voterId.path,
-            type: voterId.mime,
+            uri: voterId,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         if (panCard) {
           formData.append('panCard', {
-            uri: panCard.path,
-            type: panCard.mime,
+            uri: panCard,
+            type: 'image/jpg',
             name: `${enrollmentId}.jpg`,
           });
         }
         formData.append('housePhoto', {
-          uri: housePhoto.path,
-          type: housePhoto.mime,
+          uri: housePhoto,
+          type: 'image/jpg',
           name: `${enrollmentId}.jpg`,
         });
 
@@ -253,7 +257,7 @@ const KYCCustomer = ({route}) => {
           payload.append('clientPhoto', {
             uri: clientPhoto.path,
             type: clientPhoto.mime,
-            name: `${enrollmentId}.jpg`,
+            name: `${enrollmentId}.jpeg`,
           });
           const resp = await uploadClientPhoto(payload);
           if (resp?.success) {
@@ -293,7 +297,19 @@ const KYCCustomer = ({route}) => {
   };
 
   const styles = createStyles(colorScheme);
-  console.log('isCameraReady', isCameraReady);
+
+  const handleImageCaptured = (uri, reset) => {
+    console.log('Captured Image URI:', uri);
+    setHousePhoto(uri);
+    reset && reset();
+    setIsModalVisible(false);
+  };
+  const handleScannedDocument = (uri, setter) => {
+    console.log('Captured Image URI:', uri, setter);
+    setter(uri);
+    setDocModalVisible(false);
+  };
+
   return (
     <ScreenWrapper header={false} backDisabled title="Client KYC">
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -356,7 +372,7 @@ const KYCCustomer = ({route}) => {
                 ]}>
                 <Text style={styles.buttonText}>Upload Client Photo</Text>
                 <View>
-                  {clientPhoto && (
+                  {clientPhoto !== null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -386,7 +402,7 @@ const KYCCustomer = ({route}) => {
                   )}
 
                   {/* Fallback Image */}
-                  {!clientPhoto && (
+                  {clientPhoto == null && (
                     <Image
                       source={require('../../assets/Images/activeProfile.jpeg')}
                       style={styles.image}
@@ -394,56 +410,15 @@ const KYCCustomer = ({route}) => {
                   )}
                 </View>
               </TouchableOpacity>
-
-              {/* <TouchableOpacity
-                onPress={() => handleImagePick(setClientPhoto)}
-                style={[
-                  styles.uploadButton,
-                  {
-                    borderColor: err?.clientPhoto
-                      ? R.colors.RED
-                      : R.colors.PRIMARI_DARK,
-                    borderWidth: err?.clientPhoto ? 1.5 : 1,
-                  },
-                ]}>
-                <Text style={styles.buttonText}>Upload Client Photo</Text>
-                <View>
-                  {clientPhoto && (
-                    <Icon
-                      name="close"
-                      size={32}
-                      color={R.colors.PRIMARY_LIGHT}
-                      style={styles.icon}
-                      onPress={() => {
-                        setClientPhoto(null);
-                      }}
-                    />
-                  )}
-                  <Image
-                    source={
-                      clientPhoto
-                        ? {uri: clientPhoto?.path}
-                        : require('../../assets/Images/activeProfile.jpeg')
-                    }
-                    style={styles.image}
-                    onPress={() => {
-                      if (clientPhoto?.path) {
-                        setImage([
-                          {
-                            uri: clientPhoto?.path,
-                          },
-                        ]);
-                        onClose(true);
-                      }
-                    }}
-                  />
-                </View>
-              </TouchableOpacity> */}
             </View>
 
             <View style={styles.sectionRow}>
               <TouchableOpacity
-                onPress={() => handleImagePick(setAadharFront)}
+                // onPress={() => handleImagePick(setAadharFront)}
+                onPress={() => {
+                  setDocModalVisible(true);
+                  selected.current = setAadharFront;
+                }}
                 style={[
                   styles.smallUploadButton,
                   {
@@ -455,7 +430,7 @@ const KYCCustomer = ({route}) => {
                 ]}>
                 <Text style={styles.buttonText}>Upload Aadhar Front</Text>
                 <View>
-                  {aadharFront && (
+                  {aadharFront != null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -470,13 +445,13 @@ const KYCCustomer = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (aadharFront?.path) {
-                            setImage([{uri: aadharFront?.path}]);
+                          if (aadharFront) {
+                            setImage([{uri: aadharFront}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: aadharFront?.path}}
+                          source={{uri: aadharFront}}
                           resizeMode="center"
                           style={[styles.image, {width: 150}]}
                         />
@@ -496,7 +471,11 @@ const KYCCustomer = ({route}) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => handleImagePick(setAadharBack)}
+                // onPress={() => handleImagePick(setAadharBack)}
+                onPress={() => {
+                  setDocModalVisible(true);
+                  selected.current = setAadharBack;
+                }}
                 style={[
                   styles.smallUploadButton,
                   {
@@ -523,13 +502,13 @@ const KYCCustomer = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (aadharBack?.path) {
-                            setImage([{uri: aadharBack?.path}]);
+                          if (aadharBack) {
+                            setImage([{uri: aadharBack}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: aadharBack?.path}}
+                          source={{uri: aadharBack}}
                           style={styles.image}
                           resizeMode="center"
                         />
@@ -557,7 +536,11 @@ const KYCCustomer = ({route}) => {
               <>
                 <View style={styles.sectionRow}>
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setVoterId)}
+                    // onPress={() => handleImagePick(setVoterId)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setVoterId;
+                    }}
                     style={[
                       styles.smallUploadButton,
                       {
@@ -584,14 +567,14 @@ const KYCCustomer = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (voterId?.path) {
+                              if (voterId) {
                                 // Example: Show full-screen image or perform an action
-                                setImage([{uri: voterId?.path}]);
+                                setImage([{uri: voterId}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: voterId?.path}}
+                              source={{uri: voterId}}
                               style={styles.image}
                               resizeMode="cover"
                             />
@@ -611,7 +594,11 @@ const KYCCustomer = ({route}) => {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setVoterIdBack)}
+                    // onPress={() => handleImagePick(setVoterIdBack)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setVoterIdBack;
+                    }}
                     style={[
                       styles.smallUploadButton,
                       {
@@ -638,14 +625,14 @@ const KYCCustomer = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (voterIdBack?.path) {
+                              if (voterIdBack) {
                                 // Example: Show full-screen image or perform an action
-                                setImage([{uri: voterIdBack?.path}]);
+                                setImage([{uri: voterIdBack}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: voterIdBack?.path}}
+                              source={{uri: voterIdBack}}
                               style={styles.image}
                               resizeMode="cover"
                             />
@@ -669,7 +656,7 @@ const KYCCustomer = ({route}) => {
                   <Text style={styles.value}>
                     {userData?.voterId?.toUpperCase()}
                   </Text>
-                </View>{' '}
+                </View>
               </>
             )}
 
@@ -677,7 +664,11 @@ const KYCCustomer = ({route}) => {
               <>
                 <View style={styles.section}>
                   <TouchableOpacity
-                    onPress={() => handleImagePick(setPanCard)}
+                    // onPress={() => handleImagePick(setPanCard)}
+                    onPress={() => {
+                      setDocModalVisible(true);
+                      selected.current = setPanCard;
+                    }}
                     style={[
                       styles.uploadButton,
                       {
@@ -704,13 +695,13 @@ const KYCCustomer = ({route}) => {
                           {/* Display Image */}
                           <TouchableOpacity
                             onPress={() => {
-                              if (panCard?.path) {
-                                setImage([{uri: panCard?.path}]);
+                              if (panCard) {
+                                setImage([{uri: panCard}]);
                                 onClose(true);
                               }
                             }}>
                             <Image
-                              source={{uri: panCard?.path}}
+                              source={{uri: panCard}}
                               resizeMode="center"
                               style={[styles.image, {width: 180}]}
                             />
@@ -739,7 +730,8 @@ const KYCCustomer = ({route}) => {
             )}
             <View style={styles.section}>
               <TouchableOpacity
-                onPress={() => handleImagePick(setHousePhoto)}
+                // onPress={() => handleImagePick(setHousePhoto)}
+                onPress={() => setIsModalVisible(true)}
                 style={[
                   styles.uploadButton,
                   {
@@ -753,7 +745,7 @@ const KYCCustomer = ({route}) => {
                   Upload Client's House Photo
                 </Text>
                 <View>
-                  {housePhoto && (
+                  {housePhoto !== null && (
                     <>
                       {/* Remove Icon */}
                       <Icon
@@ -768,13 +760,13 @@ const KYCCustomer = ({route}) => {
                       {/* Display Image */}
                       <TouchableOpacity
                         onPress={() => {
-                          if (housePhoto?.path) {
-                            setImage([{uri: housePhoto?.path}]);
+                          if (housePhoto !== null) {
+                            setImage([{uri: housePhoto}]);
                             onClose(true);
                           }
                         }}>
                         <Image
-                          source={{uri: housePhoto?.path}}
+                          source={{uri: housePhoto}}
                           style={styles.image}
                           resizeMode="center"
                         />
@@ -783,7 +775,7 @@ const KYCCustomer = ({route}) => {
                   )}
 
                   {/* Fallback Image */}
-                  {!housePhoto && (
+                  {housePhoto == null && (
                     <Image
                       source={require('../../assets/Images/homeVillage.jpeg')}
                       style={styles.image}
@@ -809,6 +801,18 @@ const KYCCustomer = ({route}) => {
         imageIndex={0}
         visible={isVis}
         onRequestClose={() => onClose(false)}
+      />
+
+      <GeotaggedImageModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onImageCaptured={handleImageCaptured}
+      />
+      <DocumentScannerModal
+        isVisible={isDocModalVisible}
+        onClose={() => setDocModalVisible(false)}
+        onDocumentScanned={handleScannedDocument}
+        setter={selected.current}
       />
     </ScreenWrapper>
   );

@@ -13,9 +13,9 @@ const BMOptions = () => {
     {
       id: 1,
       icon: 'list-status',
-      title: 'Proposal Review',
-      screen: ScreensNameEnum.PROPOSAL_REVIEW_SCREEN,
-      color: '#4CAF50', 
+      title: 'GRT',
+      screen: ScreensNameEnum.CENTRE_CGT_SCREEN,
+      color: '#4CAF50',
       image: require('../../assets/Images/icon2.png'),
     },
     {
@@ -23,7 +23,7 @@ const BMOptions = () => {
       icon: 'currency-inr',
       title: 'Foreclose Approval',
       screen: ScreensNameEnum.FORECLOSE_SCREEN,
-      color: '#FF9800', 
+      color: '#FF9800',
       image: require('../../assets/Images/icon1.png'),
     },
     {
@@ -31,7 +31,7 @@ const BMOptions = () => {
       icon: 'currency-inr',
       title: 'Partial Approval',
       screen: ScreensNameEnum.PART_PAYMENT_APPROVAL_SCREEN,
-      color: '#FF9800', 
+      color: '#FF9800',
       image: require('../../assets/Images/appr.jpg'),
     },
   ];

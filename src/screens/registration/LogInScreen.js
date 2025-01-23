@@ -280,7 +280,7 @@ const LogInScreen = () => {
           source={require('../../assets/Images/mainbg.png')}
           style={{flex: 1}}
           resizeMode="stretch">
-          <ScrollView>
+          <ScrollView keyboardShouldPersistTaps={true}>
             <Image
               source={require('../../assets/Images/APP_LOGO.png')}
               style={{width: '85%', alignSelf: 'center'}}

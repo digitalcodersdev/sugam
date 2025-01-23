@@ -21,6 +21,7 @@ import {
   getPendingEnrollments,
   fetchProposals,
   fetchAMProposals,
+  fetchGRTCentres,
 } from '../../actions/userActions';
 // TODO: Should we have api based status and errors for more fine grained control
 
@@ -42,6 +43,7 @@ const initialState = {
   holidays: [],
   currentDayCollection: [],
   currentDayCollectionCenter: [],
+  grtCentres: [],
   proposal:[],
   getUserByIdStatus: initialThunkState,
   updateUserStatus: initialThunkState,
@@ -100,6 +102,7 @@ const userSlice = createSlice({
         };
       },
     );
+
     builder.addCase(fetchCurrentDayCollectionByCenterId.pending, state => {
       state.getUserByIdStatus = defaultThunkLoadingState;
     });
@@ -119,6 +122,26 @@ const userSlice = createSlice({
         };
       },
     );
+    builder.addCase(fetchGRTCentres.pending, state => {
+      state.getUserByIdStatus = defaultThunkLoadingState;
+    });
+    builder.addCase(
+      fetchGRTCentres.fulfilled,
+      (state, action) => {
+        state.getUserByIdStatus = defaultThunkSuccessState;
+        state.grtCentres = action.payload;
+      },
+    );
+    builder.addCase(
+      fetchGRTCentres.rejected,
+      (state, action) => {
+        state.getUserByIdStatus = {
+          ...defaultThunkFailureState,
+          error: action.payload,
+        };
+      },
+    );
+
     builder.addCase(getPendingEnrollments.pending, state => {
       state.getUserByIdStatus = defaultThunkLoadingState;
     });
@@ -165,6 +188,8 @@ export const currentDayCollectionSelector = state =>
   state?.user?.currentDayCollection || [];
 export const currentDayCollectionCenterSelector = state =>
   state?.user?.currentDayCollectionCenter || [];
+export const grtCentresSelector = state =>
+  state?.user?.grtCentres || [];
 
   export const proposalSelector = state => state?.user?.proposal || [];
 

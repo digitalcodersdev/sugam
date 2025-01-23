@@ -555,7 +555,7 @@ const CheckCreditBureau = ({route}) => {
         //     Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
         //     MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
         //     SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.SecurityCode,
-        //     CustRefField: '123456',
+        //     CustRefField: aadharNo,
         //     ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
         //   },
         //   RequestBody: {
@@ -568,7 +568,8 @@ const CheckCreditBureau = ({route}) => {
         //       {
         //         seq: '1',
         //         AddressType: ['H'],
-        //         AddressLine1: 'Bagicha, Dharchula, Pithoragarh,Uttrakhand - 262545',
+        //         AddressLine1:
+        //           'Bagicha, Dharchula, Pithoragarh,Uttrakhand - 262545',
         //         State: 'BR',
         //         Postal: '262545',
         //       },

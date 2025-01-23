@@ -110,6 +110,23 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async completeCGT({CenterID, BranchID}) {
+    try {
+      const response = await this.securedAxios.put(
+        getApiUri(`/complete/cgt/${BranchID}/${CenterID}`),
+      );
+      if (response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
 
   async getCentreDetails() {
     try {
@@ -151,6 +168,24 @@ class AuthenticationApi extends SecuredBaseApi {
       const response = await this.securedAxios.post(
         getApiUri('/get/max/center/number'),
         data,
+      );
+      if (response.data && response.success) {
+        return response;
+      }
+      return response;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error(err);
+      return false;
+    }
+  }
+  async getClientDetailsForGrt({enrollmentId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(`/fetch/grt/client/${enrollmentId}`),
+        
       );
       if (response.data && response.success) {
         return response;
@@ -323,6 +358,22 @@ class AuthenticationApi extends SecuredBaseApi {
       const response = await this.securedAxios.get(
         getApiUri(
           `/fetch/current-day/collection/pending-center/${centerId}/${branchId}`,
+        ),
+      );
+      if (response.data) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+  async fetchGRTCentres({centerId, branchId}) {
+    try {
+      const response = await this.securedAxios.get(
+        getApiUri(
+          `/fetch/grt/centers/${branchId}/${centerId}`,
         ),
       );
       if (response.data) {

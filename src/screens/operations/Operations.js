@@ -20,6 +20,14 @@ const Operations = () => {
       color: R.colors.DARK_ORANGE,
       image: require('../../assets/Images/icon2.png'),
     },
+    // {
+    //   id: 1,
+    //   icon: 'home-city',
+    //   title: 'Create New Center',
+    //   screen: ScreensNameEnum.BANK_DETAILS_SCREEN,
+    //   color: R.colors.DARK_ORANGE,
+    //   image: require('../../assets/Images/icon2.png'),
+    // },
     {
       id: 2,
       icon: 'account-group',
@@ -69,14 +77,14 @@ const Operations = () => {
     //   color: R.colors.DARK_ORANGE,
     //   image: require('../../assets/Images/clientDetails.png'),
     // },
-    // {
-    //   id: 8,
-    //   icon: 'check-circle-outline',
-    //   title: 'BM Approval',
-    //   screen: ScreensNameEnum.BM_OPERATIONS_SCREEN,
-    //   color: R.colors.DARK_ORANGE,
-    //   image: require('../../assets/Images/approve.png'),
-    // },
+    {
+      id: 8,
+      icon: 'check-circle-outline',
+      title: 'BM Approval',
+      screen: ScreensNameEnum.BM_OPERATIONS_SCREEN,
+      color: R.colors.DARK_ORANGE,
+      image: require('../../assets/Images/approve.png'),
+    },
     // {
     //   id: 6,
     //   icon: 'check-circle',

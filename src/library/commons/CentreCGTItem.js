@@ -32,14 +32,14 @@ const CentreCGTItem = ({item, BRANCHID, CenterNo,CenterName}) => {
     <Pressable
       style={styles.item}
       onPress={() => {
-        if (item?.Status == 'Pending') {
+        // if (item?.Status == 'Pending') {
           navigation.navigate(ScreensNameEnum.CLIENT_GRT_SCREEN, {
             enrollmentId: item?.EnrollmentID,
             BRANCHID,
             CenterNo,
             CenterName
           });
-        }
+        // }
       }}>
       <View style={styles.customerInfo}>
         <View style={styles.detailRow}>

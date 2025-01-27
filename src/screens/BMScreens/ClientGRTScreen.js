@@ -10,7 +10,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
@@ -22,6 +22,7 @@ import env from '../../../env';
 import GRTStatusModal from '../../library/modals/GRTModal';
 import Button from '../../library/commons/Button';
 import ImageView from 'react-native-images-viewer';
+import WebViewPDF from '../../library/commons/ViewPDF';
 
 const ClientGRTScreen = ({route}) => {
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,8 @@ const ClientGRTScreen = ({route}) => {
   const [data, setData] = useState({});
   const [isVis, onClose] = useState(false);
   const [image, setImage] = useState([]);
+  const [pdfVis, setPDFVis] = useState(false);
+  const fileURL = useRef(null);
   const {enrollmentId, BRANCHID, CenterNo, CenterName} = route.params;
   const URL = `${env.SERVER_URL}/clientphoto/${enrollmentId}.jpeg`;
   const PASSBOOK_URL = `${env.SERVER_URL}/clientbankDetail/${data.loanid}.pdf`;
@@ -59,13 +62,19 @@ const ClientGRTScreen = ({route}) => {
   };
 
   const handlePress = async () => {
-    await Linking.openURL(KYC_URL);
+    fileURL.current = KYC_URL;
+    setPDFVis(true);
+    // await Linking.openURL(KYC_URL);
   };
   const handlePressPassbook = async () => {
-    await Linking.openURL(PASSBOOK_URL);
+    fileURL.current = PASSBOOK_URL;
+    setPDFVis(true);
+    // await Linking.openURL(PASSBOOK_URL);
   };
   const handleCoPress = async () => {
-    await Linking.openURL(KYC_URL_CO_Borrower);
+    fileURL.current = KYC_URL_CO_Borrower;
+    setPDFVis(true);
+    // await Linking.openURL(KYC_URL_CO_Borrower);
   };
 
   const renderField = (label, value) => (
@@ -306,6 +315,14 @@ const ClientGRTScreen = ({route}) => {
         visible={isVis}
         onRequestClose={() => onClose(false)}
       />
+
+      {pdfVis && (
+        <WebViewPDF
+          isModalVisible={pdfVis}
+          setIsModalVisible={setPDFVis}
+          fileURL={fileURL.current}
+        />
+      )}
     </ScreenWrapper>
   );
 };

@@ -15,19 +15,19 @@ import R from '../../resources/R';
 import GRTStatusModal from '../modals/GRTModal';
 import ScreensNameEnum from '../../constants/ScreensNameEnum';
 
-const CentreCGTItem = ({item, meeting}) => {
+const CentreCGTItem = ({item, BRANCHID, CenterNo,CenterName}) => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
 
   const statusColor = item?.Status === 'Approved' ? '#4CAF50' : '#F44336';
 
-  const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
 
   const handleSubmit = value => {
     // setModalVisible(false);
     closeModal();
   };
+
   return (
     <Pressable
       style={styles.item}
@@ -35,6 +35,9 @@ const CentreCGTItem = ({item, meeting}) => {
         if (item?.Status == 'Pending') {
           navigation.navigate(ScreensNameEnum.CLIENT_GRT_SCREEN, {
             enrollmentId: item?.EnrollmentID,
+            BRANCHID,
+            CenterNo,
+            CenterName
           });
         }
       }}>
@@ -61,14 +64,7 @@ const CentreCGTItem = ({item, meeting}) => {
         </View>
       </View>
 
-      <Pressable
-        style={styles.statusContainer}
-        // onPress={() => {
-        //   if (item?.Status === 'Pending') {
-        //     openModal();
-        //   }
-        // }}
-        >
+      <Pressable style={styles.statusContainer}>
         <Text style={[styles.statusText, {backgroundColor: statusColor}]}>
           Status: {item?.Status}
         </Text>

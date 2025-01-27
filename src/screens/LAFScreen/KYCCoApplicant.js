@@ -59,23 +59,11 @@ const KYCCoApplicant = ({route}) => {
   const {enrollmentId, coAppData} = route?.params?.data;
 
   const coAppName = coAppData?.coApplicantName?.split(' ')[0];
-console.log("coAppData",coAppData);
+  
   const handleImagePick = setter => {
     selected.current = setter;
     setCamera(true);
-    // if (isCameraReady) {
-    //   captureAndCropImage();
-    // }
-    // launchCamera({mediaType: 'photo', quality: 0.8}, response => {
-    //   if (response.didCancel) {
-    //     console.log('User cancelled image picker');
-    //   } else if (response.errorMessage) {
-    //     console.log('ImagePicker Error: ', response.errorMessage);
-    //   } else if (response.assets && response.assets.length > 0) {
-    //     console.log(response.assets[0]);
-    //     setter(response.assets[0]);
-    //   }
-    // });
+
   };
 
   // Function to copy the image to permanent storage

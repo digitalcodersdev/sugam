@@ -75,6 +75,45 @@ const FAMILY = {
   daughter_in_law: 'K10',
   sister_in_law: 'K11',
 };
+const STATE_CODE = {
+  'ANDAMAN AND NICOBAR ISLANDS': 'AN',
+  'ANDHRA PRADESH': 'AP',
+  'ARUNACHAL PRADESH': 'AR',
+  ASSAM: 'AS',
+  BIHAR: 'BR',
+  CHANDIGARH: 'CH',
+  CHHATTISGARH: 'CG',
+  'DADRA AND NAGAR HAVELI': 'DN',
+  'DAMAN AND DIU': 'DD',
+  DELHI: 'DL',
+  GOA: 'GA',
+  GUJARAT: 'GJ',
+  HARYANA: 'HR',
+  'HIMACHAL PRADESH': 'HP',
+  'JAMMU AND KASHMIR': 'JK',
+  JHARKHAND: 'JH',
+  KARNATAKA: 'KA',
+  KERALA: 'KL',
+  LADAKH: 'LA',
+  LAKSHADWEEP: 'LD',
+  'MADHYA PRADESH': 'MP',
+  MAHARASHTRA: 'MH',
+  MANIPUR: 'MN',
+  MEGHALAYA: 'ML',
+  MIZORAM: 'MZ',
+  NAGALAND: 'NL',
+  ODISHA: 'OR',
+  PUDUCHERRY: 'PY',
+  PUNJAB: 'PB',
+  RAJASTHAN: 'RJ',
+  SIKKIM: 'SK',
+  'TAMIL NADU': 'TN',
+  TELANGANA: 'TG',
+  TRIPURA: 'TR',
+  'UTTAR PRADESH': 'UP',
+  UTTARAKHAND: 'UK',
+  'WEST BENGAL': 'WB',
+};
 
 const CheckCreditBureau = ({route}) => {
   I18n.locale = 'hi';
@@ -243,6 +282,7 @@ const CheckCreditBureau = ({route}) => {
       Alert.alert(
         'आवेदक और सह-आवेदक का फ़ोन नंबर एक ही है। अगर आप नंबर बदलना चाहते हैं तो बदल सकते हैं',
       );
+      setCoAppVerifyStatus(true);
     }
   }, [phone, coApplMobileNo]);
 
@@ -548,247 +588,253 @@ const CheckCreditBureau = ({route}) => {
     try {
       const valid = validate();
       if (valid) {
-        // var RAW_PROD = JSON.stringify({
-        //   RequestHeader: {
-        //     CustomerId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.CustomerId,
-        //     UserId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.UserId,
-        //     Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
-        //     MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
-        //     SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.SecurityCode,
-        //     CustRefField: aadharNo,
-        //     ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
-        //   },
-        //   RequestBody: {
-        //     InquiryPurpose: '00',
-        //     FirstName: 'Arjun ',
-        //     MiddleName: '',
-        //     LastName: 'Arya',
-        //     DOB: '1996-06-20',
-        //     InquiryAddresses: [
-        //       {
-        //         seq: '1',
-        //         AddressType: ['H'],
-        //         AddressLine1:
-        //           'Bagicha, Dharchula, Pithoragarh,Uttrakhand - 262545',
-        //         State: 'BR',
-        //         Postal: '262545',
-        //       },
-        //     ],
-        //     InquiryPhones: [
-        //       {
-        //         seq: '1',
-        //         Number: '8126949109',
-        //         PhoneType: ['M'],
-        //       },
-        //     ],
-        //     IDDetails: [
-        //       {
-        //         seq: '1',
-        //         IDType: 'M',
-        //         IDValue: '86625621616',
-        //         Source: 'Inquiry',
-        //       },
-        //       {
-        //         seq: '2',
-        //         IDType: 'T',
-        //         IDValue: 'BVDPA8941B',
-        //         Source: 'Inquiry',
-        //       },
-        //       {
-        //         seq: '3',
-        //         IDType: 'V',
-        //         IDValue: '',
-        //         Source: 'Inquiry',
-        //       },
-        //     ],
-        //     MFIDetails: {
-        //       FamilyDetails: [
-        //         {
-        //           seq: '1',
-        //           AdditionalNameType: 'K01',
-        //           AdditionalName: 'Ganesh Arya',
-        //         },
-        //       ],
-        //     },
-        //   },
-        //   Score: [
-        //     {
-        //       Type: 'ERS',
-        //       Version: '4.0',
-        //     },
-        //   ],
-        // });
-
-        // var myHeaders = new Headers();
-        // myHeaders.append('Content-Type', 'application/json');
-        // console.log('RAW_PROD', RAW_PROD);
-        // const PRODUCTION_URL =
-        //   'https://ists.equifax.co.in/cir360service/cir360report';
-        // const res = await axios.post(PRODUCTION_URL, JSON.parse(RAW_PROD), {
-        //   headers: myHeaders,
-        // });
-        // console.log('RESPONSE___________CCR', res);
-
-        // if (
-        //   res &&
-        //   res?.data?.CCRResponse?.Status == 1 &&
-        //   res?.status == 200 &&
-        //   res?.data?.CCRResponse?.CIRReportDataLst?.length >= 1
-        // ) {
-        //   const dt = res?.data?.CCRResponse?.CIRReportDataLst;
-        //   const indexof = dt.findIndex(item => 'CIRReportData' in item);
-        //   const {MicrofinanceAccountsSummary, ScoreDetails} =
-        //     dt[indexof].CIRReportData;
-        //   console.log('MicrofinanceAccountsSummary', MicrofinanceAccountsSummary);
-        //   console.log(
-        //     'ccrRules',
-        //     ccrRules,
-        //     ScoreDetails,
-        //     MicrofinanceAccountsSummary?.length,
-        //   );
-        //   const score = parseInt(ScoreDetails[0]?.Value);
-        //   if ('TotalBalanceAmount' in MicrofinanceAccountsSummary) {
-        //     const {
-        //       NoOfActiveAccounts,
-        //       NoOfPastDueAccounts,
-        //       RecentAccount,
-        //       TotalBalanceAmount,
-        //       TotalMonthlyPaymentAmount,
-        //       TotalPastDue,
-        //       TotalWrittenOffAmount,
-        //     } = MicrofinanceAccountsSummary;
-        const payload = {
-          data: {
-            Client_MobileNo: phone,
-            Client_AadharNo: aadharNo,
-            Client_Name: name,
-            Client_Address: address,
-            Client_DOB: dob,
-            Client_State: state,
-            Client_Pincode: pc,
-            Client_Relation: relation,
-            Client_PAN_No: panNo?.toUpperCase(),
-            Client_VoterID: voterId?.toUpperCase(),
-            Client_Gender: gender,
-            CoApplicant_AadharNo: coApplAadhar,
-            CoApplicant_Name: coApplicantName,
-            CoApplicant_Address: coAppAddress,
-            CoApplicant_DOB: coApplDOB,
-            CoApplicant_State: coApplState,
-            CoApplicant_Pincode: coAppPincode,
-            CoApplicant_MobileNo: coApplMobileNo,
-            CoApplicant_PAN_No: coApplPAN?.toUpperCase(),
-            CoApplicant_VoterID: coApplVoterid?.toUpperCase(),
-            // CreditScore: score,
-            OpeningBalance: 0, //AverageOpenBalance,
-            // ActiveAccount: NoOfActiveAccounts,
-            // PastDue: NoOfPastDueAccounts,
-            // Write_OFF: TotalWrittenOffAmount,
-            // Monthly_EMI: TotalMonthlyPaymentAmount,
-            BranchID: route?.params?.data.branchid,
-            CenterID: route?.params?.data.centreid,
-            age: calculateAge(dob),
-            coAppAge: calculateAge(coApplDOB),
-            // Result:
-            //   score >= ccrRules?.CreditScore &&
-            //   // parseInt(AverageOpenBalance) <=
-            //   //   ccrRules?.AverageOpenBalance
-            //   //    &&
-            //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
-            //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
-            //   parseInt(TotalWrittenOffAmount) <= ccrRules?.NoOfWriteOffs &&
-            //   parseInt(TotalMonthlyPaymentAmount) ==
-            //     ccrRules?.TotalMonthlyPaymentAmt
-            //     ? 'SUCCESS'
-            //     : 'FAILED',
+        var RAW_PROD = JSON.stringify({
+          RequestHeader: {
+            CustomerId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.CustomerId,
+            UserId: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.UserId,
+            Password: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.Password,
+            MemberNumber: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.MemberNumber,
+            SecurityCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.SecurityCode,
+            CustRefField: aadharNo,
+            ProductCode: APP_CONSTANTS.CCR_CONSTANTS.PRODUCTION.ProductCode,
           },
-        };
-        console.log(
-          'PAYLOAD____________________________________________',
-          payload,
-        );
-        const response = await new UserApi().createEnrollmentHis(payload);
-        console.log('response____', response, payload);
-        if (response) {
-          // CCRReport.current = {
-          //   // AverageOpenBalance,
-          //   CreditScore: score,
-
-          //   NoOfActiveAccounts,
-          //   NoOfPastDueAccounts,
-          //   TotalWrittenOffAmount,
-          //   TotalBalanceAmount,
-
-          //   TotalMonthlyPaymentAmount,
-          // };
-          userData.current = {
-            name,
-            dob,
-            address,
-            aadharNo,
-            panNo,
-            voterId,
-            maskedAdharNumber,
-            phone,
-            relation,
-            pincode: pc,
-            state,
-            careOf,
-            gender,
-            house,
-            street,
-            landmark,
-            po,
-            dist,
-            subdist,
-            vtc,
-            state,
-            country,
-          };
-          coAppData.current = {
-            coApplicantName,
-            coApplDOB,
-            coAppAddress,
-            coApplAadhar,
-            coApplPAN,
-            coApplVoterid,
-            coApplMaskedAadhar,
-            coApplMobileNo,
-            coApplState,
-            coAppPincode,
-            coAppCareOf,
-            coAppGender,
-            address: coAppAdd,
-          };
-          productCurrent.current = {
-            product,
-            category,
-            amountApplied,
-            loanPurpose,
-          };
-          enrollmentId.current = response;
-          // console.log('CCRReport', CCRReport);
-          navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-            data: {
-              userData: userData.current,
-              coAppData: coAppData.current,
-              productCurrent: productCurrent.current,
-              enrollmentId: response,
+          RequestBody: {
+            InquiryPurpose: '00',
+            FirstName: applicantName,
+            MiddleName: '',
+            LastName: '',
+            DOB: moment(dob, 'DD-MM-YYYY').format('YYYY-MM-DD'),
+            InquiryAddresses: [
+              {
+                seq: '1',
+                AddressType: ['H'],
+                AddressLine1: address,
+                State: STATE_CODE[state?.trim()?.toUpperCase()],
+                Postal: pc,
+              },
+            ],
+            InquiryPhones: [
+              {
+                seq: '1',
+                Number: phone,
+                PhoneType: ['M'],
+              },
+            ],
+            IDDetails: [
+              {
+                seq: '1',
+                IDType: 'M',
+                IDValue: aadharNo,
+                Source: 'Inquiry',
+              },
+              {
+                seq: '2',
+                IDType: 'T',
+                IDValue: panNo,
+                Source: 'Inquiry',
+              },
+              {
+                seq: '3',
+                IDType: 'V',
+                IDValue: voterId,
+                Source: 'Inquiry',
+              },
+            ],
+            MFIDetails: {
+              FamilyDetails: [
+                {
+                  seq: '1',
+                  AdditionalNameType: FAMILY[relation],
+                  AdditionalName: coApplicantName,
+                },
+              ],
             },
-          });
-          // setCCRVis(true);
-          // if (
-          //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
-          //   parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
-          //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
-          //   score >= ccrRules?.CreditScore &&
-          //   parseInt(NoOfWriteOfxs) == ccrRules?.NoOfWriteOffs &&
-          //   // parseInt(TotalPastDue) == ccrRules?.TotalPastDue
-          // ) {
+          },
+          Score: [
+            {
+              Type: 'ERS',
+              Version: '4.0',
+            },
+          ],
+        });
+
+        var myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/json');
+        console.log('RAW_PROD', RAW_PROD);
+        const PRODUCTION_URL =
+          'https://ists.equifax.co.in/cir360service/cir360report';
+        const res = await axios.post(PRODUCTION_URL, JSON.parse(RAW_PROD), {
+          headers: myHeaders,
+        });
+        console.log('RESPONSE___________CCR', res);
+
+        if (
+          res &&
+          res?.data?.CCRResponse?.Status == 1 &&
+          res?.status == 200 &&
+          res?.data?.CCRResponse?.CIRReportDataLst?.length >= 1
+        ) {
+          const dt = res?.data?.CCRResponse?.CIRReportDataLst;
+          console.log('_______________________dt', dt);
+          const indexof = dt.findIndex(
+            item =>
+              'CIRReportData' in item &&
+              'MicrofinanceAccountDetails' in item.CIRReportData,
+          );
+          debugger;
+          const {MicrofinanceAccountsSummary, ScoreDetails} =
+            dt[indexof].CIRReportData;
+          console.log(
+            'MicrofinanceAccountsSummary',
+            MicrofinanceAccountsSummary,
+          );
+          console.log(
+            'ccrRules',
+            ccrRules,
+            ScoreDetails,
+            MicrofinanceAccountsSummary
+          );
+          const score = parseInt(ScoreDetails[0]?.Value);
+          if ('TotalBalanceAmount' in MicrofinanceAccountsSummary) {
+            const {
+              NoOfActiveAccounts,
+              NoOfPastDueAccounts,
+              RecentAccount,
+              TotalBalanceAmount,
+              TotalMonthlyPaymentAmount,
+              TotalPastDue,
+              TotalWrittenOffAmount,
+            } = MicrofinanceAccountsSummary;
+            console.log("_______++++++++++++",MicrofinanceAccountsSummary,ccrRules);
+
+            const payload = {
+              data: {
+                Client_MobileNo: phone,
+                Client_AadharNo: aadharNo,
+                Client_Name: name,
+                Client_Address: address,
+                Client_DOB: dob,
+                Client_State: state,
+                Client_Pincode: pc,
+                Client_Relation: relation,
+                Client_PAN_No: panNo?.toUpperCase(),
+                Client_VoterID: voterId?.toUpperCase(),
+                Client_Gender: gender,
+                CoApplicant_AadharNo: coApplAadhar,
+                CoApplicant_Name: coApplicantName,
+                CoApplicant_Address: coAppAddress,
+                CoApplicant_DOB: coApplDOB,
+                CoApplicant_State: coApplState,
+                CoApplicant_Pincode: coAppPincode,
+                CoApplicant_MobileNo: coApplMobileNo,
+                CoApplicant_PAN_No: coApplPAN?.toUpperCase(),
+                CoApplicant_VoterID: coApplVoterid?.toUpperCase(),
+                CreditScore: score,
+                OpeningBalance: TotalBalanceAmount, //AverageOpenBalance,
+                ActiveAccount: NoOfActiveAccounts,
+                PastDue: NoOfPastDueAccounts,
+                Write_OFF: TotalWrittenOffAmount,
+                Monthly_EMI: TotalMonthlyPaymentAmount,
+                BranchID: route?.params?.data.branchid,
+                CenterID: route?.params?.data.centreid,
+                age: calculateAge(dob),
+                coAppAge: calculateAge(coApplDOB),
+                Result: 
+                score >= ccrRules?.CreditScore &&
+                parseInt(TotalBalanceAmount) + parseInt(amountApplied) <=
+                  ccrRules?.AverageOpenBalance &&
+                parseInt(NoOfActiveAccounts) <=
+                  ccrRules?.NoOfActiveAccounts &&
+                parseInt(NoOfPastDueAccounts) <=
+                  ccrRules?.NoOfPastDueAccounts &&
+                parseInt(TotalWrittenOffAmount) <= ccrRules?.Totalwriteoff &&
+                parseInt(TotalMonthlyPaymentAmount) <=
+                  ccrRules?.TotalBalanceAmount
+                  ? 'Approved'
+                  : 'Failed',
+              },
+            };
+
+            const response = await new UserApi().createEnrollmentHis(payload);
+            console.log('response____', response, payload);
+            if (response) {
+              CCRReport.current = {
+                // AverageOpenBalance,
+                CreditScore: score,
+                NoOfActiveAccounts,
+                NoOfPastDueAccounts,
+                TotalWrittenOffAmount,
+                TotalBalanceAmount,
+                TotalMonthlyPaymentAmount,
+              };
+              userData.current = {
+                name,
+                dob,
+                address,
+                aadharNo,
+                panNo,
+                voterId,
+                maskedAdharNumber,
+                phone,
+                relation,
+                pincode: pc,
+                state,
+                careOf,
+                gender,
+                house,
+                street,
+                landmark,
+                po,
+                dist,
+                subdist,
+                vtc,
+                state,
+                country,
+              };
+              coAppData.current = {
+                coApplicantName,
+                coApplDOB,
+                coAppAddress,
+                coApplAadhar,
+                coApplPAN,
+                coApplVoterid,
+                coApplMaskedAadhar,
+                coApplMobileNo,
+                coApplState,
+                coAppPincode,
+                coAppCareOf,
+                coAppGender,
+                address: coAppAdd,
+              };
+              productCurrent.current = {
+                product,
+                category,
+                amountApplied,
+                loanPurpose,
+              };
+              enrollmentId.current = response;
+              // console.log('CCRReport', CCRReport);
+              // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+              //   data: {
+              //     userData: userData.current,
+              //     coAppData: coAppData.current,
+              //     productCurrent: productCurrent.current,
+              //     enrollmentId: response,
+              //   },
+              // });
+              setCCRVis(true);
+              // if (
+              //   parseInt(NoOfActiveAccounts) <= ccrRules?.NoOfActiveAccounts &&
+              //   parseInt(NoOfWriteOffs) <= ccrRules?.NoOfWriteOffs &&
+              //   parseInt(TotalPastDue) <= ccrRules?.TotalPastDue &&
+              //   score >= ccrRules?.CreditScore &&
+              //   parseInt(NoOfWriteOfxs) == ccrRules?.NoOfWriteOffs &&
+              //   // parseInt(TotalPastDue) == ccrRules?.TotalPastDue
+              // ) {
+            }
+            //       }
+          }
         }
-        //       }
-        //     }
-        // }
 
         // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
       }
@@ -971,19 +1017,20 @@ const CheckCreditBureau = ({route}) => {
           const parsedData = JSON.parse(res1.data);
           res = {...res, data: parsedData};
         }
+        console.log('________________________________', res);
         if (
           res?.data?.client_adharcard == coApplAadhar ||
           res?.data?.co_borrower_adharcard == coApplAadhar
         ) {
-          Alert.alert(null, I18n.t('alreadyCustomer'));
+          Alert.alert(null, 'यह आधार नंबर पहले से मौजूद है।');
           setLoading(false);
         }
         if (res?.data?.code == 500) {
-          Alert.alert(null, I18n.t('msgLimitEnd'));
+          Alert.alert(null, res?.data?.msg);
           setLoading(false);
         }
         if (res?.data?.code == 400) {
-          Alert.alert(null, I18n.t('enterValidAAdhar'));
+          Alert.alert(null, 'कृपया वैध आधार संख्या दर्ज करें');
           setLoading(false);
         }
         if (res?.data?.model?.transactionId) {
@@ -1155,7 +1202,7 @@ const CheckCreditBureau = ({route}) => {
         screenName={ScreensNameEnum.CHECK_CREDIT_BUREAU_SCREEN}
       />
       <View style={{flex: 1, padding: 10}}>
-        <ScrollView keyboardShouldPersistTaps>
+        <ScrollView keyboardShouldPersistTaps="always">
           {/* <Text style={styles.tagline}>Check Credit Bureau</Text> */}
           <Card style={styles.card}>
             <Surface style={styles.surface}>

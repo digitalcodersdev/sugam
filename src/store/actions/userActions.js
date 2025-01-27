@@ -201,6 +201,7 @@ export const fetchProposals = createAsyncThunk(
   },
 );
 
+
 export const fetchAMProposals = createAsyncThunk(
   'fetch/proposals/am',
   async (data, {rejectWithValue}) => {

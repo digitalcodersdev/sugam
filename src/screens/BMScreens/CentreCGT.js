@@ -49,11 +49,11 @@ const LoanProposalReview = () => {
   useEffect(() => {
     if (user?.branchid && isInitialLoad.current && proposals?.length < 1) {
       isInitialLoad.current = false; // Set to false after the first load
-      fetchLoanProposalReviewData();
+      fetchCGTData();
     }
   }, [user]);
 
-  const fetchLoanProposalReviewData = async () => {
+  const fetchCGTData = async () => {
     setLoading(true);
     try {
       await dispatch(fetchProposals(user?.branchid));
@@ -100,7 +100,7 @@ const LoanProposalReview = () => {
           BranchID: BRANCHID,
         });
         if (res[1] == 1) {
-          fetchLoanProposalReviewData();
+          await dispatch(fetchProposals(user?.branchid));
           Alert.alert('CGT Completed', 'You can continue to GRT');
         }
       } else {
@@ -118,7 +118,7 @@ const LoanProposalReview = () => {
       <Pressable
         onPress={() => {
           if (item?.CGTDoneBy !== null) {
-            navigation.navigate(ScreensNameEnum.CENTRE_GRT_SCREEN , {
+            navigation.navigate(ScreensNameEnum.CENTRE_GRT_SCREEN, {
               centre: item,
             });
           } else {
@@ -249,11 +249,11 @@ const LoanProposalReview = () => {
         </View>
         <FlatList
           data={filteredData}
-          keyExtractor={item => `${item?.BRANCHID}_${item?.CenterNo}`}
+          keyExtractor={item => `${item?.ContactPerson}`}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           refreshing={loading}
-          onRefresh={fetchLoanProposalReviewData}
+          onRefresh={fetchProposals}
           ListEmptyComponent={() => (
             <Text style={styles.emptyText}>No New Proposal Found...</Text>
           )}

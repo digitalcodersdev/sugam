@@ -14,31 +14,90 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import GeotaggedImageModal from './GeotaggedImageModal';
 import Button from '../commons/Button';
 import R from '../../resources/R';
+import UserApi from '../../datalib/services/user.api';
+import {useNavigation} from '@react-navigation/native';
+import ScreensNameEnum from '../../constants/ScreensNameEnum';
+import {useDispatch} from 'react-redux';
+import {fetchGRTCentres} from '../../store/actions/userActions';
+import Loader from '../commons/Loader';
+import {uploadGRTPhoto} from '../../datalib/services/utility.api';
+import moment from 'moment';
 
-const GRTStatusModal = ({isVisible, onClose, onSubmit, data}) => {
+const GRTStatusModal = ({isVisible, onClose, onSubmit, data,}) => {
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [status, setStatus] = useState(null);
   const [remarks, setRemarks] = useState('');
   const [capturedImage, setCapturedImage] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  console.log('data___________________', data);
+  const [loading, setLoading] = useState(false);
 
   const handleCaptureImage = () => {
     setIsModalVisible(true);
   };
 
-  const handleSubmit = () => {
-    if (!status) {
-      Alert.alert('Error', 'Please select a status.');
-      return;
-    }
-    if (!remarks) {
-      Alert.alert('Error', 'Please provide remarks.');
-      return;
-    }
+  const handleSubmit = async () => {
+    try {
+      if (!status) {
+        Alert.alert('Select GRT Status', 'Please select a status.');
+        return;
+      }
+      if (status === 'Rejected' && !remarks) {
+        Alert.alert('Reason required', 'Please enter rejection reason.');
+        return;
+      }
+      if (capturedImage == null) {
+        Alert.alert('Image required', 'Please capture an image.');
+        return;
+      }
+      setLoading(true);
+      const payload = new FormData();
+      payload.append('grtPhoto', {
+        uri: capturedImage,
+        type: 'image/jpg',
+        name: `${data?.BRANCHID}_${data?.CenterNo}.jpg`,
+      });
+      const res = await uploadGRTPhoto(payload);
+      if (res?.success && res?.files?.grtPhoto?.length >= 10) {
+        const dt = {
+          grtData: {
+            loanId: data.loanid,
+            GRTDoneDate: moment(new Date()).format('YYYY-MM-DD'),
+            Status: status,
+            remarks: remarks ? remarks : ' ',
+          },
+        };
+        const response = await new UserApi().markGRTComplete(dt);
+        if (response) {
+          Alert.alert('GRT Completed', 'GRT Status Updated Successfully');
+          await dispatch(
+            fetchGRTCentres({
+              centerId: data?.CenterNo,
+              branchId: data?.BRANCHID,              
+            }),
+          );
+          navigation.navigate(ScreensNameEnum.CENTRE_GRT_SCREEN, {
+            centre: {
+              CenterNo: data?.CenterNo,
+              BRANCHID: data?.BRANCHID,
+              CenterName:data?.CenterName
+            },
+          });
+        } else {
+          Alert.alert('Something went Wrong', 'Please try again later.');
+        }
+      } else {
+        Alert.alert('Something went Wrong', 'Please try again later.');
+      }
 
-    // Call the onSubmit function with data
-    onSubmit({status, remarks, image: capturedImage});
-    onClose(false); // Close modal after submission
+      onClose(false); // Close modal after submission
+      setLoading(false);
+    } catch (error) {
+      console.log('ERRor', error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleImageCaptured = (uri, reset) => {
@@ -72,10 +131,13 @@ const GRTStatusModal = ({isVisible, onClose, onSubmit, data}) => {
               onValueChange={value => setStatus(value)}
               dropdownIconColor={R.colors.DARK_BLUE}
               style={styles.picker}>
-              <Picker.Item label="Select Status" value={null} enabled={false} />
-              <Picker.Item label="Pending" value={null} />
-              <Picker.Item label="Approved" value="1" />
-              <Picker.Item label="Rejected" value="2" />
+              <Picker.Item
+                label="Select GRT Status"
+                value={null}
+                enabled={false}
+              />
+              <Picker.Item label="Approved" value="Approved" />
+              <Picker.Item label="Rejected" value="Rejected" />
             </Picker>
           </View>
 
@@ -88,6 +150,7 @@ const GRTStatusModal = ({isVisible, onClose, onSubmit, data}) => {
             placeholderTextColor={R.colors.DARKGRAY}
             value={remarks}
             onChangeText={text => setRemarks(text)}
+            maxLength={50}
           />
 
           {/* Capture Image */}
@@ -115,7 +178,6 @@ const GRTStatusModal = ({isVisible, onClose, onSubmit, data}) => {
             width: '50%',
             alignSelf: 'center',
             borderRadius: 22,
-            height: 50,
           }}
           textStyle={{fontWeight: 'bold'}}
           onPress={handleSubmit}
@@ -126,6 +188,7 @@ const GRTStatusModal = ({isVisible, onClose, onSubmit, data}) => {
         onClose={() => setIsModalVisible(false)}
         onImageCaptured={handleImageCaptured}
       />
+      {loading && <Loader loading={loading} message={'please wait...'} />}
     </Modal>
   );
 };
@@ -184,6 +247,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
     color: R.colors.PRIMARI_DARK,
+    fontWeight: '600',
   },
   imageCaptureContainer: {
     alignItems: 'center',

@@ -19,127 +19,27 @@ const CCRReportModal = ({
   enrollmentId,
 }) => {
   const navigation = useNavigation();
-  const {
-    name,
-    dob,
-    address,
-    aadharNo,
-    panNo,
-    voterId,
-    maskedAdharNumber,
-    phone,
-    relation,
-    pincode,
-    state,
-    careOf,
-  } = userData;
-  const {
-    coApplicantName,
-    coApplDOB,
-    coAppAddress,
-    coApplAadhar,
-    coApplPAN,
-    coApplVoterid,
-    coApplMaskedAadhar,
-    coApplMobileNo,
-    coApplState,
-    coAppPincode,
-    coAppCareOf,
-  } = coAppData;
 
   const res =
-    data2.CreditScore >= data1?.CreditScore &&
-    parseInt(data2?.AverageOpenBalance) <= data1?.AverageOpenBalance &&
-    parseInt(data2?.NoOfActiveAccounts) <= data1?.NoOfActiveAccounts &&
-    parseInt(data2?.TotalPastDue) <= data1?.TotalPastDue &&
-    parseInt(data2?.TotalWrittenOffAmount) <= data1?.NoOfWriteOffs &&
-    parseInt(data2?.TotalMonthlyPaymentAmount) == data1?.TotalMonthlyPaymentAmt;
+    parseInt(data2?.CreditScore) >= parseInt(data1?.CreditScore) &&
+    totalOpeningBal <= parseInt(data1?.AverageOpenBalance) &&
+    parseInt(data2?.NoOfActiveAccounts) <=
+      parseInt(data1?.NoOfActiveAccounts) &&
+    parseInt(data2?.NoOfPastDueAccounts) <=
+      parseInt(data1?.NoOfPastDueAccounts) &&
+    parseInt(data2?.TotalWrittenOffAmount) <= parseInt(data1?.Totalwriteoff) &&
+    parseInt(data2?.TotalMonthlyPaymentAmount) <=
+      parseInt(data1?.TotalBalanceAmount);
 
-  console.log(
-    res,
-    '_____',
-    'productCurrent',
-    productCurrent,
-    data2.CreditScore >= data1?.CreditScore &&
-      parseInt(data2?.TotalBalanceAmount) <= data1?.AverageOpenBalance &&
-      parseInt(data2?.NoOfActiveAccounts) <= data1?.NoOfActiveAccounts &&
-      parseInt(data2?.NoOfPastDueAccounts) <= data1?.NoOfPastDueAccounts &&
-      parseInt(data2?.TotalWrittenOffAmount) <= data1?.NoOfWriteOffs &&
-      parseInt(data2?.TotalMonthlyPaymentAmount) <= data1?.TotalBalanceAmount,
-  );
+  const totalOpeningBal =
+    parseInt(data2?.TotalBalanceAmount) +
+    parseInt(productCurrent?.amountApplied);
+
+  console.log('______________', data2, data1, enrollmentId);
   return (
     <Modal isVisible={isVisible} onBackdropPress={onClose} style={styles.modal}>
       <View style={styles.modalContent}>
         <ScrollView>
-          {/* <View style={{flexDirection: 'column', flex: 1}}>
-            <Text style={[styles.Label]}>Applicant's Information</Text>
-            <View style={{flex: 1, margin: 5}}>
-              <Text style={styles.lbl}>
-                Name : <Text style={styles.val}>{name}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                DOB : <Text style={styles.val}>{dob}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Phone : <Text style={styles.val}>{phone}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Address :{' '}
-                <Text style={styles.val}>
-                  {address?.length <= 60
-                    ? address
-                    : address.substring(0, 60) + '...'}
-                </Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Aadhar : <Text style={styles.val}>{maskedAdharNumber}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                PAN : <Text style={styles.val}>{panNo}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Voter ID : <Text style={styles.val}>{voterId}</Text>
-              </Text>
-            </View>
-          </View>
-          <View style={{flexDirection: 'column', flex: 1}}>
-            <Text style={styles.Label}>Co-Applicant's Information</Text>
-            <View style={{flex: 1, margin: 5}}>
-              <Text style={styles.lbl}>
-                Name : <Text style={styles.val}>{coApplicantName}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                DOB : <Text style={styles.val}>{coApplDOB}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Phone : <Text style={styles.val}>{coApplMobileNo}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Address :{' '}
-                <Text style={styles.val}>
-                  {coAppAddress?.length <= 60
-                    ? coAppAddress
-                    : coAppAddress.substring(0, 60) + '...'}
-                </Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Aadhar : <Text style={styles.val}>{coApplMaskedAadhar}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                PAN : <Text style={styles.val}>{coApplPAN}</Text>
-              </Text>
-              <Text style={styles.lbl}>
-                Voter ID : <Text style={styles.val}>{coApplVoterid}</Text>
-              </Text>
-            </View>
-          </View> */}
-          {/* <Surface style={styles.profileContainer} elevation={4}>
-           
-        
-          </Surface> */}
-          {/* <Surface style={styles.profileContainer} elevation={4}>
-            <Text style={styles.Label}>CCR Report Information</Text>
-          </Surface> */}
           <View style={styles.table}>
             <View style={styles.tableHeader}>
               <Text style={[styles.headerCell, {flex: 1}]}>Parameter</Text>
@@ -203,7 +103,7 @@ const CCRReportModal = ({
                   {data2?.CreditScore}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
-                  {parseInt(data2?.TotalBalanceAmount)?.toFixed(1)}
+                  {totalOpeningBal}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
                   {data2?.NoOfActiveAccounts}
@@ -215,7 +115,7 @@ const CCRReportModal = ({
                   {parseInt(data2?.TotalWrittenOffAmount).toFixed(0)}
                 </Text>
                 <Text style={[styles.cell, styles.cellVal]}>
-                  {data2?.TotalMonthlyPaymentAmount}
+                  {parseInt(data2?.TotalMonthlyPaymentAmount)}
                 </Text>
               </View>
               <View style={{flex: 1}}>
@@ -318,31 +218,19 @@ const CCRReportModal = ({
           <Button
             title="Process"
             onPress={() => {
-              if (
-                data2.CreditScore >= data1?.CreditScore &&
-                parseInt(data2?.TotalBalanceAmount) <=
-                  data1?.AverageOpenBalance &&
-                parseInt(data2?.NoOfActiveAccounts) <=
-                  data1?.NoOfActiveAccounts &&
-                parseInt(data2?.NoOfPastDueAccounts) <=
-                  data1?.NoOfPastDueAccounts &&
-                parseInt(data2?.TotalWrittenOffAmount) <=
-                  data1?.NoOfWriteOffs &&
-                parseInt(data2?.TotalMonthlyPaymentAmount) <=
-                  data1?.TotalBalanceAmount
-              ) {
-                navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-                  data: {userData, coAppData, productCurrent},
-                });
+              if (res) {
+              // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+              //   data: {userData, coAppData, productCurrent},
+              // });
 
-                navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-                  data: {
-                    userData: userData,
-                    coAppData: coAppData,
-                    productCurrent: productCurrent,
-                    enrollmentId: enrollmentId,
-                  },
-                });
+              navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+                data: {
+                  userData: userData,
+                  coAppData: coAppData,
+                  productCurrent: productCurrent,
+                  enrollmentId: enrollmentId,
+                },
+              });
               } else {
                 Alert.alert('आपका ऋण स्वीकृत नहीं हुआ');
                 navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN);

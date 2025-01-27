@@ -44,7 +44,7 @@ const initialState = {
   currentDayCollection: [],
   currentDayCollectionCenter: [],
   grtCentres: [],
-  proposal:[],
+  proposal: [],
   getUserByIdStatus: initialThunkState,
   updateUserStatus: initialThunkState,
   uploadProfilePicStatus: initialThunkState,
@@ -124,22 +124,16 @@ const userSlice = createSlice({
     builder.addCase(fetchGRTCentres.pending, state => {
       state.getUserByIdStatus = defaultThunkLoadingState;
     });
-    builder.addCase(
-      fetchGRTCentres.fulfilled,
-      (state, action) => {
-        state.getUserByIdStatus = defaultThunkSuccessState;
-        state.grtCentres = action.payload;
-      },
-    );
-    builder.addCase(
-      fetchGRTCentres.rejected,
-      (state, action) => {
-        state.getUserByIdStatus = {
-          ...defaultThunkFailureState,
-          error: action.payload,
-        };
-      },
-    );
+    builder.addCase(fetchGRTCentres.fulfilled, (state, action) => {
+      state.getUserByIdStatus = defaultThunkSuccessState;
+      state.grtCentres = action.payload;
+    });
+    builder.addCase(fetchGRTCentres.rejected, (state, action) => {
+      state.getUserByIdStatus = {
+        ...defaultThunkFailureState,
+        error: action.payload,
+      };
+    });
 
     builder.addCase(getPendingEnrollments.pending, state => {
       state.getUserByIdStatus = defaultThunkLoadingState;
@@ -187,10 +181,9 @@ export const currentDayCollectionSelector = state =>
   state?.user?.currentDayCollection || [];
 export const currentDayCollectionCenterSelector = state =>
   state?.user?.currentDayCollectionCenter || [];
-export const grtCentresSelector = state =>
-  state?.user?.grtCentres || [];
+export const grtCentresSelector = state => state?.user?.grtCentres || [];
 
-  export const proposalSelector = state => state?.user?.proposal || [];
+export const proposalSelector = state => state?.user?.proposal || [];
 
-  export const pendingEnrollmentsSelector  = state =>
+export const pendingEnrollmentsSelector = state =>
   state?.user?.pendingEnrollments || [];

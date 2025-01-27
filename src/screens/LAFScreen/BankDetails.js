@@ -9,7 +9,6 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import {launchCamera} from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useNavigation} from '@react-navigation/native';
 import Button from '../../library/commons/Button';
@@ -30,16 +29,13 @@ const BankDetails = ({route}) => {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const [isvis, onModalClose] = useState(false);
-  // const {enrollmentId, customerid, userData, coAppData} = route?.params?.data;
-  let enrollmentId = 123;
-  let customerid = 123;
-  let userData = {name: 'Vikas Kumar'};
-  let coAppData = {};
+  const {enrollmentId, customerid, userData, coAppData, productCurrent} =
+    route?.params?.data;
+
   const [open, setOpen] = useState(false);
   const [isVis, onClose] = useState(false);
   const [image, setImage] = useState([]);
   const [isDocModalVisible, setDocModalVisible] = useState(false);
-  console.log('customerid', route?.params);
 
   const [formData, setFormData] = useState({
     bankName: null,
@@ -56,7 +52,9 @@ const BankDetails = ({route}) => {
   const [accountVerified, setAccVerified] = useState(false);
   const [bankData, setBankData] = useState([]);
   const [items, setItems] = useState([]);
-  console.log('route?.params?.data', customerid);
+
+  const {name} = userData;
+  const {coApplicantName} = coAppData;
 
   useEffect(() => {
     getBankDorpDown();
@@ -66,7 +64,6 @@ const BankDetails = ({route}) => {
     try {
       setLoading(true);
       const response = await new UserApi().getBankDropdown();
-      console.log('response', response);
       if (response) {
         setItems(
           response[0]?.map(item => {
@@ -213,6 +210,14 @@ const BankDetails = ({route}) => {
               livestatus: 1,
               EntryMode: 'Sugam',
               bankDetailsImage: null,
+              //GRT Details entry fields
+              Client_Name: name,
+              Co_Borrower_Name: coApplicantName,
+              FinanceAmt: productCurrent?.amountApplied,
+              Status: 'Pending',
+              GRTDoneBy: null,
+              GRTDoneDate: null,
+              EntryDate: moment(new Date()).format('YYYY-MM-DD'),
             },
           };
 

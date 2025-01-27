@@ -180,16 +180,7 @@ const GeotaggedImageModal = ({isVisible, onClose, onImageCaptured}) => {
                 </View>
               )}
             </ViewShot>
-            <Button
-              title="Retry"
-              onPress={() => setImageUri(null)}
-              buttonStyle={{
-                width: '40%',
-                alignSelf: 'center',
-                position: 'absolute',
-                bottom: 20,
-              }}
-            />
+
           </View>
         ) : finalImgUri !== null ? (
           <View style={styles.resultContainer}>

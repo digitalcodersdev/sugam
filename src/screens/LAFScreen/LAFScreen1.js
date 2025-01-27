@@ -37,7 +37,6 @@ const LAFScreen1 = props => {
   const [gender, setGender] = useState(null);
   const [noOfDependent, setnoOfDependent] = useState(null);
   const [occupation, setOccupation] = useState('');
-  const [education, setEductaion] = useState('');
   const [maritalStatus, setMaritalStatus] = useState(null);
   const [houseType, setHouseType] = useState(null);
   const [village, setVillage] = useState('');
@@ -128,7 +127,7 @@ const LAFScreen1 = props => {
       return valid;
     }
     // Validate Education
-    if (education === null) {
+    if (eductaion === null) {
       errors.occupation = 'Education is required';
       valid = false;
       Alert.alert('Education is required');
@@ -270,7 +269,7 @@ const LAFScreen1 = props => {
             block: block,
             religion: religion,
             caste: caste,
-            education: education,
+            education: eductaion,
           },
         };
         const response = await new UserApi().insertApplicant(payload);

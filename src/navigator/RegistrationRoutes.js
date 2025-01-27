@@ -412,13 +412,13 @@ function MyTabs() {
           headerShown: false,
         }}
       /> */}
-      <Tab.Screen
+      {/* <Tab.Screen
         name={ScreensNameEnum.TASK_SCREEN}
         component={TaskScreen}
         options={{
           headerShown: false,
         }}
-      />
+      /> */}
       {/* <Tab.Screen
         name={ScreensNameEnum.EVENTS_SCREENS}
         component={Events}

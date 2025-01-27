@@ -57,9 +57,7 @@ const KYCCustomer = ({route}) => {
   const [isDocModalVisible, setDocModalVisible] = useState(false);
   const selected = useRef(null);
   const cameraRef = useRef(null);
-
   const {userData, enrollmentId} = route?.params?.data;
-
   const applicantName = userData?.name?.split(' ')[0];
 
   const requestCameraPermission = async () => {

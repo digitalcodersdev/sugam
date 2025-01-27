@@ -238,7 +238,7 @@ const LAFScreen2 = props => {
             name: firstName,
             client_middle_name: middleName,
             client_last_name: lastName,
-            client_gender: GENDER[gender],
+            client_gender: gender,
             client_no_of_depend: noOfDependent,
             client_occupation: occupation,
             surname: fatherName,
@@ -406,8 +406,8 @@ const LAFScreen2 = props => {
                     enabled={false}
                   />
                 )}
-                <Picker.Item label="Male" value="M" />
-                <Picker.Item label="Female" value="F" />
+                <Picker.Item label="Male" value="Male" />
+                <Picker.Item label="Female" value="Female" />
               </Picker>
             </View>
             <View style={styles.viewInput}>

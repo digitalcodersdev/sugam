@@ -18,22 +18,22 @@ const BMOptions = () => {
       color: '#4CAF50',
       image: require('../../assets/Images/icon2.png'),
     },
-    {
-      id: 2,
-      icon: 'currency-inr',
-      title: 'Foreclose Approval',
-      screen: ScreensNameEnum.FORECLOSE_SCREEN,
-      color: '#FF9800',
-      image: require('../../assets/Images/icon1.png'),
-    },
-    {
-      id: 3,
-      icon: 'currency-inr',
-      title: 'Partial Approval',
-      screen: ScreensNameEnum.PART_PAYMENT_APPROVAL_SCREEN,
-      color: '#FF9800',
-      image: require('../../assets/Images/appr.jpg'),
-    },
+    // {
+    //   id: 2,
+    //   icon: 'currency-inr',
+    //   title: 'Foreclose Approval',
+    //   screen: ScreensNameEnum.FORECLOSE_SCREEN,
+    //   color: '#FF9800',
+    //   image: require('../../assets/Images/icon1.png'),
+    // },
+    // {
+    //   id: 3,
+    //   icon: 'currency-inr',
+    //   title: 'Partial Approval',
+    //   screen: ScreensNameEnum.PART_PAYMENT_APPROVAL_SCREEN,
+    //   color: '#FF9800',
+    //   image: require('../../assets/Images/appr.jpg'),
+    // },
   ];
 
   const Item = ({item, index}) => (

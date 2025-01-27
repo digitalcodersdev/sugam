@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Linking,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import ScreenWrapper from '../../library/wrapper/ScreenWrapper';
@@ -20,12 +21,15 @@ import {Image} from 'react-native';
 import env from '../../../env';
 import GRTStatusModal from '../../library/modals/GRTModal';
 import Button from '../../library/commons/Button';
+import ImageView from 'react-native-images-viewer';
 
 const ClientGRTScreen = ({route}) => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [data, setData] = useState({});
-  const {enrollmentId} = route.params;
+  const [isVis, onClose] = useState(false);
+  const [image, setImage] = useState([]);
+  const {enrollmentId, BRANCHID, CenterNo, CenterName} = route.params;
   const URL = `${env.SERVER_URL}/clientphoto/${enrollmentId}.jpeg`;
   const PASSBOOK_URL = `${env.SERVER_URL}/clientbankDetail/${data.loanid}.pdf`;
   const KYC_URL = `${env.SERVER_URL}/KycPhoto/${enrollmentId}.pdf`;
@@ -154,7 +158,12 @@ const ClientGRTScreen = ({route}) => {
             <View style={styles.labelHeaderView}>
               <Text style={styles.labelHeader}>Co-Applicant Details</Text>
               {renderField('Co-Borrower Name', data.coborrower)}
-              {renderField('Date of Birth', moment(new Date(data.co_borrower_dateof_birth)).format("DD-MM-YYYY"))}
+              {renderField(
+                'Date of Birth',
+                moment(new Date(data.co_borrower_dateof_birth)).format(
+                  'DD/MM/YYYY',
+                ),
+              )}
               {renderField('Gender', data.co_borrowe_gender)}
               {renderField('Mobile No.', data.co_borrower_mobile)}
               {renderField('No. Of Dependents', data.co_borrowe_gender)}
@@ -211,7 +220,13 @@ const ClientGRTScreen = ({route}) => {
                 <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: '800'}}>
                   Client Image
                 </Text>
-                <Image source={{uri: URL}} style={styles.image} />
+                <TouchableOpacity
+                  onPress={() => {
+                    setImage([{uri: URL}]);
+                    onClose(true); // Optional: Open modal or perform an action
+                  }}>
+                  <Image source={{uri: URL}} style={styles.image} />
+                </TouchableOpacity>
               </View>
               <View style={styles.row}>
                 <Text style={{color: R.colors.PRIMARI_DARK, fontWeight: '800'}}>
@@ -281,10 +296,16 @@ const ClientGRTScreen = ({route}) => {
             isVisible={modalVisible}
             onClose={setModalVisible}
             onSubmit={handleSubmit}
-            data={data}
+            data={{...data, BRANCHID, CenterNo, CenterName}}
           />
         )}
       </ScrollView>
+      <ImageView
+        images={image}
+        imageIndex={0}
+        visible={isVis}
+        onRequestClose={() => onClose(false)}
+      />
     </ScreenWrapper>
   );
 };

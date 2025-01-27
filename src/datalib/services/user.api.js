@@ -110,6 +110,24 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async markGRTComplete(dt) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/mark/grt/complete`),
+        dt,
+      );
+      if (response.success) {
+        return response.data;
+      }
+      return false;
+    } catch (err) {
+      if (err?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.error('getUserDetails', err);
+      return false;
+    }
+  }
   async completeCGT({CenterID, BranchID}) {
     try {
       const response = await this.securedAxios.put(
@@ -185,7 +203,6 @@ class AuthenticationApi extends SecuredBaseApi {
     try {
       const response = await this.securedAxios.get(
         getApiUri(`/fetch/grt/client/${enrollmentId}`),
-        
       );
       if (response.data && response.success) {
         return response;
@@ -372,9 +389,7 @@ class AuthenticationApi extends SecuredBaseApi {
   async fetchGRTCentres({centerId, branchId}) {
     try {
       const response = await this.securedAxios.get(
-        getApiUri(
-          `/fetch/grt/centers/${branchId}/${centerId}`,
-        ),
+        getApiUri(`/fetch/grt/centers/${branchId}/${centerId}`),
       );
       if (response.data) {
         return response.data;
@@ -1049,11 +1064,10 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-  async mergeAllFiles({loanId,enrollmentId}) {
+  async mergeAllFiles({loanId, enrollmentId}) {
     try {
       const response = await this.securedAxios.post(
         getApiUri(`/merge/all/files/${loanId}/${enrollmentId}`),
-
       );
       if (response.data && response.success) {
         return response;
@@ -1078,6 +1092,8 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+
+
 }
 
 export default AuthenticationApi;

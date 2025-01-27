@@ -280,7 +280,7 @@ const LogInScreen = () => {
           source={require('../../assets/Images/mainbg.png')}
           style={{flex: 1}}
           resizeMode="stretch">
-          <ScrollView keyboardShouldPersistTaps={true}>
+          <ScrollView keyboardShouldPersistTaps="always">
             <Image
               source={require('../../assets/Images/APP_LOGO.png')}
               style={{width: '85%', alignSelf: 'center'}}
@@ -409,7 +409,7 @@ const LogInScreen = () => {
                       value={password}
                       onChangeText={setPassword}
                       placeholderTextColor={R.colors.DARKGRAY}
-                      maxLength={15}
+                      maxLength={20}
                       style={styles.textInput}
                       // keyboardType="numeric"
                       onFocus={() => setError({})}

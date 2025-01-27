@@ -64,7 +64,7 @@ const CentreGRT = ({route}) => {
           <CenterInfo data={data} CenterNo={CenterNo} CenterName={CenterName} />
         </View>
       </View>
-      <CentresList centres={centres} CenterNo={CenterNo} loading={loading} />
+      <CentresList centres={centres} CenterNo={CenterNo} BRANCHID ={BRANCHID} CenterName= {CenterName} loading={loading} />
       <Loader loading={loading} />
     </ScreenWrapper>
   );
@@ -77,7 +77,7 @@ const CenterInfo = ({CenterNo, CenterName}) => (
   </View>
 );
 
-const CentresList = ({centres, CenterNo, loading, meeting}) => (
+const CentresList = ({centres, CenterNo, loading, BRANCHID,CenterName}) => (
   <View style={styles.container}>
     {centres.length > 0 && (
       <FlatList
@@ -88,7 +88,8 @@ const CentresList = ({centres, CenterNo, loading, meeting}) => (
             item={item}
             index={index}
             CenterNo={CenterNo}
-            meeting={meeting}
+            BRANCHID={BRANCHID}
+            CenterName={CenterName}
           />
         )}
         refreshing={loading}

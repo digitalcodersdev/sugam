@@ -75,13 +75,19 @@ const VerifyOTPModal = ({
               'something Went wrong please try again...',
               Toast.BOTTOM,
             );
-
             setLoading(false);
+          }
+          if (res?.code == 500 && res?.msg == 'Incorrect OTP input') {
+            Alert.alert('Incorrect OTP', 'Please enter correct OTP');
+          }
+          if (res?.code == 500 && res?.msg == 'Error while submitting OTP') {
+            Alert.alert('Resend OTP', 'Resend OTP and Try Again');
           }
           if (res?.code == 500 && res?.msg == 'Invalid OTP') {
             Toast.show(res?.msg + '...', Toast.BOTTOM);
             setLoading(false);
           }
+          setLoading(false);
         })
         .catch(error => {
           console.error({error});

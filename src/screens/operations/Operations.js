@@ -164,7 +164,7 @@ const Operations = () => {
   const DATA =
     user?.stafftype == 1
       ? DesignationID1
-      : user?.stafftype == 4 || user?.stafftype == 13
+      : user?.stafftype == 4 || user?.stafftype == 13 || user?.stafftype == 231
       ? DesignationID2
       : [];
   //   user?.Designation_ID == 12 ||

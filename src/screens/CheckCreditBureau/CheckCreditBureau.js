@@ -586,6 +586,7 @@ const CheckCreditBureau = ({route}) => {
 
   const handleConfirm = async () => {
     try {
+      setLoading(true);
       const valid = validate();
       if (valid) {
         var RAW_PROD = JSON.stringify({
@@ -658,54 +659,129 @@ const CheckCreditBureau = ({route}) => {
           ],
         });
 
-        var myHeaders = new Headers();
-        myHeaders.append('Content-Type', 'application/json');
-        console.log('RAW_PROD', RAW_PROD);
-        const PRODUCTION_URL =
-          'https://ists.equifax.co.in/cir360service/cir360report';
-        const res = await axios.post(PRODUCTION_URL, JSON.parse(RAW_PROD), {
-          headers: myHeaders,
-        });
-        console.log('RESPONSE___________CCR', res);
+        // const RAW_PROD = JSON.stringify({
+        //   RequestHeader: {
+        //     CustomerId: '5349',
+        //     UserId: 'STS_SFPCCR',
+        //     Password: 'W3#QeicsB',
+        //     MemberNumber: '007FZ00376',
+        //     SecurityCode: 'SP9',
+        //     CustRefField: '123456',
+        //     ProductCode: ['CCR'],
+        //   },
+        //   RequestBody: {
+        //     InquiryPurpose: '00',
+        //     FirstName: 'Anita Devi',
+        //     MiddleName: '',
+        //     LastName: '',
+        //     DOB: '1985-07-12',
+        //     InquiryAddresses: [
+        //       {
+        //         seq: '1',
+        //         AddressType: ['H'],
+        //         AddressLine1:
+        //           "W/O: Kamlesh Kumar, Ithara, mungra badshahpur jaunpur, Ithara, Jaunpur, Uttar Pradesh - 222202'",
+        //         State: 'UP',
+        //         Postal: '222202',
+        //       },
+        //     ],
+        //     InquiryPhones: [
+        //       {
+        //         seq: '1',
+        //         Number: '9984643940',
+        //         PhoneType: ['M'],
+        //       },
+        //     ],
+        //     IDDetails: [
+        //       {
+        //         seq: '1',
+        //         IDType: 'M',
+        //         IDValue: '228996474937',
+        //         Source: 'Inquiry',
+        //       },
+        //       {
+        //         seq: '2',
+        //         IDType: 'T',
+        //         IDValue: '',
+        //         Source: 'Inquiry',
+        //       },
+        //       {
+        //         seq: '3',
+        //         IDType: 'V',
+        //         IDValue: 'DNP2920262',
+        //         Source: 'Inquiry',
+        //       },
+        //     ],
+        //     MFIDetails: {
+        //       FamilyDetails: [
+        //         {
+        //           seq: '1',
+        //           AdditionalNameType: 'K02',
+        //           AdditionalName: 'Kamlesh Kumar',
+        //         },
+        //       ],
+        //     },
+        //   },
+        //   Score: [
+        //     {
+        //       Type: 'ERS',
+        //       Version: '4.0',
+        //     },
+        //   ],
+        // });
+        const payload = {
+          ccrData: RAW_PROD,
+        };
+        const res = await new UserApi().checkCCRReport(payload);
 
-        if (
-          res &&
-          res?.data?.CCRResponse?.Status == 1 &&
-          res?.status == 200 &&
-          res?.data?.CCRResponse?.CIRReportDataLst?.length >= 1
-        ) {
-          const dt = res?.data?.CCRResponse?.CIRReportDataLst;
-          console.log('_______________________dt', dt);
-          const indexof = dt.findIndex(
-            item =>
-              'CIRReportData' in item &&
-              'MicrofinanceAccountDetails' in item.CIRReportData,
-          );
-          debugger;
-          const {MicrofinanceAccountsSummary, ScoreDetails} =
-            dt[indexof].CIRReportData;
-          console.log(
-            'MicrofinanceAccountsSummary',
-            MicrofinanceAccountsSummary,
-          );
-          console.log(
-            'ccrRules',
-            ccrRules,
-            ScoreDetails,
-            MicrofinanceAccountsSummary
-          );
+        if (res && res?.Status == 1 && res?.CIRReportDataLst?.length >= 1) {
+          const dt = res?.CIRReportDataLst;
+          // console.log('_______________________dt', dt);
+          const getObjectWithMicrofinanceSummary = array => {
+            return array.find(
+              item =>
+                item?.CIRReportData?.MicrofinanceAccountsSummary !==
+                  undefined ||
+                item?.CIRReportData?.RetailAccountsSummary !== undefined,
+            );
+          };
+
+          const dtNew = getObjectWithMicrofinanceSummary(dt);
+
+          // const {MicrofinanceAccountsSummary, ScoreDetails} =
+          //   dt[indexof].CIRReportData;
+          const {ScoreDetails} = dtNew?.CIRReportData;
+          const MicrofinanceAccountsSummary =
+            'RetailAccountsSummary' in dtNew?.CIRReportData
+              ? dtNew?.CIRReportData?.RetailAccountsSummary
+              : dtNew?.CIRReportData?.MicrofinanceAccountsSummary;
+          // console.log(
+          //   'MicrofinanceAccountsSummary',
+          //   MicrofinanceAccountsSummary,
+          // );
+          // console.log(
+          //   'ccrRules',
+          //   ccrRules,
+          //   ScoreDetails,
+          //   MicrofinanceAccountsSummary,
+          // );
           const score = parseInt(ScoreDetails[0]?.Value);
           if ('TotalBalanceAmount' in MicrofinanceAccountsSummary) {
             const {
               NoOfActiveAccounts,
               NoOfPastDueAccounts,
-              RecentAccount,
               TotalBalanceAmount,
               TotalMonthlyPaymentAmount,
-              TotalPastDue,
-              TotalWrittenOffAmount,
             } = MicrofinanceAccountsSummary;
-            console.log("_______++++++++++++",MicrofinanceAccountsSummary,ccrRules);
+            const TotalWrittenOffAmount =
+              'NoOfWriteOffs' in MicrofinanceAccountsSummary
+                ? MicrofinanceAccountsSummary?.NoOfWriteOffs
+                : MicrofinanceAccountsSummary?.TotalWrittenOffAmount;
+            // console.log(
+            //   '_______++++++++++++',
+            //   MicrofinanceAccountsSummary,
+            //   ccrRules,
+            // );
 
             const payload = {
               data: {
@@ -739,24 +815,24 @@ const CheckCreditBureau = ({route}) => {
                 CenterID: route?.params?.data.centreid,
                 age: calculateAge(dob),
                 coAppAge: calculateAge(coApplDOB),
-                Result: 
-                score >= ccrRules?.CreditScore &&
-                parseInt(TotalBalanceAmount) + parseInt(amountApplied) <=
-                  ccrRules?.AverageOpenBalance &&
-                parseInt(NoOfActiveAccounts) <=
-                  ccrRules?.NoOfActiveAccounts &&
-                parseInt(NoOfPastDueAccounts) <=
-                  ccrRules?.NoOfPastDueAccounts &&
-                parseInt(TotalWrittenOffAmount) <= ccrRules?.Totalwriteoff &&
-                parseInt(TotalMonthlyPaymentAmount) <=
-                  ccrRules?.TotalBalanceAmount
-                  ? 'Approved'
-                  : 'Failed',
+                Result:
+                  score >= ccrRules?.CreditScore &&
+                  parseInt(TotalBalanceAmount) + parseInt(amountApplied) <=
+                    ccrRules?.AverageOpenBalance &&
+                  parseInt(NoOfActiveAccounts) <=
+                    ccrRules?.NoOfActiveAccounts &&
+                  parseInt(NoOfPastDueAccounts) <=
+                    ccrRules?.NoOfPastDueAccounts &&
+                  parseInt(TotalWrittenOffAmount) <= ccrRules?.Totalwriteoff &&
+                  parseInt(TotalMonthlyPaymentAmount) <=
+                    ccrRules?.TotalBalanceAmount
+                    ? 'Approved'
+                    : 'Failed',
               },
             };
 
             const response = await new UserApi().createEnrollmentHis(payload);
-            console.log('response____', response, payload);
+            // console.log('response____', response, payload);
             if (response) {
               CCRReport.current = {
                 // AverageOpenBalance,
@@ -834,12 +910,25 @@ const CheckCreditBureau = ({route}) => {
             }
             //       }
           }
+        } else {
+          Alert.alert(
+            'Something Went Wrong',
+            'Something Wrong While Fetching CIBIL Repport',
+          );
+          // Alert.alert("Error", "Failed to fetch CIBIL report");
         }
 
         // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN);
       }
+      setLoading(false);
     } catch (error) {
       console.log('Error Details --->', error);
+      // if (error?.includes('AxiosError: Network Error')) {
+      //   Alert.alert('Network Error', 'Please try after some time.');
+      // }
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 

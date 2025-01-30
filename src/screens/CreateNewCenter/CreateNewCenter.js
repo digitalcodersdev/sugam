@@ -130,14 +130,8 @@ const CreateNewCenter = ({}) => {
         const daysToCheck = 29; // Total days to check
 
         for (let i = 1; i < daysToCheck; i++) {
-          // debugger;
           const currentDate = new Date();
           currentDate.setDate(today.getDate() + i);
-          // console.log(
-          //   'currentDate.getDay() === DATA[meetingDay]',
-          //   currentDate.getDay(),
-          //   DATA[meetingDay],
-          // );
           if (currentDate.getDay() == DATA[meetingDay]) {
             const year = currentDate.getFullYear();
             const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed

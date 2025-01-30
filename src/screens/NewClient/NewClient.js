@@ -26,7 +26,7 @@ const NewClient = () => {
   const [search, setSearch] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-console.log(centre);
+  console.log(centre);
   useEffect(() => {
     fetchCentresData();
   }, []);
@@ -41,7 +41,7 @@ console.log(centre);
     if (search?.length >= 1) {
       const res = data?.filter(
         item =>
-          item?.centreid == search ||
+          item?.centreid?.toString()?.includes(search) ||
           item?.cename?.toUpperCase().includes(search?.toUpperCase()),
       );
       setData(res);
@@ -49,6 +49,8 @@ console.log(centre);
       setData(centre);
     }
   }, [search]);
+
+  console.log('search', search, data);
 
   const fetchCentresData = async () => {
     setLoading(true);
@@ -159,8 +161,8 @@ const styles = StyleSheet.create({
     borderRadius: 4, // Slightly larger for a smoother look
     padding: 15, // Increased padding for better spacing
     marginVertical: 12, // Adds vertical spacing between cards
-    borderColor: R.colors.BLUE , // Lighter border color for contrast
-    borderWidth: .5, // Slightly wider border for better visibility
+    borderColor: R.colors.BLUE, // Lighter border color for contrast
+    borderWidth: 0.5, // Slightly wider border for better visibility
     elevation: 5, // Increased elevation for a clearer shadow
     shadowOffset: {
       width: 0,
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: R.colors.PRIMARI_DARK,
     flexWrap: 'wrap',
-    flex:2.5
+    flex: 2.5,
   },
   view: {
     flexDirection: 'row',
@@ -189,9 +191,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderBottomWidth: 1,
     borderColor: R.colors.LIGHTGRAY,
-    flexWrap:"wrap",
-    borderBottomWidth:1,
-    padding:3
+    flexWrap: 'wrap',
+    borderBottomWidth: 1,
+    padding: 3,
   },
   flatListContent: {
     paddingBottom: 20,

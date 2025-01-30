@@ -35,7 +35,7 @@ const ClientGRTScreen = ({route}) => {
   const {enrollmentId, BRANCHID, CenterNo, CenterName} = route.params;
   const URL = `${env.SERVER_URL}/clientphoto/${enrollmentId}.jpeg`;
   const PASSBOOK_URL = `${env.SERVER_URL}/clientbankDetail/${data.loanid}.pdf`;
-  const KYC_URL = `${env.SERVER_URL}/KycPhoto/${enrollmentId}.pdf`;
+  const KYC_URL = `${env.SERVER_URL}/KycPhoto/${data.loanid}.pdf`;
   const KYC_URL_CO_Borrower = `${env.SERVER_URL}/Co-BorrowerDoc/${enrollmentId}.pdf`;
   useEffect(() => {
     if (enrollmentId) {

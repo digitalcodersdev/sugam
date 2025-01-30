@@ -135,26 +135,26 @@ const LAFScreen = props => {
   const handleConfirm = status => {
     if (status === 'confirm') {
       onModalClose(false);
-      if (durationOfLoan) {
-        navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
-          data: {
-            ...data,
-            loanPurpose: {
-              product,
-              amountApplied,
-              durationOfLoan,
-              frequency,
-              category,
-              loanPurpose,
-              insurance,
-              emi,
-            },
-          },
-        });
-      } else {
-        Alert.alert('Error', 'Tenure is required. Please try again.');
-        fetchProdFreqTen(amountApplied);
-      }
+      // if (durationOfLoan) {
+      //   navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
+      //     data: {
+      //       ...data,
+      //       loanPurpose: {
+      //         product,
+      //         amountApplied,
+      //         durationOfLoan,
+      //         frequency,
+      //         category,
+      //         loanPurpose,
+      //         insurance,
+      //         emi,
+      //       },
+      //     },
+      //   });
+      // } else {
+      //   Alert.alert('Error', 'Tenure is required. Please try again.');
+      //   fetchProdFreqTen(amountApplied);
+      // }
     }
   };
 
@@ -360,21 +360,43 @@ const LAFScreen = props => {
             buttonStyle={styles.nextButton}
             textStyle={styles.nextButtonText}
             onPress={
-              () => onModalClose(true)
+              () => {
+                if (durationOfLoan) {
+                  navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1, {
+                    data: {
+                      ...data,
+                      loanPurpose: {
+                        product,
+                        amountApplied,
+                        durationOfLoan,
+                        frequency,
+                        category,
+                        loanPurpose,
+                        insurance,
+                        emi,
+                      },
+                    },
+                  });
+                } else {
+                  Alert.alert('Error', 'Tenure is required. Please try again.');
+                  fetchProdFreqTen(amountApplied);
+                }
+                onModalClose(true);
+              }
               // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN1)
             }
           />
         </ScrollView>
       </View>
       <Loader loading={loading} message={'please wait...'} />
-      <ConfirmationModal
+      {/* <ConfirmationModal
         isVisible={isVis}
         onModalClose={onModalClose}
         confirmationText={
           'Are you sure the Selected Information Of Product is Okay and verified?'
         }
         onConfirm={handleConfirm}
-      />
+      /> */}
     </ScreenWrapper>
   );
 };

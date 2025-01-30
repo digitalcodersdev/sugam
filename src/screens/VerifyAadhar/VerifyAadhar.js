@@ -23,7 +23,6 @@ import UserApi from '../../datalib/services/user.api';
 import Loader from '../../library/commons/Loader';
 import I18n from 'react-native-i18n';
 import {useNavigation} from '@react-navigation/native';
-import axios from 'axios';
 import ChildScreensHeader from '../../components/MainComponents/ChildScreensHeader';
 
 const VerifyAadhar = ({route}) => {

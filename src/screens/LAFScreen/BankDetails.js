@@ -396,6 +396,7 @@ const BankDetails = ({route}) => {
                 }
                 error={errors.ifscCode}
                 style={[styles.input, {marginBottom: 10}]}
+            
                 disabled={accountVerified ? true : false}
               />
               {errors.ifscCode && (

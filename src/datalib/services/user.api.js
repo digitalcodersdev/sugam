@@ -4,6 +4,25 @@ import getApiUri from '../api.util';
 import SecuredBaseApi from '../securedBase.api';
 
 class AuthenticationApi extends SecuredBaseApi {
+  async checkCCRReport(payload) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/check/ccr`),
+        payload,
+      );
+      console.log("____response___",response);
+      if (response?.status == 200) {
+        return response?.data;
+      }
+      return false;
+    } catch (error) {
+      if (error?.code == 'ERR_NETWORK') {
+        Alert.alert('please check your internet connection and try again');
+      }
+      console.log(error);
+      return false;
+    }
+  }
   async sendClientOtp({phone, name}) {
     try {
       const response = await this.securedAxios.post(
@@ -1092,8 +1111,6 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
-
-
 }
 
 export default AuthenticationApi;

@@ -19,7 +19,9 @@ const CCRReportModal = ({
   enrollmentId,
 }) => {
   const navigation = useNavigation();
-
+  const totalOpeningBal =
+    parseInt(data2?.TotalBalanceAmount) +
+    parseInt(productCurrent?.amountApplied);
   const res =
     parseInt(data2?.CreditScore) >= parseInt(data1?.CreditScore) &&
     totalOpeningBal <= parseInt(data1?.AverageOpenBalance) &&
@@ -31,11 +33,7 @@ const CCRReportModal = ({
     parseInt(data2?.TotalMonthlyPaymentAmount) <=
       parseInt(data1?.TotalBalanceAmount);
 
-  const totalOpeningBal =
-    parseInt(data2?.TotalBalanceAmount) +
-    parseInt(productCurrent?.amountApplied);
-
-  console.log('______________', data2, data1, enrollmentId);
+  // console.log('______________', data2, data1, enrollmentId, res);
   return (
     <Modal isVisible={isVisible} onBackdropPress={onClose} style={styles.modal}>
       <View style={styles.modalContent}>
@@ -137,12 +135,12 @@ const CCRReportModal = ({
                 <Text style={[styles.cell, styles.cellVal]}>
                   <Icon
                     name={
-                      data2?.TotalBalanceAmount <= data1?.TotalBalanceAmount
+                      data2?.TotalBalanceAmount <= data1?.AverageOpenBalance
                         ? 'check'
                         : 'window-close'
                     }
                     color={
-                      data2?.TotalBalanceAmount <= data1?.TotalBalanceAmount
+                      data2?.TotalBalanceAmount <= data1?.AverageOpenBalance
                         ? R.colors.GREEN
                         : R.colors.RED
                     }
@@ -219,18 +217,15 @@ const CCRReportModal = ({
             title="Process"
             onPress={() => {
               if (res) {
-              // navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-              //   data: {userData, coAppData, productCurrent},
-              // });
 
-              navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
-                data: {
-                  userData: userData,
-                  coAppData: coAppData,
-                  productCurrent: productCurrent,
-                  enrollmentId: enrollmentId,
-                },
-              });
+                navigation.navigate(ScreensNameEnum.LAF_GROUP_SCREEN, {
+                  data: {
+                    userData: userData,
+                    coAppData: coAppData,
+                    productCurrent: productCurrent,
+                    enrollmentId: enrollmentId,
+                  },
+                });
               } else {
                 Alert.alert('आपका ऋण स्वीकृत नहीं हुआ');
                 navigation.navigate(ScreensNameEnum.ENROLLMENT_SCREEN);

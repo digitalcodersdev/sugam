@@ -91,6 +91,14 @@ const Operations = () => {
       color: R.colors.DARK_ORANGE,
       image: require('../../assets/Images/icon1.png'),
     },
+    {
+      id: 4,
+      icon: 'cash-multiple',
+      title: 'FLO Collection',
+      screen: ScreensNameEnum.FLO_COLLECTION_SCREEN,
+      color: R.colors.DARK_ORANGE,
+      image: require('../../assets/Images/collection.png'),
+    },
     // {
     //   id: 2,
     //   icon: 'account-group',
@@ -164,7 +172,7 @@ const Operations = () => {
   const DATA =
     user?.stafftype == 1
       ? DesignationID1
-      : user?.stafftype == 4 || user?.stafftype == 13 || user?.stafftype == 231
+      : user?.stafftype == 4 || user?.stafftype == 13 || user?.stafftype == 231 || user?.stafftype == 27
       ? DesignationID2
       : [];
   //   user?.Designation_ID == 12 ||

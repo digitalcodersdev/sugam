@@ -221,6 +221,7 @@ const LogInScreen = () => {
     },
     [transactionId, phone, authContext, dispatch],
   );
+  
   const valid = () => {
     let valid = true;
     const err = {};
@@ -228,9 +229,9 @@ const LogInScreen = () => {
       valid = false;
       err.username = 'Please enter a valid phone number...';
     }
-    if (password?.length <= 6 || password?.length <= 1) {
+    if (password?.length < 6 || password?.length <= 1) {
       valid = false;
-      err.password = 'Please enter valid password';
+      err.password = 'Please enter valid password Min 6 characters';
     }
     setError(err);
     return valid;
@@ -247,7 +248,6 @@ const LogInScreen = () => {
           },
         };
         const response = await new AuthApi().login(payload);
-        console.log('response', response);
         if (response) {
           const userData = await dispatch(getUserDetails());
           if (userData?.type?.includes('fulfilled')) {

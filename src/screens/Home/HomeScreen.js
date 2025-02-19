@@ -189,7 +189,7 @@ const HomeScreen = ({navigation}) => {
               }
               style={styles.userImage}
             />
-            <View>
+            <View style={{width: "70%"}}>
               <Text style={styles.userName}>
                 {user?.staffname?.trim() || 'N/A'}
               </Text>
@@ -197,10 +197,12 @@ const HomeScreen = ({navigation}) => {
                 ({user?.stafftypedetail?.trim() || 'N/A'})
               </Text>
             </View>
-          </View>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={{alignItems:"center"}}>
             <Icon name="power" size={40} color={R.colors.primary} />
           </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.categoryView}>
           <FlatList
@@ -252,10 +254,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap:"wrap"
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+
   },
   userImage: {
     height: 50,

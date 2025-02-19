@@ -10,7 +10,7 @@ class AuthenticationApi extends SecuredBaseApi {
         getApiUri(`/check/ccr`),
         payload,
       );
-      console.log("____response___",response);
+      console.log('____response___', response);
       if (response?.status == 200) {
         return response?.data;
       }
@@ -515,8 +515,10 @@ class AuthenticationApi extends SecuredBaseApi {
   async sendAadharOtp({aadharNo}) {
     try {
       const response = await this.securedAxios.post(
-        getApiUri(`/generate/aadhar/otp/${aadharNo}`),
+        getApiUri(`/send/aadhar/otp`),
+        {aadharNo},
       );
+      // console.log('_____________', getApiUri(`/send/aadhar/otp/${aadharNo}`));
       if (response.data) {
         return response;
       }

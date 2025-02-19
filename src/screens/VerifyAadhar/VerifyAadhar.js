@@ -176,8 +176,6 @@ const VerifyAadhar = ({route}) => {
         const res1 = await new UserApi().sendAadharOtp({
           aadharNo: aadharNumber,
         });
-        console.log('res1', res1);
-        // Handle response if `data` is a string
         let res = res1;
         if (typeof res1?.data === 'string') {
           const parsedData = JSON.parse(res1.data);
@@ -294,6 +292,7 @@ const VerifyAadhar = ({route}) => {
               : true
           }
         />
+        {/* 588589979200 */}
         {otpEnabled && (
           <View style={styles.resendView}>
             <Text

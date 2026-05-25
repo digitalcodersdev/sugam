@@ -1,5 +1,5 @@
-import React from 'react';
-import {StatusBar, Text, View} from 'react-native';
+import React, { useEffect } from 'react';
+import {StatusBar, Text, View,PermissionsAndroid, Platform} from 'react-native';
 import {Provider as StoreProvider} from 'react-redux';
 import RootRoutes from './navigator/RootRoutes';
 import store from './store/app.store';
@@ -9,10 +9,25 @@ import R from './resources/R';
 import 'react-native-gesture-handler';
 navigator.geolocation = require('@react-native-community/geolocation');
 import { Buffer } from 'buffer';
+// import useLocationTracking from './library/customHooks/useLocationTracking';
 global.Buffer = Buffer;
 
 
 const App = () => {
+  // useLocationTracking(); 
+  // const requestPermissions = async () => {
+  //   if (Platform.OS === "android") {
+  //     await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+  //     ]);
+  //   }
+  // };
+  
+  // useEffect(() => {
+  //   requestPermissions();
+
+  // }, []);
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <StoreProvider store={store}>

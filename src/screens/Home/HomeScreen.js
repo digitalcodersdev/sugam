@@ -27,6 +27,7 @@ import {currentUserSelector} from '../../store/slices/user/user.slice';
 import {AuthContext} from '../../store/contexts/AuthContext';
 import Video from 'react-native-video';
 import ConfirmationModal from '../../library/modals/ConfirmationModal';
+// import useLocationTracking from '../../library/customHooks/useLocationTracking';
 
 const DATA = [
   {
@@ -80,6 +81,7 @@ const DATA = [
 ];
 
 const HomeScreen = ({navigation}) => {
+  // useLocationTracking()
   const [isModalVisible, setModalVisible] = useState(false);
   const [canCloseModal, setCanCloseModal] = useState(false);
   const authContext = useContext(AuthContext);

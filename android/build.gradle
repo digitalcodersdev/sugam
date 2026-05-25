@@ -6,19 +6,33 @@ buildscript {
         targetSdkVersion = 34
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24"
-
         playServicesLocationVersion = "21.0.1" 
+        appCompatVersion= "1.4.2" 
+        googlePlayServicesLocationVersion = "21.0.1" 
 
             // googlePlayServicesVersion      = "17.0.0"
     }
     repositories {
         google()
         mavenCentral()
+        maven { url("${project(':react-native-background-geolocation').projectDir}/libs") }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+
+allprojects {   // <-- NOTE:  allprojects container -- If you don't see this, create it.
+    repositories {
+             google()
+        mavenCentral()
+      // Required for react-native-background-geolocation
+      maven { url("${project(':react-native-background-geolocation').projectDir}/libs") }
+      maven { url 'https://developer.huawei.com/repo/' }
+      // Required for react-native-background-fetch
+      maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
     }
 }
 

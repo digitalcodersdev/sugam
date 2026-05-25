@@ -1113,6 +1113,21 @@ class AuthenticationApi extends SecuredBaseApi {
       return false;
     }
   }
+  async startTracking(data) {
+    try {
+      const response = await this.securedAxios.post(
+        getApiUri(`/staff/tracking`),
+        data
+      );
+      if (response?.success) {
+        return response;
+      }
+      return false;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
 }
 
 export default AuthenticationApi;
